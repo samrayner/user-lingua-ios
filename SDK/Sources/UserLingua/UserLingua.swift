@@ -33,12 +33,12 @@ struct Suggestion {
     var screenshot: Image?
 }
 
-class UserLingua {
-    struct Configuration {
+public class UserLingua {
+    public struct Configuration {
         let highlightColor: Color
     }
     
-    static let shared = UserLingua(config: .init(highlightColor: .red))
+    static let shared = UserLingua(config: .init(highlightColor: .green))
     
     let db = Database()
     let config: Configuration
@@ -51,7 +51,8 @@ class UserLingua {
 class Database {
     var localizedStringLogs: [LocalizedStringLog] = []
     var suggestions: [Suggestion] = [
-        .init(oldValue: "Text value", newValue: "Sam", languageCode: "en", key: "text_key")
+        .init(oldValue: "Text value", newValue: "Sam", languageCode: "en", key: "text_key"),
+        .init(oldValue: "verbatim", newValue: "Testing", languageCode: "en")
     ]
     
     func logLocalizedStringInstance(_ localizedString: LocalizedString) {
@@ -102,7 +103,7 @@ extension Text {
         
         if let value = Reflection.value("verbatim", on: storage) as? String {
             let suggestion = UserLingua.shared.db.suggestion(for: value)
-            return suggestion.map { Text($0.newValue) } ?? self
+            return suggestion.map { text(string: $0.newValue) } ?? self
         }
         
         guard let textStorage = Reflection.value("anyTextStorage", on: storage)
@@ -118,13 +119,17 @@ extension Text {
             UserLingua.shared.db.logLocalizedStringInstance(value)
             
             let suggestion = UserLingua.shared.db.suggestion(for: value)
-            return suggestion.map { Text($0.newValue) } ?? self
+            return suggestion.map { text(string: $0.newValue) } ?? self
         case "AttributedStringTextStorage":
             //we probably want to support this in future
             return self
         default:
             return self
         }
+    }
+    
+    private func text(string: String) -> Self {
+        return Self(verbatim: string).foregroundColor(UserLingua.shared.config.highlightColor)
     }
     
     private func localizedString(from localizedTextStorage: Any) -> LocalizedString? {

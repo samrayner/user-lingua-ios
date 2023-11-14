@@ -7,21 +7,20 @@
 
 import SwiftUI
 import UserLingua
+import UserLinguaText
 
 struct ContentView: View {
     var body: some View {
         VStack {
             Text("text_key", tableName: "Localizable", bundle: .main, comment: "comment")
-                .userLingua()
             
             Text(verbatim: "verbatim")
-                .userLingua()
+                .bold()
             
             Text(NSLocalizedString("nslocalized_key", tableName: "Localizable", bundle: .main, comment: "comment"))
-                .userLingua()
+                .bold()
             
             Text("content")
-                .userLingua()
             
             Button("button_key", action: {})
         }
