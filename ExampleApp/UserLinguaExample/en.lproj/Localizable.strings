@@ -1,1 +1,3 @@
-"my_key" = "Hello world!";
+"text_key" = "Text value";
+"nslocalized_key" = "NSLocalized value";
+"button_key" = "Button value";

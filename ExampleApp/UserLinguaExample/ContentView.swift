@@ -11,13 +11,21 @@ import UserLingua
 struct ContentView: View {
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("my_key")
+            Text("text_key", tableName: "Localizable", bundle: .main, comment: "comment")
+                .userLingua()
+            
+            Text(verbatim: "verbatim")
+                .userLingua()
+            
+            Text(NSLocalizedString("nslocalized_key", tableName: "Localizable", bundle: .main, comment: "comment"))
+                .userLingua()
+            
+            Text("content")
+                .userLingua()
+            
+            Button("button_key", action: {})
         }
         .padding()
-        .userLingua()
     }
 }
 
