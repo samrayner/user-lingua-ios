@@ -7,12 +7,13 @@
 
 import SwiftUI
 import UserLingua
-import UserLinguaText
 
-struct ContentView: View {
+struct ContentView: View, UserLinguaOptIn {
     var body: some View {
         VStack {
             Text("text_key", tableName: "Localizable", bundle: .main, comment: "comment")
+            
+            Text("text_key_\("lol")", tableName: "Localizable", bundle: .main, comment: "comment")
             
             Text(verbatim: "verbatim")
                 .bold()

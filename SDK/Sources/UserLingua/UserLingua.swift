@@ -1,32 +1,21 @@
 import SwiftUI
 
-struct LocalizedString: Equatable {
+struct Localization: Hashable {
     var key: String
-    var value: String
-    var bundle: Bundle = .main
     var tableName: String?
     var comment: String?
-    
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.key == rhs.key &&
-        lhs.value == rhs.value &&
-        lhs.bundle == rhs.bundle &&
-        lhs.tableName == rhs.tableName
-    }
 }
 
-struct LocalizedStringLog {
-    var localizedString: LocalizedString
-    var firstInstanceAt: Date = .now
-    var lastInstanceAt: Date = .now
-    var instanceCount: UInt = 1
+struct LocalizedString: Hashable {
+    var value: String
+    var localization: Localization
 }
 
 struct Suggestion {
     var oldValue: String
     var newValue: String
-    var languageCode: String
-    var key: String?
+    var locale: Locale
+    var localization: Localization?
     var createdAt: Date = .now
     var modifiedAt: Date = .now
     var isSubmitted = false
@@ -34,6 +23,13 @@ struct Suggestion {
 }
 
 public class UserLingua {
+    enum State {
+        case disabled
+        case recordingStrings
+        case detectingStrings
+        case previewingSuggestions
+    }
+    
     public struct Configuration {
         let highlightColor: Color
     }
@@ -42,6 +38,7 @@ public class UserLingua {
     
     let db = Database()
     let config: Configuration
+    var state: State = .recordingStrings
     
     public init(config: Configuration) {
         self.config = config
@@ -49,33 +46,50 @@ public class UserLingua {
 }
 
 class Database {
-    var localizedStringLogs: [LocalizedStringLog] = []
-    var suggestions: [Suggestion] = [
-        .init(oldValue: "Text value", newValue: "Sam", languageCode: "en", key: "text_key"),
-        .init(oldValue: "verbatim", newValue: "Testing", languageCode: "en")
-    ]
-    
-    func logLocalizedStringInstance(_ localizedString: LocalizedString) {
-        if var existing = localizedStringLogs.first(
-            where: { $0.localizedString == localizedString }
-        ) {
-            existing.instanceCount += 1
-            existing.lastInstanceAt = .now
-        } else {
-            localizedStringLogs.append(
-                .init(localizedString: localizedString)
-            )
+    var stringRecord: [String] = [] {
+        didSet {
+            trimStringRecord()
         }
     }
     
+    var localizations: [String: Set<LocalizedString>] = [:]
+    var suggestions: [String: [Suggestion]] = [
+        "Text value %@": [
+            .init(
+                oldValue: "Text value %@",
+                newValue: "Sam2",
+                locale: .current
+            )
+        ]
+    ]
+    
+    private func trimStringRecord() {
+        let softLimit = 1000
+        let buffer = 500
+        if stringRecord.count > softLimit + buffer {
+            stringRecord.removeFirst(buffer)
+        }
+    }
+    
+    func record(string: String) {
+        stringRecord.append(string)
+    }
+    
+    func record(localizedString: LocalizedString) {
+        record(string: localizedString.value)
+        localizations[localizedString.value, default: []].insert(localizedString)
+    }
+    
     func suggestions(for oldValue: String) -> [Suggestion] {
-        suggestions.filter { $0.oldValue == oldValue }
+        suggestions[oldValue, default: []].filter {
+            $0.locale == .current
+        }
     }
     
     func suggestion(for localizedString: LocalizedString) -> Suggestion? {
         let matchingValues = suggestions(for: localizedString.value)
         return matchingValues.first {
-            $0.key == localizedString.key
+            $0.localization == localizedString.localization
         } ?? matchingValues.first
     }
     
@@ -98,12 +112,25 @@ enum Reflection {
 
 extension Text {
     public func userLingua() -> Self {
+        guard UserLingua.shared.state != .disabled
+        else { return self }
+        
         guard let storage = Reflection.value("storage", on: self)
         else { return self }
         
         if let value = Reflection.value("verbatim", on: storage) as? String {
-            let suggestion = UserLingua.shared.db.suggestion(for: value)
-            return suggestion.map { text(string: $0.newValue) } ?? self
+            switch UserLingua.shared.state {
+            case .disabled:
+                return self
+            case .recordingStrings:
+                UserLingua.shared.db.record(string: value)
+                return self
+            case .detectingStrings:
+                return text(string: value.tokenized())
+            case .previewingSuggestions:
+                let suggestion = UserLingua.shared.db.suggestion(for: value)
+                return suggestion.map { text(string: $0.newValue) } ?? self
+            }
         }
         
         guard let textStorage = Reflection.value("anyTextStorage", on: storage)
@@ -113,17 +140,26 @@ extension Text {
         
         switch textStorageType {
         case "LocalizedTextStorage":
-            guard let value = localizedString(from: textStorage)
+            guard let localizedString = localizedString(from: textStorage)
             else { return self }
             
-            UserLingua.shared.db.logLocalizedStringInstance(value)
-            
-            let suggestion = UserLingua.shared.db.suggestion(for: value)
-            return suggestion.map { text(string: $0.newValue) } ?? self
+            switch UserLingua.shared.state {
+            case .disabled:
+                return self
+            case .recordingStrings:
+                UserLingua.shared.db.record(localizedString: localizedString)
+                return self
+            case .detectingStrings:
+                return text(string: localizedString.value.tokenized())
+            case .previewingSuggestions:
+                let suggestion = UserLingua.shared.db.suggestion(for: localizedString)
+                return suggestion.map { text(string: $0.newValue) } ?? self
+            }
         case "AttributedStringTextStorage":
             //we probably want to support this in future
             return self
         default:
+            //there are more types we will probably never support
             return self
         }
     }
@@ -146,11 +182,45 @@ extension Text {
         let value = bundle?.localizedString(forKey: key, value: nil, table: tableName)
         
         return LocalizedString(
-            key: key,
             value: value ?? key,
-            bundle: .main,
-            tableName: tableName,
-            comment: comment
+            localization: .init(
+                key: key,
+                tableName: tableName,
+                comment: comment
+            )
         )
+    }
+}
+
+public protocol UserLinguaOptIn {}
+
+// These method overloads need to be more accurate
+// based on the init methods of Text
+extension UserLinguaOptIn where Self: View {
+    public func Text(verbatim: String) -> SwiftUI.Text {
+        SwiftUI.Text(verbatim: "verbatim").userLingua()
+    }
+    
+    public func Text(_ content: any StringProtocol) -> SwiftUI.Text {
+        SwiftUI.Text(content).userLingua()
+    }
+    
+    public func Text(_ key: LocalizedStringKey, tableName: String?, bundle: Bundle?, comment: StaticString?) -> SwiftUI.Text {
+        SwiftUI.Text(key, tableName: tableName, bundle: bundle, comment: comment).userLingua()
+    }
+}
+
+extension StringProtocol {
+    func tokenized() -> String {
+        let utf16 = self.utf16
+        var array = Array(utf16)
+        
+        var i = 0
+        while i < utf16.count/2 {
+            array.swapAt(i, utf16.count - i - 1)
+            i += 2
+        }
+        
+        return String(utf16CodeUnits: array, count: array.count)
     }
 }
