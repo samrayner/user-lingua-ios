@@ -6,12 +6,22 @@
 //
 
 import SwiftUI
+import UserLingua
 
 @main
 struct UserLinguaExampleApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
+    }
+}
+
+final class AppDelegate: UIResponder, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        UserLingua.shared.enable()
+        return true
     }
 }

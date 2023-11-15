@@ -1,4 +1,7 @@
+import UIKit
 import SwiftUI
+import OrderedCollections
+import Vision
 
 struct Localization: Hashable {
     var key: String
@@ -11,6 +14,16 @@ struct LocalizedString: Hashable {
     var localization: Localization
 }
 
+struct TokenizedString: Hashable {
+    let value: String
+    let token: String
+    
+    init(_ value: String) {
+        self.value = value
+        self.token = value.tokenized()
+    }
+}
+
 struct Suggestion {
     var oldValue: String
     var newValue: String
@@ -19,37 +32,47 @@ struct Suggestion {
     var createdAt: Date = .now
     var modifiedAt: Date = .now
     var isSubmitted = false
-    var screenshot: Image?
+    var screenshot: UIImage?
 }
 
-public class UserLingua {
+final public class UserLingua {
     enum State {
         case disabled
         case recordingStrings
         case detectingStrings
-        case previewingSuggestions
+        case highlightingStrings
+        case previewingSuggestion
     }
     
     public struct Configuration {
         let highlightColor: Color
+        
+        public init(
+            highlightColor: Color = .accentColor
+        ) {
+            self.highlightColor = highlightColor
+        }
     }
     
-    static let shared = UserLingua(config: .init(highlightColor: .green))
+    public static let shared = UserLingua()
     
     let db = Database()
-    let config: Configuration
-    var state: State = .recordingStrings
+    var config = Configuration()
+    let detector = Detector()
+    var state: State = .disabled
     
-    public init(config: Configuration) {
+    public init() {}
+    
+    public func enable(config: Configuration = .init()) {
         self.config = config
+        state = .detectingStrings
+        detector.findAllText()
     }
 }
 
-class Database {
-    var stringRecord: [String] = [] {
-        didSet {
-            trimStringRecord()
-        }
+final class Database {
+    var stringRecord: OrderedSet<TokenizedString> = [] {
+        didSet { stringRecord.trimFront() }
     }
     
     var localizations: [String: Set<LocalizedString>] = [:]
@@ -63,16 +86,10 @@ class Database {
         ]
     ]
     
-    private func trimStringRecord() {
-        let softLimit = 1000
-        let buffer = 500
-        if stringRecord.count > softLimit + buffer {
-            stringRecord.removeFirst(buffer)
-        }
-    }
-    
     func record(string: String) {
-        stringRecord.append(string)
+        let tokenized = TokenizedString(string)
+        stringRecord.remove(tokenized)
+        stringRecord.append(tokenized)
     }
     
     func record(localizedString: LocalizedString) {
@@ -98,7 +115,7 @@ class Database {
     }
 }
 
-enum Reflection {
+private enum Reflection {
     static func value(
         _ label: String,
         on object: Any
@@ -120,14 +137,15 @@ extension Text {
         
         if let value = Reflection.value("verbatim", on: storage) as? String {
             switch UserLingua.shared.state {
-            case .disabled:
+            case .disabled, .highlightingStrings:
                 return self
             case .recordingStrings:
                 UserLingua.shared.db.record(string: value)
                 return self
             case .detectingStrings:
-                return text(string: value.tokenized())
-            case .previewingSuggestions:
+                let tokenizedString = TokenizedString(value)
+                return text(string: tokenizedString.token)
+            case .previewingSuggestion:
                 let suggestion = UserLingua.shared.db.suggestion(for: value)
                 return suggestion.map { text(string: $0.newValue) } ?? self
             }
@@ -144,14 +162,15 @@ extension Text {
             else { return self }
             
             switch UserLingua.shared.state {
-            case .disabled:
+            case .disabled, .highlightingStrings:
                 return self
             case .recordingStrings:
                 UserLingua.shared.db.record(localizedString: localizedString)
                 return self
             case .detectingStrings:
-                return text(string: localizedString.value.tokenized())
-            case .previewingSuggestions:
+                let tokenizedString = TokenizedString(localizedString.value)
+                return text(string: tokenizedString.token)
+            case .previewingSuggestion:
                 let suggestion = UserLingua.shared.db.suggestion(for: localizedString)
                 return suggestion.map { text(string: $0.newValue) } ?? self
             }
@@ -204,5 +223,48 @@ extension StringProtocol {
         }
         
         return String(utf16CodeUnits: array, count: array.count)
+    }
+}
+
+extension OrderedSet {
+    mutating func trimFront(softLimit: Int = 1000, buffer: Int = 500) {
+        if count > softLimit + buffer {
+            removeFirst(buffer)
+        }
+    }
+}
+
+final class Detector {
+    func snapshot() -> UIImage {
+        UIImage(resource: .screenshot)
+    }
+    
+    public func findAllText() {
+        guard let cgImage = snapshot().cgImage else { return }
+        
+        let requestHandler = VNImageRequestHandler(cgImage: cgImage)
+        let request = VNRecognizeTextRequest(completionHandler: recognizeTextHandler)
+        request.recognitionLevel = .fast
+        request.automaticallyDetectsLanguage = false
+        request.usesLanguageCorrection = false
+        
+        do {
+            try requestHandler.perform([request])
+        } catch {
+            print("Unable to perform the requests: \(error).")
+        }
+    }
+    
+    private func recognizeTextHandler(request: VNRequest, error: Error?) {
+        guard let observations = request.results as? [VNRecognizedTextObservation]
+        else { return }
+        
+        let recognizedText = observations
+            .compactMap { observation in
+                observation.topCandidates(1).first?.string
+            }
+            .joined(separator: " ")
+        
+        print(recognizedText)
     }
 }

@@ -10,18 +10,23 @@ import UserLingua
 
 struct ContentView: View, UserLinguaOptIn {
     var body: some View {
-        VStack {
-            Text("text_key", tableName: "Localizable", bundle: .main, comment: "comment")
-            
-            Text("text_key_\("lol")", tableName: "Localizable", bundle: .main, comment: "comment")
-            
-            Text(verbatim: "verbatim")
-                .bold()
-            
-            Text(NSLocalizedString("nslocalized_key", tableName: "Localizable", bundle: .main, comment: "comment"))
-                .bold()
-            
-            Text("content")
+        VStack(alignment: .leading) {
+            HStack(alignment: .top) {
+                Text("text_key", tableName: "Localizable", bundle: .main, comment: "comment")
+                
+                VStack(alignment: .leading) {
+                    
+                    Text("text_key_\("lol")", tableName: "Localizable", bundle: .main, comment: "comment")
+                    
+                    Text(verbatim: "verbatim")
+                        .bold()
+                    
+                    Text(NSLocalizedString("nslocalized_key", tableName: "Localizable", bundle: .main, comment: "comment"))
+                        .bold()
+                    
+                    Text("content")
+                }
+            }
             
             Button("button_key", action: {})
         }
