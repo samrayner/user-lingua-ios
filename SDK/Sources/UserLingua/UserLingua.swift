@@ -68,6 +68,64 @@ final public class UserLingua {
         state = .detectingStrings
         detector.findAllText()
     }
+    
+    func processLocalizedText(_ originalText: Text) -> Text {      
+        guard UserLingua.shared.state != .disabled,
+              let storage = Reflection.value("storage", on: originalText),
+              let textStorage = Reflection.value("anyTextStorage", on: storage)
+        else { return originalText }
+        
+        let textStorageType = "\(type(of: textStorage))"
+        
+        switch textStorageType {
+        case "LocalizedTextStorage":
+            guard let localizedString = localizedString(from: textStorage)
+            else { return originalText }
+            
+            switch UserLingua.shared.state {
+            case .disabled, .highlightingStrings:
+                return originalText
+            case .recordingStrings:
+                UserLingua.shared.db.record(localizedString: localizedString)
+                return originalText
+            case .detectingStrings:
+                let tokenizedString = TokenizedString(localizedString.value)
+                return .init(verbatim: tokenizedString.token)
+            case .previewingSuggestion:
+                let suggestion = UserLingua.shared.db.suggestion(for: localizedString)
+                return suggestion.map { .init(verbatim: $0.newValue) } ?? originalText
+            }
+        case "AttributedStringTextStorage":
+            //we probably want to support this in future
+            return originalText
+        default:
+            //there are more types we will probably never support
+            return originalText
+        }
+    }
+    
+    private func localizedString(from localizedTextStorage: Any) -> LocalizedString? {
+        guard let localizedStringKey = Reflection.value("key", on: localizedTextStorage)
+        else { return nil }
+        
+        guard let key = Reflection.value("key", on: localizedStringKey) as? String
+        else { return nil }
+        
+        let bundle = Reflection.value("bundle", on: localizedTextStorage) as? Bundle
+        let tableName = Reflection.value("table", on: localizedTextStorage) as? String
+        let comment = Reflection.value("comment", on: localizedTextStorage) as? String
+        
+        let value = bundle?.localizedString(forKey: key, value: nil, table: tableName)
+        
+        return LocalizedString(
+            value: value ?? key,
+            localization: .init(
+                key: key,
+                tableName: tableName,
+                comment: comment
+            )
+        )
+    }
 }
 
 final class Database {
@@ -124,105 +182,6 @@ private enum Reflection {
         return reflection.children
             .first(where: { $0.label == label })?
             .value
-    }
-}
-
-extension Text {
-    public func userLingua() -> Self {
-        guard UserLingua.shared.state != .disabled
-        else { return self }
-        
-        guard let storage = Reflection.value("storage", on: self)
-        else { return self }
-        
-        if let value = Reflection.value("verbatim", on: storage) as? String {
-            switch UserLingua.shared.state {
-            case .disabled, .highlightingStrings:
-                return self
-            case .recordingStrings:
-                UserLingua.shared.db.record(string: value)
-                return self
-            case .detectingStrings:
-                let tokenizedString = TokenizedString(value)
-                return text(string: tokenizedString.token)
-            case .previewingSuggestion:
-                let suggestion = UserLingua.shared.db.suggestion(for: value)
-                return suggestion.map { text(string: $0.newValue) } ?? self
-            }
-        }
-        
-        guard let textStorage = Reflection.value("anyTextStorage", on: storage)
-        else { return self }
-        
-        let textStorageType = "\(type(of: textStorage))"
-        
-        switch textStorageType {
-        case "LocalizedTextStorage":
-            guard let localizedString = localizedString(from: textStorage)
-            else { return self }
-            
-            switch UserLingua.shared.state {
-            case .disabled, .highlightingStrings:
-                return self
-            case .recordingStrings:
-                UserLingua.shared.db.record(localizedString: localizedString)
-                return self
-            case .detectingStrings:
-                let tokenizedString = TokenizedString(localizedString.value)
-                return text(string: tokenizedString.token)
-            case .previewingSuggestion:
-                let suggestion = UserLingua.shared.db.suggestion(for: localizedString)
-                return suggestion.map { text(string: $0.newValue) } ?? self
-            }
-        case "AttributedStringTextStorage":
-            //we probably want to support this in future
-            return self
-        default:
-            //there are more types we will probably never support
-            return self
-        }
-    }
-    
-    private func text(string: String) -> Self {
-        return Self(verbatim: string).foregroundColor(UserLingua.shared.config.highlightColor)
-    }
-    
-    private func localizedString(from localizedTextStorage: Any) -> LocalizedString? {
-        guard let localizedStringKey = Reflection.value("key", on: localizedTextStorage)
-        else { return nil }
-        
-        guard let key = Reflection.value("key", on: localizedStringKey) as? String
-        else { return nil }
-        
-        let bundle = Reflection.value("bundle", on: localizedTextStorage) as? Bundle
-        let tableName = Reflection.value("table", on: localizedTextStorage) as? String
-        let comment = Reflection.value("comment", on: localizedTextStorage) as? String
-        
-        let value = bundle?.localizedString(forKey: key, value: nil, table: tableName)
-        
-        return LocalizedString(
-            value: value ?? key,
-            localization: .init(
-                key: key,
-                tableName: tableName,
-                comment: comment
-            )
-        )
-    }
-}
-
-extension StringProtocol {
-    func tokenized() -> String {
-        let utf16 = self.utf16
-        var array = Array(utf16)
-        
-        var i = 0
-        while i < utf16.count/2 {
-            array.swapAt(i, utf16.count - i - 1)
-            i += 2
-        }
-        
-        return String(utf16CodeUnits: array, count: array.count)
     }
 }
 

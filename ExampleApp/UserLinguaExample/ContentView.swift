@@ -8,23 +8,26 @@
 import SwiftUI
 import UserLingua
 
-struct ContentView: View, UserLinguaOptIn {
+let key = "text_key"
+
+struct ContentView: View {
     var body: some View {
         VStack(alignment: .leading) {
             HStack(alignment: .top) {
-                Text("text_key", tableName: "Localizable", bundle: .main, comment: "comment")
+                Text("text_key", tableName: "Localizable", userLingua: true)
                 
                 VStack(alignment: .leading) {
+                    Text("text_key_\("lol")", tableName: "Localizable", bundle: .main, comment: "comment", userLingua: true)
                     
-                    Text("text_key_\("lol")", tableName: "Localizable", bundle: .main, comment: "comment")
-                    
-                    Text(verbatim: "verbatim")
+                    Text(verbatim: "verbatim".userLingua())
                         .bold()
                     
-                    Text(NSLocalizedString("nslocalized_key", tableName: "Localizable", bundle: .main, comment: "comment"))
+                    Text(NSLocalizedString("nslocalized_key", tableName: "Localizable", bundle: .main, comment: "comment").userLingua())
                         .bold()
                     
-                    Text("content")
+                    Text("text_key", userLingua: true)
+                    
+                    Text(key.userLingua())
                 }
             }
             
