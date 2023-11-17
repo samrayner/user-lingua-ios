@@ -13,11 +13,11 @@ let key = "text_key"
 struct ContentView: View {
     var body: some View {
         VStack(alignment: .leading) {
-            HStack(alignment: .top) {
-                Text("text_key", tableName: "Localizable", userLingua: true)
+            HStack(alignment: .top, spacing: 30) {
+                Text("text_key", tableName: "Localizable")
                 
                 VStack(alignment: .leading) {
-                    Text("text_key_\("lol")", tableName: "Localizable", bundle: .main, comment: "comment", userLingua: true)
+                    Text("text_key_\("lol")", tableName: "Localizable", bundle: .main, comment: "comment")
                     
                     Text(verbatim: "verbatim".userLingua())
                         .bold()
@@ -25,13 +25,15 @@ struct ContentView: View {
                     Text(NSLocalizedString("nslocalized_key", tableName: "Localizable", bundle: .main, comment: "comment").userLingua())
                         .bold()
                     
-                    Text("text_key", userLingua: true)
+                    Text("text_key")
                     
                     Text(key.userLingua())
                 }
             }
             
-            Button("button_key", action: {})
+            Button("button_key") {
+                UserLingua.shared.findAllText()
+            }
         }
         .padding()
     }

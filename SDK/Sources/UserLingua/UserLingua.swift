@@ -45,28 +45,26 @@ final public class UserLingua {
     }
     
     public struct Configuration {
-        let highlightColor: Color
+        public var automaticallyOptInLocalizedTextViews: Bool
         
         public init(
-            highlightColor: Color = .accentColor
+            automaticallyOptInLocalizedTextViews: Bool = true
         ) {
-            self.highlightColor = highlightColor
+            self.automaticallyOptInLocalizedTextViews = automaticallyOptInLocalizedTextViews
         }
     }
     
     public static let shared = UserLingua()
     
     let db = Database()
-    var config = Configuration()
-    let detector = Detector()
+    public var config = Configuration()
     var state: State = .disabled
     
-    public init() {}
+    init() {}
     
     public func enable(config: Configuration = .init()) {
         self.config = config
-        state = .detectingStrings
-        detector.findAllText()
+        state = .recordingStrings
     }
     
     func processLocalizedText(_ originalText: Text) -> Text {      
@@ -125,6 +123,86 @@ final public class UserLingua {
                 comment: comment
             )
         )
+    }
+    
+    private func snapshot() -> UIImage {
+        UIImage(resource: .screenshot)
+    }
+    
+    public func findAllText() {
+        guard let cgImage = snapshot().cgImage else { return }
+        
+        let requestHandler = VNImageRequestHandler(cgImage: cgImage)
+        let request = VNRecognizeTextRequest(completionHandler: recognizeTextHandler)
+        request.recognitionLevel = .fast
+        request.automaticallyDetectsLanguage = false
+        request.usesLanguageCorrection = false
+        
+        do {
+            try requestHandler.perform([request])
+        } catch {
+            print("Unable to perform the requests: \(error).")
+        }
+    }
+    
+    private func recognizeTextHandler(request: VNRequest, error: Error?) {
+        guard let observations = request.results as? [VNRecognizedTextObservation]
+        else { return }
+        
+        let recognizedText = observations
+            .compactMap { observation in
+                observation.topCandidates(1).first
+            }
+        
+        let matches = matchRecognizedTextToKnownStrings(recognizedText)
+        
+        for (recordedString, textBlocks) in matches {
+            print(recordedString.value, textBlocks.map(\.string))
+        }
+    }
+    
+    private func matchRecognizedTextToKnownStrings(_ recognizedText: [VNRecognizedText]) -> [TokenizedString: [VNRecognizedText]] {
+        var textBlocks = recognizedText
+        var matches: [TokenizedString: [VNRecognizedText]] = [:]
+        
+        //loop recognized text blocks
+        while var textBlock = textBlocks.first {
+            var recordedStringFoundForTextBlock = false
+            
+            for recordedString in db.stringRecord where matches[recordedString] == nil {
+                var token = recordedString.token
+                
+                //while the text block is found at the start of the token
+                while token.looselyStarts(with: textBlock.string) {
+                    recordedStringFoundForTextBlock = true
+                    
+                    //remove the text block from start of the token
+                    token = token
+                        .trimmingPrefix(textBlock.string)
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                    
+                    //assign the text block to the token it was found in
+                    //and remove it from the text blocks we're looking for
+                    matches[recordedString, default: []].append(textBlock)
+
+                    textBlocks.removeFirst()
+                    
+                    if let nextTextBlock = textBlocks.first {
+                        textBlock = nextTextBlock
+                    } else {
+                        //we've processed all text blocks, so we're done
+                        return matches
+                    }
+                }
+            }
+            
+            if !recordedStringFoundForTextBlock {
+                //no matches found for text block, so give up and move onto next
+                textBlocks.removeFirst()
+            }
+        }
+        
+        return matches
     }
 }
 
@@ -193,37 +271,53 @@ extension OrderedSet {
     }
 }
 
-final class Detector {
-    func snapshot() -> UIImage {
-        UIImage(resource: .screenshot)
+extension String {
+    private var commonlyConfusedAlphanumerics: [String: Set<String>] {
+        [
+            "l": ["I", "1"],
+            "j": ["i"],
+            "w": ["vv"],
+            "o": ["O", "0"],
+            "s": ["S", "5"],
+            "v": ["V"],
+            "z": ["Z", "2"],
+            "u": ["U"],
+            "x": ["X"],
+            "m": ["nn", "M"]
+        ]
     }
     
-    public func findAllText() {
-        guard let cgImage = snapshot().cgImage else { return }
+    func looselyStarts(with prefix: String, errorLimit: Double = 0.1) -> Bool {
+        let nonWordRegex = try! Regex("[\\W\\s]")
+        var needle = prefix.replacing(nonWordRegex, with: "")
+        var haystack = self.replacing(nonWordRegex, with: "")
         
-        let requestHandler = VNImageRequestHandler(cgImage: cgImage)
-        let request = VNRecognizeTextRequest(completionHandler: recognizeTextHandler)
-        request.recognitionLevel = .fast
-        request.automaticallyDetectsLanguage = false
-        request.usesLanguageCorrection = false
-        
-        do {
-            try requestHandler.perform([request])
-        } catch {
-            print("Unable to perform the requests: \(error).")
+        for (replacement, confused) in commonlyConfusedAlphanumerics {
+            let regex = try! Regex("(\(confused.joined(separator: "|")))")
+            needle = needle.replacing(regex) { _ in replacement }
+            haystack = haystack.replacing(regex) { _ in replacement }
         }
-    }
-    
-    private func recognizeTextHandler(request: VNRequest, error: Error?) {
-        guard let observations = request.results as? [VNRecognizedTextObservation]
-        else { return }
         
-        let recognizedText = observations
-            .compactMap { observation in
-                observation.topCandidates(1).first?.string
+        let needleLength = needle.utf16.count
+        let haystackLength = haystack.utf16.count
+        
+        guard needleLength <= haystackLength else { return false }
+        
+        let errorLimit = Int(Double(needleLength) * errorLimit)
+        var errorCount = 0
+        
+        for i in (0..<needleLength) {
+            let haystackIndex = UTF16View.Index(utf16Offset: i, in: haystack)
+            let needleIndex = UTF16View.Index(utf16Offset: i, in: needle)
+            if haystack[haystackIndex] != needle[needleIndex] {
+                errorCount += 1
             }
-            .joined(separator: " ")
+            if errorCount > errorLimit {
+                return false
+            }
+        }
         
-        print(recognizedText)
+        return true
     }
 }
+

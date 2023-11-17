@@ -12,7 +12,7 @@
 		E892E80229DEE9430015D5FA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E892E80129DEE9430015D5FA /* ContentView.swift */; };
 		E892E80429DEE9440015D5FA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E892E80329DEE9440015D5FA /* Assets.xcassets */; };
 		E892E80829DEE9440015D5FA /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E892E80729DEE9440015D5FA /* Preview Assets.xcassets */; };
-		E8DB966729DEED9B00DF1CE3 /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8DB966629DEED9B00DF1CE3 /* UserLingua */; };
+		E8EB88AF2B077C2500638A3F /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8EB88AE2B077C2500638A3F /* UserLingua */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,7 +31,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8DB966729DEED9B00DF1CE3 /* UserLingua in Frameworks */,
+				E8EB88AF2B077C2500638A3F /* UserLingua in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -109,7 +109,7 @@
 			);
 			name = UserLinguaExample;
 			packageProductDependencies = (
-				E8DB966629DEED9B00DF1CE3 /* UserLingua */,
+				E8EB88AE2B077C2500638A3F /* UserLingua */,
 			);
 			productName = UserLinguaExample;
 			productReference = E892E7FC29DEE9430015D5FA /* UserLinguaExample.app */;
@@ -408,7 +408,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E8DB966629DEED9B00DF1CE3 /* UserLingua */ = {
+		E8EB88AE2B077C2500638A3F /* UserLingua */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLingua;
 		};

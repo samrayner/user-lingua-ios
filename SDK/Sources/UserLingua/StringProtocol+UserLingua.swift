@@ -32,17 +32,17 @@ extension StringProtocol {
         }
         
         var i = 0
-        while i < codeUnits.count/2 {
-            defer { i += 2 }
+        while i < codeUnits.count - 1 {
+            defer { i += 1 }
             
-            let firstIndex = i
-            let secondIndex = codeUnits.count - i - 1
-            
-            guard charIsSwappable(codeUnits[firstIndex]),
-                  charIsSwappable(codeUnits[secondIndex])
+            guard charIsSwappable(codeUnits[i]),
+                  charIsSwappable(codeUnits[i + 1])
             else { continue }
             
-            codeUnits.swapAt(firstIndex, secondIndex)
+            //TODO: re-enable randomness when screenshotting isn't using an asset
+            //if Bool.random() {
+                codeUnits.swapAt(i, i + 1)
+            //}
         }
         
         return String(utf16CodeUnits: codeUnits, count: codeUnits.count)
