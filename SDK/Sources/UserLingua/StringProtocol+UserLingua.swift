@@ -58,30 +58,3 @@ extension StringProtocol {
         return String(utf16CodeUnits: codeUnits, count: codeUnits.count)
     }
 }
-
-extension String {
-    func fuzzed() -> Self {
-        let nonWordRegex = try! Regex("\\W")
-        var fuzzed = self.replacing(nonWordRegex, with: "")
-        
-        let commonlyConfusedAlphanumerics = [
-            "l": ["I", "1"],
-            "j": ["i"],
-            "w": ["vv"],
-            "o": ["O", "0"],
-            "s": ["S", "5"],
-            "v": ["V"],
-            "z": ["Z", "2"],
-            "u": ["U"],
-            "x": ["X"],
-            "m": ["nn", "M"]
-        ]
-        
-        for (replacement, confused) in commonlyConfusedAlphanumerics {
-            let regex = try! Regex("(\(confused.joined(separator: "|")))")
-            fuzzed = fuzzed.replacing(regex) { _ in replacement }
-        }
-        
-        return fuzzed
-    }
-}

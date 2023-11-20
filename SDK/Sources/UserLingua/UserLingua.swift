@@ -280,38 +280,76 @@ extension OrderedSet {
 }
 
 extension String {
+    private static let ocrMistakes = [
+        "l": ["I", "1"],
+        "j": ["i"],
+        "w": ["vv"],
+        "o": ["O", "0"],
+        "s": ["S", "5"],
+        "v": ["V"],
+        "z": ["Z", "2"],
+        "u": ["U"],
+        "x": ["X"],
+        "m": ["nn", "M"]
+    ]
+    
     func fuzzyFindPrefix(_ prefix: String, errorLimit: Double = 0.1) -> String? {
-        let needle = prefix.fuzzed()
-        let haystack = self.fuzzed()
+        var prefix = prefix
         
-        let needleLength = needle.utf16.count
-        let haystackLength = haystack.utf16.count
+        for (standard, possibleChars) in Self.ocrMistakes {
+            let regex = try! Regex("(\(possibleChars.joined(separator: "|")))")
+            prefix = prefix.replacing(regex) { _ in standard }
+        }
         
-        guard needleLength <= haystackLength else { return nil }
+        let prefixCodeUnits = Array(prefix.utf16)
+        let haystackCodeUnits = Array(self.utf16)
         
-        let errorLimit = Int(Double(needleLength) * errorLimit)
+        guard prefixCodeUnits.count <= haystackCodeUnits.count else { return nil }
+        
+        let errorLimit = Int(Double(prefixCodeUnits.count) * errorLimit)
         var errorCount = 0
+        var prefixIndex = 0
+        var haystackIndex = 0
+        var foundScalars: [Unicode.Scalar] = []
         
-        var foundCharacters: [Character] = []
-        
-        for i in (0..<needleLength) {
-            let haystackIndex = UTF16View.Index(utf16Offset: i, in: haystack)
-            let needleIndex = UTF16View.Index(utf16Offset: i, in: needle)
-            
-            let haystackCodeUnit = haystack[haystackIndex]
-            
-            if haystackCodeUnit != needle[needleIndex] {
-                errorCount += 1
+        while prefixIndex < prefixCodeUnits.count {
+            guard let prefixChar = Unicode.Scalar(UInt32(prefixCodeUnits[prefixIndex])),
+                  !CharacterSet.whitespaces.union(.punctuationCharacters).contains(prefixChar)
+            else {
+                prefixIndex += 1
+                continue
             }
             
+            guard let haystackChar = Unicode.Scalar(UInt32(haystackCodeUnits[haystackIndex]))
+            else {
+                haystackIndex += 1
+                continue
+            }
+            
+            guard !CharacterSet.whitespaces.union(.punctuationCharacters).contains(haystackChar)
+            else {
+                foundScalars.append(haystackChar)
+                haystackIndex += 1
+                continue
+            }
+            
+            if haystackChar == prefixChar {
+                foundScalars.append(haystackChar)
+                continue
+            }
+            
+            //check ocrMistakes, including multicharacter matches :(
+            
+            errorCount += 1
             if errorCount > errorLimit {
                 return nil
             }
-            
-            foundCharacters.append(haystackCodeUnit)
         }
         
-        return String(foundCharacters)
+        var foundString = ""
+        foundString.unicodeScalars.append(contentsOf: foundScalars)
+        
+        return foundString
     }
 }
 
