@@ -15,12 +15,14 @@ struct LocalizedString: Hashable {
 }
 
 struct TokenizedString: Hashable {
-    let value: String
-    let token: String
+    let original: String
+    let detectable: String
     
     init(_ value: String) {
-        self.value = value
-        self.token = value.tokenized()
+        self.original = value
+        
+        let tokenized = value.tokenized()
+        self.detectable = tokenized
     }
 }
 
@@ -88,7 +90,7 @@ final public class UserLingua {
                 return originalText
             case .detectingStrings:
                 let tokenizedString = TokenizedString(localizedString.value)
-                return .init(verbatim: tokenizedString.token)
+                return .init(verbatim: tokenizedString.detectable)
             case .previewingSuggestion:
                 let suggestion = UserLingua.shared.db.suggestion(for: localizedString)
                 return suggestion.map { .init(verbatim: $0.newValue) } ?? originalText
@@ -157,11 +159,13 @@ final public class UserLingua {
         let matches = matchRecognizedTextToKnownStrings(recognizedText)
         
         for (recordedString, textBlocks) in matches {
-            print(recordedString.value, textBlocks.map(\.string))
+            print(recordedString.original, textBlocks.map(\.string))
         }
     }
     
-    private func matchRecognizedTextToKnownStrings(_ recognizedText: [VNRecognizedText]) -> [TokenizedString: [VNRecognizedText]] {
+    private func matchRecognizedTextToKnownStrings(
+        _ recognizedText: [VNRecognizedText]
+    ) -> [TokenizedString: [VNRecognizedText]] {
         var textBlocks = recognizedText
         var matches: [TokenizedString: [VNRecognizedText]] = [:]
         
@@ -170,16 +174,20 @@ final public class UserLingua {
             var recordedStringFoundForTextBlock = false
             
             for recordedString in db.stringRecord where matches[recordedString] == nil {
-                var token = recordedString.token
+                var tokenized = recordedString.detectable
                 
                 //while the text block is found at the start of the token
-                while token.looselyStarts(with: textBlock.string) {
+                while tokenized.fuzzyFindPrefix(textBlock.string) != nil {
                     recordedStringFoundForTextBlock = true
                     
+                    print("\n\nremoving <<<\(textBlock.string)>>> from: [[[\(tokenized)]]]")
+                    
                     //remove the text block from start of the token
-                    token = token
-                        .trimmingPrefix(textBlock.string)
-                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                    tokenized = tokenized
+                        .dropFirst(textBlock.string.count)
+                        .trimmingCharacters(in: .whitespaces)
+                    
+                    print("=== \(tokenized)")
                     
                     //assign the text block to the token it was found in
                     //and remove it from the text blocks we're looking for
@@ -272,52 +280,38 @@ extension OrderedSet {
 }
 
 extension String {
-    private var commonlyConfusedAlphanumerics: [String: Set<String>] {
-        [
-            "l": ["I", "1"],
-            "j": ["i"],
-            "w": ["vv"],
-            "o": ["O", "0"],
-            "s": ["S", "5"],
-            "v": ["V"],
-            "z": ["Z", "2"],
-            "u": ["U"],
-            "x": ["X"],
-            "m": ["nn", "M"]
-        ]
-    }
-    
-    func looselyStarts(with prefix: String, errorLimit: Double = 0.1) -> Bool {
-        let nonWordRegex = try! Regex("[\\W\\s]")
-        var needle = prefix.replacing(nonWordRegex, with: "")
-        var haystack = self.replacing(nonWordRegex, with: "")
-        
-        for (replacement, confused) in commonlyConfusedAlphanumerics {
-            let regex = try! Regex("(\(confused.joined(separator: "|")))")
-            needle = needle.replacing(regex) { _ in replacement }
-            haystack = haystack.replacing(regex) { _ in replacement }
-        }
+    func fuzzyFindPrefix(_ prefix: String, errorLimit: Double = 0.1) -> String? {
+        let needle = prefix.fuzzed()
+        let haystack = self.fuzzed()
         
         let needleLength = needle.utf16.count
         let haystackLength = haystack.utf16.count
         
-        guard needleLength <= haystackLength else { return false }
+        guard needleLength <= haystackLength else { return nil }
         
         let errorLimit = Int(Double(needleLength) * errorLimit)
         var errorCount = 0
         
+        var foundCharacters: [Character] = []
+        
         for i in (0..<needleLength) {
             let haystackIndex = UTF16View.Index(utf16Offset: i, in: haystack)
             let needleIndex = UTF16View.Index(utf16Offset: i, in: needle)
-            if haystack[haystackIndex] != needle[needleIndex] {
+            
+            let haystackCodeUnit = haystack[haystackIndex]
+            
+            if haystackCodeUnit != needle[needleIndex] {
                 errorCount += 1
             }
+            
             if errorCount > errorLimit {
-                return false
+                return nil
             }
+            
+            foundCharacters.append(haystackCodeUnit)
         }
         
-        return true
+        return String(foundCharacters)
     }
 }
 
