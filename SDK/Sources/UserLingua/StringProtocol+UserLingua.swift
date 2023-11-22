@@ -26,10 +26,10 @@ extension StringProtocol {
     func tokenized() -> String {
         //strip diacritics to improve OCR
         let utf16 = self.folding(options: .diacriticInsensitive, locale: .current).utf16
-        var codeUnits = Array(utf16)
+        var utf16Chars = Array(utf16)
         
-        func codeUnitIsSwappable(_ codeUnit: UTF16View.Element) -> Bool {
-            guard let currentChar = Unicode.Scalar(UInt32(codeUnit)) 
+        func characterIsSwappable(_ utf16Char: UTF16Char) -> Bool {
+            guard let currentChar = utf16Char.unicodeScalar
             else { return false }
             
             return !CharacterSet.whitespaces
@@ -39,22 +39,28 @@ extension StringProtocol {
         
         var currentIndex = 0
         var swapRangeStartIndex = 0
-        while currentIndex < codeUnits.count {
+        while currentIndex < utf16Chars.count {
             defer { currentIndex += 1 }
             
             //maintain the positions of all whitespace and punctuation
             //to preserve exact wrap points of original string
-            guard codeUnitIsSwappable(codeUnits[currentIndex]) else {
+            guard characterIsSwappable(utf16Chars[currentIndex]) else {
                 swapRangeStartIndex = currentIndex + 1
                 continue
             }
             
             if currentIndex > swapRangeStartIndex + 1,
                let previousIndex = (swapRangeStartIndex..<currentIndex).randomElement() {
-                codeUnits.swapAt(currentIndex, swapRangeStartIndex) //TODO: previousIndex
+                utf16Chars.swapAt(currentIndex, swapRangeStartIndex) //TODO: previousIndex
             }
         }
         
-        return String(utf16CodeUnits: codeUnits, count: codeUnits.count)
+        return String(utf16CodeUnits: utf16Chars, count: utf16Chars.count)
+    }
+}
+
+extension UTF16Char {
+    var unicodeScalar: Unicode.Scalar? {
+        Unicode.Scalar(UInt32(self))
     }
 }

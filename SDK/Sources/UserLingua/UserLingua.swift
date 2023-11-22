@@ -177,17 +177,13 @@ final public class UserLingua {
                 var tokenized = recordedString.detectable
                 
                 //while the text block is found at the start of the token
-                while tokenized.fuzzyFindPrefix(textBlock.string) != nil {
+                while let foundPrefix = tokenized.fuzzyFindPrefix(textBlock.string) {
                     recordedStringFoundForTextBlock = true
-                    
-                    print("\n\nremoving <<<\(textBlock.string)>>> from: [[[\(tokenized)]]]")
                     
                     //remove the text block from start of the token
                     tokenized = tokenized
-                        .dropFirst(textBlock.string.count)
+                        .dropFirst(foundPrefix.count)
                         .trimmingCharacters(in: .whitespaces)
-                    
-                    print("=== \(tokenized)")
                     
                     //assign the text block to the token it was found in
                     //and remove it from the text blocks we're looking for
@@ -280,76 +276,114 @@ extension OrderedSet {
 }
 
 extension String {
-    private static let ocrMistakes = [
-        "l": ["I", "1"],
-        "j": ["i"],
-        "w": ["vv"],
-        "o": ["O", "0"],
-        "s": ["S", "5"],
-        "v": ["V"],
-        "z": ["Z", "2"],
-        "u": ["U"],
-        "x": ["X"],
-        "m": ["nn", "M"]
-    ]
+    private var ocrMistakes: [String: [String]] {
+        [
+            "l": ["I", "1"],
+            "i": ["j"],
+            "w": ["vv"],
+            "o": ["O", "0"],
+            "s": ["S", "5"],
+            "v": ["V"],
+            "z": ["Z", "2"],
+            "u": ["U"],
+            "x": ["X"],
+            "m": ["nn", "M"]
+        ]
+    }
+    
+    private var ocrMistakesUTF16: [UTF16Char: [[UTF16Char]]] {
+        var ocrMistakesUTF16: [UTF16Char: [[UTF16Char]]] = [:]
+        for (key, values) in ocrMistakes {
+            ocrMistakesUTF16[key.utf16[startIndex]] = values.map { Array($0.utf16) }
+        }
+        return ocrMistakesUTF16
+    }
     
     func fuzzyFindPrefix(_ prefix: String, errorLimit: Double = 0.1) -> String? {
-        var prefix = prefix
+        let haystack = self
         
-        for (standard, possibleChars) in Self.ocrMistakes {
+        //keep only word characters in the string we're finding
+        var prefix = prefix.replacing(#/[\W_]/#) { _ in "" }
+
+        //swap out all potentially misrecognized substrings with
+        //the most likely character they could have been
+        for (standard, possibleChars) in ocrMistakes {
             let regex = try! Regex("(\(possibleChars.joined(separator: "|")))")
             prefix = prefix.replacing(regex) { _ in standard }
         }
         
-        let prefixCodeUnits = Array(prefix.utf16)
-        let haystackCodeUnits = Array(self.utf16)
+        let prefixUTF16Chars = Array(prefix.utf16)
+        let haystackUTF16Chars = Array(haystack.utf16)
         
-        guard prefixCodeUnits.count <= haystackCodeUnits.count else { return nil }
+        //if the prefix is still longer than the full string, there's no way
+        guard prefixUTF16Chars.count <= haystackUTF16Chars.count else { return nil }
         
-        let errorLimit = Int(Double(prefixCodeUnits.count) * errorLimit)
+        let errorLimit = Int(Double(prefixUTF16Chars.count) * errorLimit)
         var errorCount = 0
         var prefixIndex = 0
         var haystackIndex = 0
-        var foundScalars: [Unicode.Scalar] = []
+        var foundPrefix: [UTF16Char] = []
         
-        while prefixIndex < prefixCodeUnits.count {
-            guard let prefixChar = Unicode.Scalar(UInt32(prefixCodeUnits[prefixIndex])),
-                  !CharacterSet.whitespaces.union(.punctuationCharacters).contains(prefixChar)
+        func findNextCharacters() -> [UTF16Char] {
+            let prefixUTF16Char = prefixUTF16Chars[prefixIndex]
+            let haystackUTF16Char = haystackUTF16Chars[haystackIndex]
+            
+            // return whitespace and punctuation characters as found
+            // but don't advance the prefix cursor as they have already
+            // been removed from the prefix
+            guard let haystackChar = haystackUTF16Char.unicodeScalar,
+                  !CharacterSet.whitespaces
+                    .union(.punctuationCharacters)
+                    .contains(haystackChar)
             else {
+                return [haystackUTF16Char]
+            }
+            
+            // from now on we want to advance to the next prefix
+            // character after matching this one, even if we don't find
+            // a match in haystack
+            defer {
                 prefixIndex += 1
-                continue
             }
             
-            guard let haystackChar = Unicode.Scalar(UInt32(haystackCodeUnits[haystackIndex]))
-            else {
+            if haystackUTF16Char == prefixUTF16Char {
+                return [haystackUTF16Char]
+            }
+            
+            // if there are potentially other characters that the prefix character
+            // could have been recognized as, loop through them looking for a match
+            if let alternatives = ocrMistakesUTF16[prefixUTF16Char] {
+                // loop for multi-character alternatives, e.g. nn representing m
+                for alternativeChars in alternatives {
+                    // get the number of characters from the current point in
+                    // haystack equal to the length of the alternative string
+                    let rangeEnd = haystackIndex + alternativeChars.count - 1
+                    guard rangeEnd < haystackUTF16Chars.count else { continue }
+                    let haystackPrefixChars = Array(haystackUTF16Chars[haystackIndex...rangeEnd])
+                    
+                    if haystackPrefixChars == alternativeChars {
+                        return haystackPrefixChars
+                    }
+                }
+            }
+            
+            return []
+        }
+        
+        while prefixIndex < prefixUTF16Chars.count {
+            let foundChars = findNextCharacters()
+            if foundChars.isEmpty {
+                errorCount += 1
+                if errorCount > errorLimit {
+                    return nil
+                }
                 haystackIndex += 1
-                continue
-            }
-            
-            guard !CharacterSet.whitespaces.union(.punctuationCharacters).contains(haystackChar)
-            else {
-                foundScalars.append(haystackChar)
-                haystackIndex += 1
-                continue
-            }
-            
-            if haystackChar == prefixChar {
-                foundScalars.append(haystackChar)
-                continue
-            }
-            
-            //check ocrMistakes, including multicharacter matches :(
-            
-            errorCount += 1
-            if errorCount > errorLimit {
-                return nil
+            } else {
+                foundPrefix.append(contentsOf: foundChars)
+                haystackIndex += foundChars.count
             }
         }
         
-        var foundString = ""
-        foundString.unicodeScalars.append(contentsOf: foundScalars)
-        
-        return foundString
+        return String(utf16CodeUnits: foundPrefix, count: foundPrefix.count)
     }
 }
-
