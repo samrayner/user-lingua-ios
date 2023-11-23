@@ -38,7 +38,7 @@ struct Suggestion {
     var screenshot: UIImage?
 }
 
-final public class UserLingua {
+final public class UserLingua: ObservableObject {
     enum State {
         case disabled
         case recordingStrings
@@ -64,7 +64,16 @@ final public class UserLingua {
     
     let db = Database()
     public var config = Configuration()
-    var state: State = .disabled
+    
+    var state: State = .disabled {
+        willSet {
+            if newValue != state {
+                objectWillChange.send()
+            }
+        }
+    }
+    
+    public var window: UIWindow?
     
     init() {}
     

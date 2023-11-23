@@ -65,7 +65,7 @@ extension Text {
         localizedStringResource: LocalizedStringResource,
         userLingua: Bool = UserLingua.shared.config.automaticallyOptInLocalizedTextViews
     ) {
-        let text = OverriddenSwiftUIMethods.initLocalizedStringResource(localizedStringResource)
+        let text = SwiftUI.Text(localizedStringResource)
         self = if userLingua {
             UserLingua.shared.processLocalizedText(text)
         } else {

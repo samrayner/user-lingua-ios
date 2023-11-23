@@ -15,6 +15,7 @@ struct UserLinguaExampleApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .userLinguaRootView()
         }
     }
 }
