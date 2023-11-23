@@ -13,6 +13,10 @@ let key = "text_key"
 struct ContentView: View {
     var body: some View {
         VStack(alignment: .leading) {
+            Text(localizedStringResource: LocalizedStringResource("text_key"))
+            
+            Text("text_key", tableName: "Localizable")
+            
             HStack(alignment: .top, spacing: 30) {
                 Text("text_key", tableName: "Localizable")
                 

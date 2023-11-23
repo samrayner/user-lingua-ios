@@ -5,6 +5,7 @@ import Vision
 
 struct Localization: Hashable {
     var key: String
+    var bundle: Bundle?
     var tableName: String?
     var comment: String?
 }
@@ -48,11 +49,14 @@ final public class UserLingua {
     
     public struct Configuration {
         public var automaticallyOptInLocalizedTextViews: Bool
+        public var locale: Locale
         
         public init(
-            automaticallyOptInLocalizedTextViews: Bool = true
+            automaticallyOptInLocalizedTextViews: Bool = true,
+            locale: Locale = .current
         ) {
             self.automaticallyOptInLocalizedTextViews = automaticallyOptInLocalizedTextViews
+            self.locale = locale
         }
     }
     
@@ -76,25 +80,13 @@ final public class UserLingua {
         else { return originalText }
         
         let textStorageType = "\(type(of: textStorage))"
+        var string: LocalizedString?
         
         switch textStorageType {
         case "LocalizedTextStorage":
-            guard let localizedString = localizedString(from: textStorage)
-            else { return originalText }
-            
-            switch UserLingua.shared.state {
-            case .disabled, .highlightingStrings:
-                return originalText
-            case .recordingStrings:
-                UserLingua.shared.db.record(localizedString: localizedString)
-                return originalText
-            case .detectingStrings:
-                let tokenizedString = TokenizedString(localizedString.value)
-                return .init(verbatim: tokenizedString.detectable)
-            case .previewingSuggestion:
-                let suggestion = UserLingua.shared.db.suggestion(for: localizedString)
-                return suggestion.map { .init(verbatim: $0.newValue) } ?? originalText
-            }
+            string = localizedString(localizedTextStorage: textStorage)
+        case "LocalizedStringResourceStorage":
+            string = localizedString(localizedStringResourceStorage: textStorage)
         case "AttributedStringTextStorage":
             //we probably want to support this in future
             return originalText
@@ -102,25 +94,74 @@ final public class UserLingua {
             //there are more types we will probably never support
             return originalText
         }
+        
+        guard let localizedString = string else { return originalText }
+        
+        switch UserLingua.shared.state {
+        case .disabled, .highlightingStrings:
+            return originalText
+        case .recordingStrings:
+            UserLingua.shared.db.record(localizedString: localizedString)
+            return originalText
+        case .detectingStrings:
+            let tokenizedString = TokenizedString(localizedString.value)
+            return .init(verbatim: tokenizedString.detectable)
+        case .previewingSuggestion:
+            let suggestion = UserLingua.shared.db.suggestion(for: localizedString)
+            return suggestion.map { .init(verbatim: $0.newValue) } ?? originalText
+        }
     }
     
-    private func localizedString(from localizedTextStorage: Any) -> LocalizedString? {
-        guard let localizedStringKey = Reflection.value("key", on: localizedTextStorage)
+    private func localizedString(localizedStringResourceStorage storage: Any) -> LocalizedString? {
+        guard let resource = Reflection.value("resource", on: storage) as? LocalizedStringResource
         else { return nil }
         
-        guard let key = Reflection.value("key", on: localizedStringKey) as? String
+        let bundleURL = Reflection.value("_bundleURL", on: resource) as? URL
+        let localeIdentifier = resource.locale.identifier
+        
+        let bundle = (bundleURL.map(Bundle.init(url:)) ?? .main)?.path(
+            forResource: localeIdentifier.replacingOccurrences(of: "_", with: "-"),
+            ofType: "lproj"
+        )
+        .flatMap { Bundle(path: $0) }
+        
+        return LocalizedString(
+            value: String(localized: resource),
+            localization: .init(
+                key: resource.key,
+                bundle: bundle,
+                tableName: resource.table,
+                comment: nil
+            )
+        )
+    }
+    
+    private func localizedString(localizedTextStorage storage: Any) -> LocalizedString? {
+        guard let keyStorage = Reflection.value("key", on: storage) as? String
         else { return nil }
         
-        let bundle = Reflection.value("bundle", on: localizedTextStorage) as? Bundle
-        let tableName = Reflection.value("table", on: localizedTextStorage) as? String
-        let comment = Reflection.value("comment", on: localizedTextStorage) as? String
+        guard let key = Reflection.value("key", on: keyStorage) as? String
+        else { return nil }
         
-        let value = bundle?.localizedString(forKey: key, value: nil, table: tableName)
+        let storageBundle = Reflection.value("bundle", on: storage) as? Bundle
+        let tableName = Reflection.value("table", on: storage) as? String
+        let comment = Reflection.value("comment", on: storage) as? String
+        
+        let localeIdentifier = UserLingua.shared.config.locale.identifier
+        
+        let bundle = (storageBundle ?? .main)?.path(
+            forResource: localeIdentifier.replacingOccurrences(of: "_", with: "-"),
+            ofType: "lproj"
+        )
+        .flatMap({ Bundle(path: $0) })
+        
+        let value = bundle?.localizedString(forKey: key, value: key, table: tableName)
         
         return LocalizedString(
             value: value ?? key,
             localization: .init(
                 key: key,
+                bundle: bundle,
                 tableName: tableName,
                 comment: comment
             )
@@ -139,6 +180,9 @@ final public class UserLingua {
         request.recognitionLevel = .fast
         request.automaticallyDetectsLanguage = false
         request.usesLanguageCorrection = false
+        
+        let minimumTextPixelHeight: Double = 8
+        request.minimumTextHeight = Float(minimumTextPixelHeight / UIScreen.main.bounds.height * UIScreen.main.scale)
         
         do {
             try requestHandler.perform([request])
