@@ -15,15 +15,15 @@ struct LocalizedString: Hashable {
     var localization: Localization
 }
 
-struct TokenizedString: Hashable {
+struct RecordedString: Hashable {
     let original: String
     let detectable: String
+    let localization: Localization?
     
-    init(_ value: String) {
-        self.original = value
-        
-        let tokenized = value.tokenized()
-        self.detectable = tokenized
+    init(_ original: String, localization: Localization?) {
+        self.original = original
+        self.detectable = original.tokenized()
+        self.localization = localization
     }
 }
 
@@ -106,26 +106,31 @@ final public class UserLingua: ObservableObject {
         
         guard let localizedString = string else { return originalText }
         
-        switch UserLingua.shared.state {
+        switch state {
         case .disabled, .highlightingStrings:
             return originalText
         case .recordingStrings:
-            UserLingua.shared.db.record(localizedString: localizedString)
+            db.record(localizedString: localizedString)
             return originalText
         case .detectingStrings:
-            let tokenizedString = TokenizedString(localizedString.value)
-            return .init(verbatim: tokenizedString.detectable)
+            guard let recordedString = db.recordedString(for: localizedString.value) else {
+                return originalText
+            }
+            return .init(verbatim: recordedString.detectable)
         case .previewingSuggestion:
-            let suggestion = UserLingua.shared.db.suggestion(for: localizedString)
-            return suggestion.map { .init(verbatim: $0.newValue) } ?? originalText
+            guard let suggestion = db.suggestion(for: localizedString) else {
+                return originalText
+            }
+            return .init(verbatim: suggestion.newValue)
         }
     }
     
     func didShake() {
-        if state == .detectingStrings {
-            state = .recordingStrings
-        } else {
-            state = .detectingStrings
+        let previousState = state
+        state = .detectingStrings
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.findAllText()
+            self.state = previousState
         }
     }
     
@@ -189,12 +194,20 @@ final public class UserLingua: ObservableObject {
         )
     }
     
-    private func snapshot() -> UIImage {
-        UIImage(resource: .screenshot)
+    private func snapshot() -> UIImage? {
+        guard let layer = window?.layer else { return nil }
+        let scale = UIScreen.main.scale
+        UIGraphicsBeginImageContextWithOptions(layer.frame.size, false, scale);
+
+        layer.render(in: UIGraphicsGetCurrentContext()!)
+        let screenshot = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return screenshot
     }
     
     public func findAllText() {
-        guard let cgImage = snapshot().cgImage else { return }
+        guard let uiImage = snapshot(),
+              let cgImage = uiImage.cgImage else { return }
         
         let requestHandler = VNImageRequestHandler(cgImage: cgImage)
         let request = VNRecognizeTextRequest(completionHandler: recognizeTextHandler)
@@ -203,7 +216,7 @@ final public class UserLingua: ObservableObject {
         request.usesLanguageCorrection = false
         
         let minimumTextPixelHeight: Double = 8
-        request.minimumTextHeight = Float(minimumTextPixelHeight / UIScreen.main.bounds.height * UIScreen.main.scale)
+        request.minimumTextHeight = Float(minimumTextPixelHeight / uiImage.size.height)
         
         do {
             try requestHandler.perform([request])
@@ -230,9 +243,9 @@ final public class UserLingua: ObservableObject {
     
     private func matchRecognizedTextToKnownStrings(
         _ recognizedText: [VNRecognizedText]
-    ) -> [TokenizedString: [VNRecognizedText]] {
+    ) -> [RecordedString: [VNRecognizedText]] {
         var textBlocks = recognizedText
-        var matches: [TokenizedString: [VNRecognizedText]] = [:]
+        var matches: [RecordedString: [VNRecognizedText]] = [:]
         
         //loop recognized text blocks
         while var textBlock = textBlocks.first {
@@ -276,11 +289,10 @@ final public class UserLingua: ObservableObject {
 }
 
 final class Database {
-    var stringRecord: OrderedSet<TokenizedString> = [] {
+    var stringRecord: [RecordedString] = [] {
         didSet { stringRecord.trimFront() }
     }
     
-    var localizations: [String: Set<LocalizedString>] = [:]
     var suggestions: [String: [Suggestion]] = [
         "Text value %@": [
             .init(
@@ -292,14 +304,12 @@ final class Database {
     ]
     
     func record(string: String) {
-        let tokenized = TokenizedString(string)
-        stringRecord.remove(tokenized)
+        let tokenized = RecordedString(string, localization: nil)
         stringRecord.append(tokenized)
     }
     
     func record(localizedString: LocalizedString) {
         record(string: localizedString.value)
-        localizations[localizedString.value, default: []].insert(localizedString)
     }
     
     func suggestions(for oldValue: String) -> [Suggestion] {
@@ -310,13 +320,17 @@ final class Database {
     
     func suggestion(for localizedString: LocalizedString) -> Suggestion? {
         let matchingValues = suggestions(for: localizedString.value)
-        return matchingValues.first {
+        return matchingValues.last {
             $0.localization == localizedString.localization
-        } ?? matchingValues.first
+        } ?? matchingValues.last
     }
     
     func suggestion(for oldValue: String) -> Suggestion? {
         suggestions(for: oldValue).first
+    }
+    
+    func recordedString(for original: String) -> RecordedString? {
+        stringRecord.last { $0.original == original }
     }
 }
 
@@ -332,7 +346,7 @@ private enum Reflection {
     }
 }
 
-extension OrderedSet {
+extension Array {
     mutating func trimFront(softLimit: Int = 1000, buffer: Int = 500) {
         if count > softLimit + buffer {
             removeFirst(buffer)

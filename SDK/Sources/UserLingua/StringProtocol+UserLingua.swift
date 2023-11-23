@@ -11,11 +11,15 @@ extension StringProtocol {
             UserLingua.shared.db.record(string: string)
             return string
         case .detectingStrings:
-            let tokenizedString = TokenizedString(string)
-            return tokenizedString.detectable
+            guard let recordedString = UserLingua.shared.db.recordedString(for: string) else {
+                return string
+            }
+            return recordedString.detectable
         case .previewingSuggestion:
-            let suggestion = UserLingua.shared.db.suggestion(for: string)
-            return suggestion.map { $0.newValue } ?? string
+            guard let suggestion = UserLingua.shared.db.suggestion(for: string) else {
+                return string
+            }
+            return suggestion.newValue
         }
     }
     
@@ -51,7 +55,7 @@ extension StringProtocol {
             
             if currentIndex > swapRangeStartIndex + 1,
                let previousIndex = (swapRangeStartIndex..<currentIndex).randomElement() {
-                utf16Chars.swapAt(currentIndex, swapRangeStartIndex) //TODO: previousIndex
+                utf16Chars.swapAt(currentIndex, previousIndex)
             }
         }
         

@@ -30,10 +30,6 @@ struct ContentView: View {
                     Text(key.userLingua())
                 }
             }
-            
-            Button("button_key") {
-                UserLingua.shared.findAllText()
-            }
         }
         .padding()
     }
