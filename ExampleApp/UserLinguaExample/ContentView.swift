@@ -13,10 +13,6 @@ let key = "text_key"
 struct ContentView: View {
     var body: some View {
         VStack(alignment: .leading) {
-            Text(localizedStringResource: LocalizedStringResource("text_key"))
-            
-            Text("text_key", tableName: "Localizable")
-            
             HStack(alignment: .top, spacing: 30) {
                 Text("text_key", tableName: "Localizable")
                 
@@ -29,7 +25,7 @@ struct ContentView: View {
                     Text(NSLocalizedString("nslocalized_key", tableName: "Localizable", bundle: .main, comment: "comment").userLingua())
                         .bold()
                     
-                    Text("text_key")
+                    Text(localizedStringResource: LocalizedStringResource("text_key"))
                     
                     Text(key.userLingua())
                 }

@@ -73,7 +73,7 @@ final public class UserLingua: ObservableObject {
         }
     }
     
-    public var window: UIWindow?
+    var window: UIWindow?
     
     init() {}
     
@@ -119,6 +119,18 @@ final public class UserLingua: ObservableObject {
             let suggestion = UserLingua.shared.db.suggestion(for: localizedString)
             return suggestion.map { .init(verbatim: $0.newValue) } ?? originalText
         }
+    }
+    
+    func didShake() {
+        if state == .detectingStrings {
+            state = .recordingStrings
+        } else {
+            state = .detectingStrings
+        }
+    }
+    
+    func setWindow(_ window: UIWindow?) {
+        self.window = window
     }
     
     private func localizedString(localizedStringResourceStorage storage: Any) -> LocalizedString? {
