@@ -113,7 +113,7 @@ final public class UserLingua: ObservableObject {
             db.record(localizedString: localizedString)
             return originalText
         case .detectingStrings:
-            guard let recordedString = db.recordedString(for: localizedString.value) else {
+            guard let recordedString = db.recordedString(for: localizedString) else {
                 return originalText
             }
             return .init(verbatim: recordedString.detectable)
@@ -312,7 +312,7 @@ final class Database {
         record(string: localizedString.value)
     }
     
-    func suggestions(for oldValue: String) -> [Suggestion] {
+    private func suggestions(for oldValue: String) -> [Suggestion] {
         suggestions[oldValue, default: []].filter {
             $0.locale == .current
         }
@@ -329,8 +329,19 @@ final class Database {
         suggestions(for: oldValue).first
     }
     
+    private func recordedStrings(for original: String) -> [RecordedString] {
+        stringRecord.filter { $0.original == original }
+    }
+    
+    func recordedString(for localizedString: LocalizedString) -> RecordedString? {
+        let matchingValues = recordedStrings(for: localizedString.value)
+        return matchingValues.last {
+            $0.localization == localizedString.localization
+        } ?? matchingValues.last
+    }
+    
     func recordedString(for original: String) -> RecordedString? {
-        stringRecord.last { $0.original == original }
+        recordedStrings(for: original).last
     }
 }
 
