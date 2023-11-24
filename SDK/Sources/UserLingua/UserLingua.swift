@@ -163,23 +163,15 @@ final public class UserLingua: ObservableObject {
     }
     
     private func localizedString(localizedTextStorage storage: Any) -> LocalizedString? {
-        guard let keyStorage = Reflection.value("key", on: storage) as? String
+        guard let keyStorage = Reflection.value("key", on: storage)
         else { return nil }
         
         guard let key = Reflection.value("key", on: keyStorage) as? String
         else { return nil }
         
-        let storageBundle = Reflection.value("bundle", on: storage) as? Bundle
+        let bundle = Reflection.value("bundle", on: storage) as? Bundle
         let tableName = Reflection.value("table", on: storage) as? String
         let comment = Reflection.value("comment", on: storage) as? String
-        
-        let localeIdentifier = UserLingua.shared.config.locale.identifier
-        
-        let bundle = (storageBundle ?? .main)?.path(
-            forResource: localeIdentifier.replacingOccurrences(of: "_", with: "-"),
-            ofType: "lproj"
-        )
-        .flatMap({ Bundle(path: $0) })
         
         let value = bundle?.localizedString(forKey: key, value: key, table: tableName)
         
@@ -304,12 +296,11 @@ final class Database {
     ]
     
     func record(string: String) {
-        let tokenized = RecordedString(string, localization: nil)
-        stringRecord.append(tokenized)
+        stringRecord.append(RecordedString(string, localization: nil))
     }
     
     func record(localizedString: LocalizedString) {
-        record(string: localizedString.value)
+        stringRecord.append(RecordedString(localizedString.value, localization: localizedString.localization))
     }
     
     private func suggestions(for oldValue: String) -> [Suggestion] {
