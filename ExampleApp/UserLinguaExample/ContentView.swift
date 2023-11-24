@@ -19,15 +19,15 @@ struct ContentView: View {
                 VStack(alignment: .leading) {
                     Text("text_key_\("lol")", tableName: "Localizable", bundle: .main, comment: "comment")
                     
-                    Text(verbatim: "verbatim".userLingua())
+                    Text(verbatim: userLingua("verbatim"))
                         .bold()
                     
-                    Text(NSLocalizedString("nslocalized_key", tableName: "Localizable", bundle: .main, comment: "comment").userLingua())
+                    Text(userLingua(NSLocalizedString("nslocalized_key", tableName: "Localizable", bundle: .main, comment: "comment")))
                         .bold()
                     
                     Text(localizedStringResource: LocalizedStringResource("text_key"))
                     
-                    Text(key.userLingua())
+                    Text(userLingua(key))
                 }
             }
         }

@@ -1,28 +1,6 @@
 import Foundation
 
-extension StringProtocol {
-    public func userLingua() -> String {
-        let string = String(self)
-        
-        switch UserLingua.shared.state {
-        case .disabled, .highlightingStrings:
-            return string
-        case .recordingStrings:
-            UserLingua.shared.db.record(string: string)
-            return string
-        case .detectingStrings:
-            guard let recordedString = UserLingua.shared.db.recordedString(for: string) else {
-                return string
-            }
-            return recordedString.detectable
-        case .previewingSuggestion:
-            guard let suggestion = UserLingua.shared.db.suggestion(for: string) else {
-                return string
-            }
-            return suggestion.newValue
-        }
-    }
-    
+extension StringProtocol {   
     /// Goals of tokenization:
     /// - Maximise string uniqueness
     /// - Maintain exact wrapping of the original string (i.e. exact "word" widths)

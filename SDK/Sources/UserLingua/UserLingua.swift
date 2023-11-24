@@ -44,7 +44,7 @@ final public class UserLingua: ObservableObject {
         case recordingStrings
         case detectingStrings
         case highlightingStrings
-        case previewingSuggestion
+        case previewingSuggestions
     }
     
     public struct Configuration {
@@ -84,44 +84,47 @@ final public class UserLingua: ObservableObject {
     
     func processLocalizedText(_ originalText: Text) -> Text {      
         guard UserLingua.shared.state != .disabled,
-              let storage = Reflection.value("storage", on: originalText),
-              let textStorage = Reflection.value("anyTextStorage", on: storage)
+              let localizedString = localizedString(text: originalText)
         else { return originalText }
         
-        let textStorageType = "\(type(of: textStorage))"
-        var string: LocalizedString?
-        
-        switch textStorageType {
-        case "LocalizedTextStorage":
-            string = localizedString(localizedTextStorage: textStorage)
-        case "LocalizedStringResourceStorage":
-            string = localizedString(localizedStringResourceStorage: textStorage)
-        case "AttributedStringTextStorage":
-            //we probably want to support this in future
-            return originalText
-        default:
-            //there are more types we will probably never support
-            return originalText
+        if state == .recordingStrings {
+            db.record(localizedString: localizedString)
         }
         
-        guard let localizedString = string else { return originalText }
-        
+        return Text(verbatim: displayString(for: localizedString))
+    }
+    
+    func displayString(for localizedString: LocalizedString) -> String {
         switch state {
-        case .disabled, .highlightingStrings:
-            return originalText
-        case .recordingStrings:
-            db.record(localizedString: localizedString)
-            return originalText
+        case .disabled, .highlightingStrings, .recordingStrings:
+            return localizedString.value
         case .detectingStrings:
             guard let recordedString = db.recordedString(for: localizedString) else {
-                return originalText
+                return localizedString.value
             }
-            return .init(verbatim: recordedString.detectable)
-        case .previewingSuggestion:
+            return recordedString.detectable
+        case .previewingSuggestions:
             guard let suggestion = db.suggestion(for: localizedString) else {
-                return originalText
+                return localizedString.value
             }
-            return .init(verbatim: suggestion.newValue)
+            return suggestion.newValue
+        }
+    }
+    
+    func displayString(for string: String) -> String {
+        switch state {
+        case .disabled, .highlightingStrings, .recordingStrings:
+            return string
+        case .detectingStrings:
+            guard let recordedString = db.recordedString(for: string) else {
+                return string
+            }
+            return recordedString.detectable
+        case .previewingSuggestions:
+            guard let suggestion = db.suggestion(for: string) else {
+                return string
+            }
+            return suggestion.newValue
         }
     }
     
@@ -136,6 +139,25 @@ final public class UserLingua: ObservableObject {
     
     func setWindow(_ window: UIWindow?) {
         self.window = window
+    }
+    
+    private func localizedString(text: Text) -> LocalizedString? {
+        guard let storage = Reflection.value("storage", on: text),
+              let textStorage = Reflection.value("anyTextStorage", on: storage)
+        else { return nil }
+        
+        switch "\(type(of: textStorage))" {
+        case "LocalizedTextStorage":
+            return localizedString(localizedTextStorage: textStorage)
+        case "LocalizedStringResourceStorage":
+            return localizedString(localizedStringResourceStorage: textStorage)
+        case "AttributedStringTextStorage":
+            //we probably want to support this in future
+            return nil
+        default:
+            //there are more types we will probably never support
+            return nil
+        }
     }
     
     private func localizedString(localizedStringResourceStorage storage: Any) -> LocalizedString? {
@@ -163,20 +185,30 @@ final public class UserLingua: ObservableObject {
     }
     
     private func localizedString(localizedTextStorage storage: Any) -> LocalizedString? {
-        guard let keyStorage = Reflection.value("key", on: storage)
+        guard let stringContainer = Reflection.value("key", on: storage)
         else { return nil }
         
-        guard let key = Reflection.value("key", on: keyStorage) as? String
+        guard let key = Reflection.value("key", on: stringContainer) as? String
         else { return nil }
         
+        let hasFormatting = Reflection.value("hasFormatting", on: stringContainer) as? Bool ?? false
         let bundle = Reflection.value("bundle", on: storage) as? Bundle
         let tableName = Reflection.value("table", on: storage) as? String
         let comment = Reflection.value("comment", on: storage) as? String
         
-        let value = bundle?.localizedString(forKey: key, value: key, table: tableName)
+        var value = bundle?.localizedString(
+            forKey: key,
+            value: key,
+            table: tableName
+        ) ?? key
+        
+        if hasFormatting {
+            let arguments = formattingArguments(stringContainer)
+            value = String(format: value, arguments: arguments)
+        }
         
         return LocalizedString(
-            value: value ?? key,
+            value: value,
             localization: .init(
                 key: key,
                 bundle: bundle,
@@ -184,6 +216,37 @@ final public class UserLingua: ObservableObject {
                 comment: comment
             )
         )
+    }
+    
+    private func formattingArguments(_ container: Any) -> [CVarArg] {
+        guard let arguments = Reflection.value("arguments", on: container) as? [Any]
+        else { return [] }
+        
+        return arguments.compactMap(formattingArgument)
+    }
+        
+    private func formattingArgument(_ container: Any) -> CVarArg? {
+        guard let storage = Reflection.value("storage", on: container)
+        else { return nil }
+        
+        if let textContainer = Reflection.value("text", on: storage),
+           let text = Reflection.value(".0", on: textContainer) as? Text {
+            return localizedString(text: text).map(displayString)
+        }
+        
+        if let formatStyleContainer = Reflection.value("formatStyleValue", on: storage),
+           let formatStyle = Reflection.value("format", on: formatStyleContainer) as? any FormatStyle,
+           let input = Reflection.value("input", on: formatStyleContainer) {
+            return formatStyle.string(for: input, locale: config.locale)
+        }
+        
+        if let valueContainer = Reflection.value("value", on: storage),
+           let value = Reflection.value(".0", on: valueContainer) as? CVarArg {
+            let formatter = Reflection.value(".1", on: valueContainer) as? Formatter
+            return formatter.flatMap { $0.string(for: value) } ?? value
+        }
+        
+        return nil
     }
     
     private func snapshot() -> UIImage? {
@@ -466,5 +529,13 @@ extension String {
         }
         
         return String(utf16CodeUnits: foundPrefix, count: foundPrefix.count)
+    }
+}
+
+extension FormatStyle {
+    func string(for input: Any, locale: Locale) -> String? {
+        guard let input = input as? FormatInput else { return nil }
+        let formatter = self.locale(locale)
+        return formatter.format(input) as? String
     }
 }
