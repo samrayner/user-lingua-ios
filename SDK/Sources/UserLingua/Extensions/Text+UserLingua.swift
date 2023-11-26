@@ -8,9 +8,9 @@ extension Text {
         tableName: String,
         bundle: Bundle,
         comment: StaticString,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInLocalizedTextViews
+        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        let text = OverriddenSwiftUIMethods.initKeyTableNameBundleComment(key, tableName, bundle, comment)
+        let text = OverriddenSwiftUIMethods.Text.initWithKeyTableNameBundleComment(key, tableName, bundle, comment)
         self = if userLingua {
             UserLingua.shared.processLocalizedText(text)
         } else {
@@ -23,9 +23,9 @@ extension Text {
         _ key: LocalizedStringKey,
         tableName: String,
         bundle: Bundle,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInLocalizedTextViews
+        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        let text = OverriddenSwiftUIMethods.initKeyTableNameBundleComment(key, tableName, bundle, nil)
+        let text = OverriddenSwiftUIMethods.Text.initWithKeyTableNameBundleComment(key, tableName, bundle, nil)
         self = if userLingua {
             UserLingua.shared.processLocalizedText(text)
         } else {
@@ -37,9 +37,9 @@ extension Text {
     public init(
         _ key: LocalizedStringKey,
         tableName: String,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInLocalizedTextViews
+        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        let text = OverriddenSwiftUIMethods.initKeyTableNameBundleComment(key, tableName, .main, nil)
+        let text = OverriddenSwiftUIMethods.Text.initWithKeyTableNameBundleComment(key, tableName, .main, nil)
         self = if userLingua {
             UserLingua.shared.processLocalizedText(text)
         } else {
@@ -50,9 +50,9 @@ extension Text {
     /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
     public init(
         _ key: LocalizedStringKey,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInLocalizedTextViews
+        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        let text = OverriddenSwiftUIMethods.initKeyTableNameBundleComment(key, "Localizable", .main, nil)
+        let text = OverriddenSwiftUIMethods.Text.initWithKeyTableNameBundleComment(key, "Localizable", .main, nil)
         self = if userLingua {
             UserLingua.shared.processLocalizedText(text)
         } else {
@@ -60,16 +60,29 @@ extension Text {
         }
     }
     
-    /// A UserLingua overload that forwards to`SwiftUI.Text(_:)`.
+    /// A UserLingua overload that forwards to`SwiftUI.Text(_ resource:)`.
     public init(
         localizedStringResource: LocalizedStringResource,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInLocalizedTextViews
+        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        let text = SwiftUI.Text(localizedStringResource)
+        let text = Self.init(localizedStringResource)
         self = if userLingua {
             UserLingua.shared.processLocalizedText(text)
         } else {
             text
+        }
+    }
+    
+    /// A UserLingua overload that forwards to`SwiftUI.Text(_ string:)`.
+    public init<S: StringProtocol>(
+        _ content: S,
+        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+    ) {
+        if UserLingua.shared.config.treatStringOnlyTextInitAsVerbatim {
+            let string = userLingua ? Self.UL(content) : String(content)
+            self = .init(verbatim: string)
+        } else {
+            self = .init(LocalizedStringKey(String(content)), userLingua: userLingua)
         }
     }
 }

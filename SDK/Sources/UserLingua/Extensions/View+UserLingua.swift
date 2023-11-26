@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension View {
-    public func userLingua(_ string: any StringProtocol) -> String {
+    internal static func UL(_ string: any StringProtocol) -> String {
         let string = String(string)
         let userLingua = UserLingua.shared
         
@@ -10,5 +10,9 @@ extension View {
         }
         
         return userLingua.displayString(for: string)
+    }
+    
+    public func UL(_ string: any StringProtocol) -> String {
+        Self.UL(string)
     }
 }

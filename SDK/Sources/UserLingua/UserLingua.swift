@@ -28,10 +28,9 @@ struct RecordedString: Hashable {
 }
 
 struct Suggestion {
-    var oldValue: String
+    var localizedString: LocalizedString
     var newValue: String
     var locale: Locale
-    var localization: Localization?
     var createdAt: Date = .now
     var modifiedAt: Date = .now
     var isSubmitted = false
@@ -48,14 +47,17 @@ final public class UserLingua: ObservableObject {
     }
     
     public struct Configuration {
-        public var automaticallyOptInLocalizedTextViews: Bool
+        public var automaticallyOptInTextViews: Bool
+        public var treatStringOnlyTextInitAsVerbatim: Bool
         public var locale: Locale
         
         public init(
-            automaticallyOptInLocalizedTextViews: Bool = true,
+            automaticallyOptInTextViews: Bool = true,
+            treatStringOnlyTextInitAsVerbatim: Bool = true,
             locale: Locale = .current
         ) {
-            self.automaticallyOptInLocalizedTextViews = automaticallyOptInLocalizedTextViews
+            self.automaticallyOptInTextViews = automaticallyOptInTextViews
+            self.treatStringOnlyTextInitAsVerbatim = treatStringOnlyTextInitAsVerbatim
             self.locale = locale
         }
     }
@@ -348,15 +350,7 @@ final class Database {
         didSet { stringRecord.trimFront() }
     }
     
-    var suggestions: [String: [Suggestion]] = [
-        "Text value %@": [
-            .init(
-                oldValue: "Text value %@",
-                newValue: "Sam2",
-                locale: .current
-            )
-        ]
-    ]
+    var suggestions: [String: [Suggestion]] = [:]
     
     func record(string: String) {
         stringRecord.append(RecordedString(string, localization: nil))
@@ -375,7 +369,7 @@ final class Database {
     func suggestion(for localizedString: LocalizedString) -> Suggestion? {
         let matchingValues = suggestions(for: localizedString.value)
         return matchingValues.last {
-            $0.localization == localizedString.localization
+            $0.localizedString == localizedString
         } ?? matchingValues.last
     }
     
