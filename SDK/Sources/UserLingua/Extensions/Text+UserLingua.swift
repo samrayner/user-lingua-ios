@@ -78,11 +78,11 @@ extension Text {
         _ content: S,
         userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        if UserLingua.shared.config.treatStringOnlyTextInitAsVerbatim {
+        if UserLingua.shared.config.localizeStringWhenOnlyTextInitParam {
+            self = .init(LocalizedStringKey(String(content)), userLingua: userLingua)
+        } else {
             let string = userLingua ? Self.UL(content) : String(content)
             self = .init(verbatim: string)
-        } else {
-            self = .init(LocalizedStringKey(String(content)), userLingua: userLingua)
         }
     }
 }

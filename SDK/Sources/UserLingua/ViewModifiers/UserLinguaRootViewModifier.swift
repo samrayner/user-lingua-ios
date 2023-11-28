@@ -8,8 +8,8 @@ struct UserLinguaRootViewModifier: ViewModifier {
             .id(UUID()) //force the content to rerender when userLingua.objectWillChange fires
             .background {
                 WindowReader(handler: userLingua.setWindow)
-                ShakeRecognizer(handler: userLingua.didShake)
             }
+            .onShake(perform: userLingua.didShake)
     }
 }
 

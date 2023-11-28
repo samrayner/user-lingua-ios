@@ -14,15 +14,19 @@ struct UserLinguaExampleApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .userLinguaRootView()
+            NavigationView {
+                PaymentView()
+            }
+            .userLinguaRootView()
         }
     }
 }
 
 final class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        UserLingua.shared.enable()
+        let userLinguaConfig = UserLingua.Configuration(
+        )
+        UserLingua.shared.enable(config: userLinguaConfig)
         return true
     }
 }

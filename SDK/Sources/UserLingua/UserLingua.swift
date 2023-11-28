@@ -48,16 +48,19 @@ final public class UserLingua: ObservableObject {
     
     public struct Configuration {
         public var automaticallyOptInTextViews: Bool
-        public var treatStringOnlyTextInitAsVerbatim: Bool
+        public var localizeStringWhenOnlyTextInitParam: Bool
+        public var localizeStringWhenWrappedWithUL: Bool
         public var locale: Locale
         
         public init(
             automaticallyOptInTextViews: Bool = true,
-            treatStringOnlyTextInitAsVerbatim: Bool = true,
+            localizeStringWhenOnlyTextInitParam: Bool = true,
+            localizeStringWhenWrappedWithUL: Bool = true,
             locale: Locale = .current
         ) {
             self.automaticallyOptInTextViews = automaticallyOptInTextViews
-            self.treatStringOnlyTextInitAsVerbatim = treatStringOnlyTextInitAsVerbatim
+            self.localizeStringWhenOnlyTextInitParam = localizeStringWhenOnlyTextInitParam
+            self.localizeStringWhenWrappedWithUL = localizeStringWhenWrappedWithUL
             self.locale = locale
         }
     }
@@ -136,7 +139,7 @@ final public class UserLingua: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.findAllText()
             self.state = previousState
-        }
+        }   
     }
     
     func setWindow(_ window: UIWindow?) {
