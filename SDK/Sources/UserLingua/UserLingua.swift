@@ -38,7 +38,7 @@ struct Suggestion {
 }
 
 final public class UserLingua: ObservableObject {
-    enum State {
+    enum State: Equatable {
         case disabled
         case recordingStrings
         case detectingStrings
@@ -66,6 +66,7 @@ final public class UserLingua: ObservableObject {
     
     let db = Database()
     public var config = Configuration()
+    var highlightedStrings: [RecordedString: [CGRect]] = [:]
     
     var state: State = .disabled {
         willSet {
@@ -131,12 +132,28 @@ final public class UserLingua: ObservableObject {
     }
     
     func didShake() {
-        let previousState = state
         state = .detectingStrings
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.findAllText()
-            self.state = previousState
-        }   
+            self.recognizeText()
+            self.displayHighlightedStrings()
+        }
+    }
+    
+    private func rectForTextBlock(_ textBlock: VNRecognizedText) -> CGRect {
+        let stringRange = textBlock.string.startIndex..<textBlock.string.endIndex
+        let box = try? textBlock.boundingBox(for: stringRange)
+        let boundingBox = box?.boundingBox ?? .zero
+        print(VNImageRectForNormalizedRect(boundingBox, Int(UIScreen.main.bounds.width), Int(UIScreen.main.bounds.height)))
+        return VNImageRectForNormalizedRect(boundingBox, Int(UIScreen.main.bounds.width), Int(UIScreen.main.bounds.height))
+    }
+    
+    private func displayHighlightedStrings() {
+        guard let window else { return }
+        let view = UIHostingController(rootView: HighlightsView()).view!
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.frame = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+        view.backgroundColor = .clear
+        window.addSubview(view)
     }
     
     func setWindow(_ window: UIWindow?) {
@@ -262,7 +279,7 @@ final public class UserLingua: ObservableObject {
         return screenshot
     }
     
-    public func findAllText() {
+    public func recognizeText() {
         guard let uiImage = snapshot(),
               let cgImage = uiImage.cgImage else { return }
         
@@ -291,11 +308,8 @@ final public class UserLingua: ObservableObject {
                 observation.topCandidates(1).first
             }
         
-        let matches = matchRecognizedTextToKnownStrings(recognizedText)
-        
-        for (recordedString, textBlocks) in matches {
-            print(recordedString.original, textBlocks.map(\.string))
-        }
+        self.highlightedStrings = matchRecognizedTextToKnownStrings(recognizedText).mapValues { $0.map(rectForTextBlock) }
+        self.state = .highlightingStrings
     }
     
     private func matchRecognizedTextToKnownStrings(
