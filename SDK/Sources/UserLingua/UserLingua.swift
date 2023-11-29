@@ -48,18 +48,15 @@ final public class UserLingua: ObservableObject {
     
     public struct Configuration {
         public var automaticallyOptInTextViews: Bool
-        public var localizeStringWhenOnlyTextInitParam: Bool
         public var localizeStringWhenWrappedWithUL: Bool
         public var locale: Locale
         
         public init(
             automaticallyOptInTextViews: Bool = true,
-            localizeStringWhenOnlyTextInitParam: Bool = true,
             localizeStringWhenWrappedWithUL: Bool = true,
             locale: Locale = .current
         ) {
             self.automaticallyOptInTextViews = automaticallyOptInTextViews
-            self.localizeStringWhenOnlyTextInitParam = localizeStringWhenOnlyTextInitParam
             self.localizeStringWhenWrappedWithUL = localizeStringWhenWrappedWithUL
             self.locale = locale
         }
@@ -443,7 +440,7 @@ extension String {
     func fuzzyFindPrefix(_ prefix: String, errorLimit: Double = 0.1) -> String? {
         let haystack = self
         
-        //keep only word characters in the string we're finding
+        //keep only word characters in the string we're finding, and lowercase it
         var prefix = prefix.replacing(#/[\W_]/#) { _ in "" }
 
         //swap out all potentially misrecognized substrings with
@@ -487,7 +484,8 @@ extension String {
                 prefixIndex += 1
             }
             
-            if haystackUTF16Char == prefixUTF16Char {
+            // if the characters match (case insensitive) move on to next character
+            if Character(haystackChar).lowercased() == prefixUTF16Char.unicodeScalar.map(Character.init)?.lowercased() {
                 return [haystackUTF16Char]
             }
             
@@ -507,6 +505,8 @@ extension String {
                     }
                 }
             }
+            
+            
             
             return []
         }

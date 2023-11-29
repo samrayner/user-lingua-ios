@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import UserLingua
 
 struct PaymentView: View {
     @StateObject var viewModel: PaymentViewModel = .init()
+    @ObservedObject private(set) var userLingua = UserLingua.shared
 
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -81,7 +83,6 @@ struct PaymentView: View {
                     .padding(.vertical)
                 } else {
                     Text("payment.preview.missing_required_info")
-                        .id(UUID())
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
                 }
@@ -96,17 +97,17 @@ struct PaymentView: View {
                 if viewModel.isFetchingExchangeRates {
                     ProgressView()
                 } else if let lastUpdate = viewModel.exchangeRatesUpdatedAt {
-                    Text("payment.exchange_rates.updated_at \(dateFormatter.string(from: lastUpdate))")
+                    Text(LocalizedStringKey("payment.exchange_rates.updated_at \(dateFormatter.string(from: lastUpdate))"))
                 } else {
                     Text("payment.exchange_rates.fetch_error")
                         .foregroundColor(.red)
                 }
 
-                Button("payment.exchange_rates.update", action: viewModel.fetchExchangeRates)
+                Button(UL("payment.exchange_rates.update"), action: viewModel.fetchExchangeRates)
                     .disabled(viewModel.isFetchingExchangeRates)
             }
         }
-        //.onAppear(perform: viewModel.fetchExchangeRates)
+        .onAppear(perform: viewModel.fetchExchangeRates)
         .navigationTitle(UL("payment.title"))
         .alert(isPresented: $viewModel.showingConfirmation) {
             Alert(

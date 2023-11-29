@@ -1,15 +1,12 @@
 import SwiftUI
 
 struct UserLinguaRootViewModifier: ViewModifier {
-    @ObservedObject private(set) var userLingua = UserLingua.shared
-    
     func body(content: Content) -> some View {
         content
-            .id(UUID()) //force the content to rerender when userLingua.objectWillChange fires
             .background {
-                WindowReader(handler: userLingua.setWindow)
+                WindowReader(handler: UserLingua.shared.setWindow)
             }
-            .onShake(perform: userLingua.didShake)
+            .onShake(perform: UserLingua.shared.didShake)
     }
 }
 
