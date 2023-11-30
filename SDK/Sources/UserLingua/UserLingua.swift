@@ -25,10 +25,20 @@ struct RecordedString: Hashable {
         self.detectable = original.tokenized()
         self.localization = localization
     }
+    
+    var localizedString: LocalizedString? {
+        localization.map { .init(value: original, localization: $0) }
+    }
+}
+
+extension RecordedString: Identifiable {
+    var id: String {
+        original
+    }
 }
 
 struct Suggestion {
-    var localizedString: LocalizedString
+    var recordedString: RecordedString
     var newValue: String
     var locale: Locale
     var createdAt: Date = .now
@@ -143,7 +153,6 @@ final public class UserLingua: ObservableObject {
         let stringRange = textBlock.string.startIndex..<textBlock.string.endIndex
         let box = try? textBlock.boundingBox(for: stringRange)
         let boundingBox = box?.boundingBox ?? .zero
-        print(VNImageRectForNormalizedRect(boundingBox, Int(UIScreen.main.bounds.width), Int(UIScreen.main.bounds.height)))
         return VNImageRectForNormalizedRect(boundingBox, Int(UIScreen.main.bounds.width), Int(UIScreen.main.bounds.height))
     }
     
@@ -151,7 +160,7 @@ final public class UserLingua: ObservableObject {
         guard let window else { return }
         let view = UIHostingController(rootView: HighlightsView()).view!
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.frame = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+        view.frame = UIScreen.main.bounds
         view.backgroundColor = .clear
         window.addSubview(view)
     }
@@ -383,7 +392,7 @@ final class Database {
     func suggestion(for localizedString: LocalizedString) -> Suggestion? {
         let matchingValues = suggestions(for: localizedString.value)
         return matchingValues.last {
-            $0.localizedString == localizedString
+            $0.recordedString.localizedString == localizedString
         } ?? matchingValues.last
     }
     
