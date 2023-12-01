@@ -6,11 +6,12 @@ extension View {
         localize: Bool = UserLingua.shared.config.localizeStringWhenWrappedWithUL,
         dsoHandle: UnsafeRawPointer = #dsohandle
     ) -> String {
+        //TODO: DRY THIS WITH processText
+        
         let string = String(string)
         let userLingua = UserLingua.shared
         
-        if localize {
-            let bundle = Bundle(dsoHandle: dsoHandle) ?? .main
+        if let bundle = Bundle(dsoHandle: dsoHandle), localize {
             let localizedString = LocalizedString(
                 value: bundle.localizedString(forKey: string, value: nil, table: nil),
                 localization: .init(key: string)

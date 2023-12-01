@@ -97,16 +97,38 @@ final public class UserLingua: ObservableObject {
         state = .recordingStrings
     }
     
-    func processLocalizedText(_ originalText: Text) -> Text {      
-        guard UserLingua.shared.state != .disabled,
-              let localizedString = localizedString(text: originalText)
+    func processText(_ originalText: Text, bundle: Bundle? = nil) -> Text {
+        //TODO: DRY THIS WITH View.UL
+        
+        guard UserLingua.shared.state != .disabled
         else { return originalText }
         
-        if state == .recordingStrings {
-            db.record(localizedString: localizedString)
+        var localizedString = localizedString(text: originalText)
+        
+        if localizedString == nil, let verbatim = verbatim(text: originalText) {
+            if let bundle, config.localizeStringWhenOnlyParamOfTextInit {
+                localizedString = LocalizedString(
+                    value: bundle.localizedString(forKey: verbatim, value: nil, table: nil),
+                    localization: .init(key: verbatim)
+                )
+            } else {
+                if state == .recordingStrings {
+                    db.record(string: verbatim)
+                }
+                
+                return Text(verbatim: displayString(for: verbatim))
+            }
         }
         
-        return Text(verbatim: displayString(for: localizedString))
+        if let localizedString {
+            if state == .recordingStrings {
+                db.record(localizedString: localizedString)
+            }
+            
+            return Text(verbatim: displayString(for: localizedString))
+        }
+        
+        return originalText
     }
     
     func displayString(for localizedString: LocalizedString) -> String {
@@ -171,22 +193,29 @@ final public class UserLingua: ObservableObject {
         self.window = window
     }
     
+    private func verbatim(text: Text) -> String? {
+        guard let storage = Reflection.value("storage", on: text)
+        else { return nil }
+        
+        return Reflection.value("verbatim", on: storage) as? String
+    }
+    
     private func localizedString(text: Text) -> LocalizedString? {
         guard let storage = Reflection.value("storage", on: text),
               let textStorage = Reflection.value("anyTextStorage", on: storage)
         else { return nil }
         
-        switch "\(type(of: textStorage))" {
+        return switch "\(type(of: textStorage))" {
         case "LocalizedTextStorage":
-            return localizedString(localizedTextStorage: textStorage)
+            localizedString(localizedTextStorage: textStorage)
         case "LocalizedStringResourceStorage":
-            return localizedString(localizedStringResourceStorage: textStorage)
+            localizedString(localizedStringResourceStorage: textStorage)
         case "AttributedStringTextStorage":
             //we probably want to support this in future
-            return nil
+            nil
         default:
             //there are more types we will probably never support
-            return nil
+            nil
         }
     }
     

@@ -8,6 +8,14 @@ extension Text {
     public init(_ text: Text) {
         self = text
     }
+    
+    public func userLingua(dsoHandle: UnsafeRawPointer = #dsohandle) -> Text {
+        if self is UserLinguaText {
+            self
+        } else {
+            UserLingua.shared.processText(self, bundle: .init(dsoHandle: dsoHandle))
+        }
+    }
 }
 
 extension UserLinguaText {
@@ -19,13 +27,8 @@ extension UserLinguaText {
         comment: StaticString,
         userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        let originalText = Text(key, tableName: tableName, bundle: bundle, comment: comment)
-        let text = if userLingua {
-            UserLingua.shared.processLocalizedText(originalText)
-        } else {
-            originalText
-        }
-        self.init(text)
+        let text = Text(key, tableName: tableName, bundle: bundle, comment: comment)
+        self.init(userLingua ? UserLingua.shared.processText(text) : text)
     }
     
     /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
@@ -35,42 +38,29 @@ extension UserLinguaText {
         bundle: Bundle,
         userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        let originalText = Text(key, tableName: tableName, bundle: bundle)
-        let text = if userLingua {
-            UserLingua.shared.processLocalizedText(originalText)
-        } else {
-            originalText
-        }
-        self.init(text)
+        let text = Text(key, tableName: tableName, bundle: bundle)
+        self.init(userLingua ? UserLingua.shared.processText(text) : text)
     }
     
     /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
     public init(
         _ key: LocalizedStringKey,
         tableName: String,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews,
+        dsoHandle: UnsafeRawPointer = #dsohandle
     ) {
-        let originalText = Text(key, tableName: tableName)
-        let text = if userLingua {
-            UserLingua.shared.processLocalizedText(originalText)
-        } else {
-            originalText
-        }
-        self.init(text)
+        let text = Text(key, tableName: tableName, bundle: .init(dsoHandle: dsoHandle))
+        self.init(userLingua ? UserLingua.shared.processText(text) : text)
     }
     
     /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
     public init(
         _ key: LocalizedStringKey,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews,
+        dsoHandle: UnsafeRawPointer = #dsohandle
     ) {
-        let originalText = Text(key)
-        let text = if userLingua {
-            UserLingua.shared.processLocalizedText(originalText)
-        } else {
-            originalText
-        }
-        self.init(text)
+        let text = Text(key, bundle: .init(dsoHandle: dsoHandle))
+        self.init(userLingua ? UserLingua.shared.processText(text) : text)
     }
     
     /// A UserLingua overload that forwards to`SwiftUI.Text(_ resource:)`.
@@ -78,25 +68,17 @@ extension UserLinguaText {
         localizedStringResource: LocalizedStringResource,
         userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        let originalText = Text(localizedStringResource)
-        let text = if userLingua {
-            UserLingua.shared.processLocalizedText(originalText)
-        } else {
-            originalText
-        }
-        self.init(text)
+        let text = Text(localizedStringResource)
+        self.init(userLingua ? UserLingua.shared.processText(text) : text)
     }
     
     /// A UserLingua overload that forwards to`SwiftUI.Text(_ string:)`.
     public init<S: StringProtocol>(
         _ content: S,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews,
+        dsoHandle: UnsafeRawPointer = #dsohandle
     ) {
-        let string = if userLingua {
-            Text.UL(content, localize:  UserLingua.shared.config.localizeStringWhenOnlyParamOfTextInit)
-        } else {
-            String(content)
-        }
-        self.init(Text(string))
+        let text = Text(content)
+        self.init(userLingua ? UserLingua.shared.processText(text, bundle: .init(dsoHandle: dsoHandle)) : text)
     }
 }

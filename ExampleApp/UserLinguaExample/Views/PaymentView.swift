@@ -21,7 +21,7 @@ struct PaymentView: View {
 
     var body: some View {
         Form {
-            Section(header: Text("payment.recipient.section_title")) {
+            Section(header: Text("payment.recipient.section_title").userLingua()) {
                 TextField(
                     UL("payment.recipient.first_name"),
                     text: $viewModel.firstName
