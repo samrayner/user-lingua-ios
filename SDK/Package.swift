@@ -11,7 +11,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "UserLingua",
-            targets: ["UserLingua", "OverriddenSwiftUIMethods"]
+            targets: ["UserLingua"]
         )
     ],
     dependencies: [
@@ -23,15 +23,9 @@ let package = Package(
         .target(
             name: "UserLingua",
             dependencies: [
-                "OverriddenSwiftUIMethods"
             ],
             resources: [
                 .process("Resources/Assets.xcassets")
-            ]
-        ),
-        .target(
-            name: "OverriddenSwiftUIMethods",
-            dependencies: [
             ]
         ),
         .testTarget(

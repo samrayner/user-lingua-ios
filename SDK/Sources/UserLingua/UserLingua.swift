@@ -1,6 +1,5 @@
 import UIKit
 import SwiftUI
-import OrderedCollections
 import Vision
 
 struct Localization: Hashable {
@@ -59,15 +58,18 @@ final public class UserLingua: ObservableObject {
     public struct Configuration {
         public var automaticallyOptInTextViews: Bool
         public var localizeStringWhenWrappedWithUL: Bool
+        public var localizeStringWhenOnlyParamOfTextInit: Bool
         public var locale: Locale
         
         public init(
             automaticallyOptInTextViews: Bool = true,
             localizeStringWhenWrappedWithUL: Bool = true,
+            localizeStringWhenOnlyParamOfTextInit: Bool = true,
             locale: Locale = .current
         ) {
             self.automaticallyOptInTextViews = automaticallyOptInTextViews
             self.localizeStringWhenWrappedWithUL = localizeStringWhenWrappedWithUL
+            self.localizeStringWhenOnlyParamOfTextInit = localizeStringWhenOnlyParamOfTextInit
             self.locale = locale
         }
     }

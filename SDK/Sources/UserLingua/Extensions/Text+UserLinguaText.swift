@@ -1,7 +1,16 @@
 import SwiftUI
-import OverriddenSwiftUIMethods
+
+public protocol UserLinguaText {
+    init(_ text: Text)
+}
 
 extension Text {
+    public init(_ text: Text) {
+        self = text
+    }
+}
+
+extension UserLinguaText {
     /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
     public init(
         _ key: LocalizedStringKey,
@@ -10,12 +19,13 @@ extension Text {
         comment: StaticString,
         userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        let text = OverriddenSwiftUIMethods.Text.initWithKeyTableNameBundleComment(key, tableName, bundle, comment)
-        self = if userLingua {
-            UserLingua.shared.processLocalizedText(text)
+        let originalText = Text(key, tableName: tableName, bundle: bundle, comment: comment)
+        let text = if userLingua {
+            UserLingua.shared.processLocalizedText(originalText)
         } else {
-            text
+            originalText
         }
+        self.init(text)
     }
     
     /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
@@ -25,12 +35,13 @@ extension Text {
         bundle: Bundle,
         userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        let text = OverriddenSwiftUIMethods.Text.initWithKeyTableNameBundleComment(key, tableName, bundle, nil)
-        self = if userLingua {
-            UserLingua.shared.processLocalizedText(text)
+        let originalText = Text(key, tableName: tableName, bundle: bundle)
+        let text = if userLingua {
+            UserLingua.shared.processLocalizedText(originalText)
         } else {
-            text
+            originalText
         }
+        self.init(text)
     }
     
     /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
@@ -39,12 +50,13 @@ extension Text {
         tableName: String,
         userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        let text = OverriddenSwiftUIMethods.Text.initWithKeyTableNameBundleComment(key, tableName, .main, nil)
-        self = if userLingua {
-            UserLingua.shared.processLocalizedText(text)
+        let originalText = Text(key, tableName: tableName)
+        let text = if userLingua {
+            UserLingua.shared.processLocalizedText(originalText)
         } else {
-            text
+            originalText
         }
+        self.init(text)
     }
     
     /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
@@ -52,12 +64,13 @@ extension Text {
         _ key: LocalizedStringKey,
         userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        let text = OverriddenSwiftUIMethods.Text.initWithKeyTableNameBundleComment(key, "Localizable", .main, nil)
-        self = if userLingua {
-            UserLingua.shared.processLocalizedText(text)
+        let originalText = Text(key)
+        let text = if userLingua {
+            UserLingua.shared.processLocalizedText(originalText)
         } else {
-            text
+            originalText
         }
+        self.init(text)
     }
     
     /// A UserLingua overload that forwards to`SwiftUI.Text(_ resource:)`.
@@ -65,12 +78,13 @@ extension Text {
         localizedStringResource: LocalizedStringResource,
         userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        let text = Self.init(localizedStringResource)
-        self = if userLingua {
-            UserLingua.shared.processLocalizedText(text)
+        let originalText = Text(localizedStringResource)
+        let text = if userLingua {
+            UserLingua.shared.processLocalizedText(originalText)
         } else {
-            text
+            originalText
         }
+        self.init(text)
     }
     
     /// A UserLingua overload that forwards to`SwiftUI.Text(_ string:)`.
@@ -78,7 +92,11 @@ extension Text {
         _ content: S,
         userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
     ) {
-        let string = userLingua ? Self.UL(content) : String(content)
-        self = OverriddenSwiftUIMethods.Text.initWithContent(string)
+        let string = if userLingua {
+            Text.UL(content, localize:  UserLingua.shared.config.localizeStringWhenOnlyParamOfTextInit)
+        } else {
+            String(content)
+        }
+        self.init(Text(string))
     }
 }

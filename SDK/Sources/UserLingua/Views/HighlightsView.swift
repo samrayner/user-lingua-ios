@@ -41,18 +41,18 @@ struct SuggestionView: View {
                     Section("Localization") {
                         VStack(alignment: .leading) {
                             HStack {
-                                Text("Key:", userLingua: false)
-                                Text(localization.key, userLingua: false)
+                                Text("Key:")
+                                Text(localization.key)
                             }
                             
                             HStack {
-                                Text("File:", userLingua: false)
-                                Text(localization.tableName ?? "Localizable.strings", userLingua: false)
+                                Text("File:")
+                                Text(localization.tableName ?? "Localizable.strings")
                             }
                             
                             HStack {
-                                Text("Comment:", userLingua: false)
-                                Text(localization.comment ?? "[None]", userLingua: false)
+                                Text("Comment:")
+                                Text(localization.comment ?? "[None]")
                             }
                         }
                     }
