@@ -56,18 +56,15 @@ final public class UserLingua: ObservableObject {
     }
     
     public struct Configuration {
-        public var automaticallyOptInTextViews: Bool
         public var localizeStringWhenWrappedWithUL: Bool
         public var localizeStringWhenOnlyParamOfTextInit: Bool
         public var locale: Locale
         
         public init(
-            automaticallyOptInTextViews: Bool = true,
             localizeStringWhenWrappedWithUL: Bool = true,
             localizeStringWhenOnlyParamOfTextInit: Bool = true,
             locale: Locale = .current
         ) {
-            self.automaticallyOptInTextViews = automaticallyOptInTextViews
             self.localizeStringWhenWrappedWithUL = localizeStringWhenWrappedWithUL
             self.localizeStringWhenOnlyParamOfTextInit = localizeStringWhenOnlyParamOfTextInit
             self.locale = locale
@@ -97,35 +94,49 @@ final public class UserLingua: ObservableObject {
         state = .recordingStrings
     }
     
-    func processText(_ originalText: Text, bundle: Bundle? = nil) -> Text {
-        //TODO: DRY THIS WITH View.UL
+    func processString(
+        _ string: String,
+        localize: Bool
+    ) -> String {
+        guard state != .disabled else { return string }
         
-        guard UserLingua.shared.state != .disabled
-        else { return originalText }
-        
-        var localizedString = localizedString(text: originalText)
-        
-        if localizedString == nil, let verbatim = verbatim(text: originalText) {
-            if let bundle, config.localizeStringWhenOnlyParamOfTextInit {
-                localizedString = LocalizedString(
-                    value: bundle.localizedString(forKey: verbatim, value: nil, table: nil),
-                    localization: .init(key: verbatim)
-                )
-            } else {
-                if state == .recordingStrings {
-                    db.record(string: verbatim)
-                }
-                
-                return Text(verbatim: displayString(for: verbatim))
+        if localize {
+            let localizedString = LocalizedString(
+                value: Bundle.main.localizedString(forKey: string, value: nil, table: nil),
+                localization: .init(key: string)
+            )
+            
+            if state == .recordingStrings {
+                db.record(localizedString: localizedString)
             }
+            
+            return displayString(for: localizedString)
+        } else {
+            if state == .recordingStrings {
+                db.record(string: string)
+            }
+            
+            return displayString(for: string)
         }
+    }
+    
+    func processText(_ originalText: Text) -> Text {
+        guard state != .disabled else { return originalText }
         
-        if let localizedString {
+        if let localizedString = localizedString(text: originalText) {
             if state == .recordingStrings {
                 db.record(localizedString: localizedString)
             }
             
             return Text(verbatim: displayString(for: localizedString))
+        }
+        
+        if let verbatim = verbatim(text: originalText) {
+            let string = processString(
+                verbatim,
+                localize: config.localizeStringWhenOnlyParamOfTextInit
+            )
+            return Text(verbatim: string)
         }
         
         return originalText
@@ -226,11 +237,11 @@ final public class UserLingua: ObservableObject {
         let bundleURL = Reflection.value("_bundleURL", on: resource) as? URL
         let localeIdentifier = resource.locale.identifier
         
-        let bundle = (bundleURL.map(Bundle.init(url:)) ?? .main)?.path(
+        let bundle = (bundleURL.flatMap(Bundle.init(url:)) ?? .main).path(
             forResource: localeIdentifier.replacingOccurrences(of: "_", with: "-"),
             ofType: "lproj"
         )
-        .flatMap { Bundle(path: $0) }
+        .flatMap(Bundle.init(path:))
         
         return LocalizedString(
             value: String(localized: resource),
@@ -251,15 +262,17 @@ final public class UserLingua: ObservableObject {
         else { return nil }
         
         let hasFormatting = Reflection.value("hasFormatting", on: stringContainer) as? Bool ?? false
-        let bundle = Reflection.value("bundle", on: storage) as? Bundle
+        let textBundle = Reflection.value("bundle", on: storage) as? Bundle
         let tableName = Reflection.value("table", on: storage) as? String
         let comment = Reflection.value("comment", on: storage) as? String
         
-        var value = bundle?.localizedString(
+        let bundle = textBundle ?? .main
+        
+        var value = bundle.localizedString(
             forKey: key,
             value: key,
             table: tableName
-        ) ?? key
+        )
         
         if hasFormatting {
             let arguments = formattingArguments(stringContainer)
@@ -281,10 +294,10 @@ final public class UserLingua: ObservableObject {
         guard let arguments = Reflection.value("arguments", on: container) as? [Any]
         else { return [] }
         
-        return arguments.compactMap(formattingArgument)
+        return arguments.compactMap(formattingArguments)
     }
         
-    private func formattingArgument(_ container: Any) -> CVarArg? {
+    private func formattingArgument(_ container: Any, fallbackBundle: Bundle?) -> CVarArg? {
         guard let storage = Reflection.value("storage", on: container)
         else { return nil }
         
