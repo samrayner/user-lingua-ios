@@ -8,6 +8,8 @@
 import SwiftUI
 import UserLingua
 
+extension Text: UserLinguaText {}
+
 @main
 struct UserLinguaExampleApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
@@ -21,8 +23,6 @@ struct UserLinguaExampleApp: App {
         }
     }
 }
-
-extension Text: UserLinguaText {}
 
 final class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {

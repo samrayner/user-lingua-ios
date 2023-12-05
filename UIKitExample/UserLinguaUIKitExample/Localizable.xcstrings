@@ -1,0 +1,108 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "text_field_text" : {
+
+    },
+    "ul_button_title_normal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Button normal"
+          }
+        }
+      }
+    },
+    "ul_button_title_selected" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Button selected"
+          }
+        }
+      }
+    },
+    "ul_label_text" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My label"
+          }
+        }
+      }
+    },
+    "ul_segmented_control_1_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SegCon1Title"
+          }
+        }
+      }
+    },
+    "ul_segmented_control_2_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SegCon2Title"
+          }
+        }
+      }
+    },
+    "ul_tab_bar_1_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TabBar1Title"
+          }
+        }
+      }
+    },
+    "ul_text_field_placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text field placeholder"
+          }
+        }
+      }
+    },
+    "ul_text_field_text" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text field text"
+          }
+        }
+      }
+    },
+    "ul_text_view_text" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text view text"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

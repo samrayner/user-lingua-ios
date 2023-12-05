@@ -92,6 +92,11 @@ final public class UserLingua: ObservableObject {
     public func enable(config: Configuration = .init()) {
         self.config = config
         state = .recordingStrings
+        swizzleUIKit()
+    }
+    
+    func swizzleUIKit() {
+        Bundle.swizzle()
     }
     
     func processString(
