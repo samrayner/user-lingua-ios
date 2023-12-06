@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -24,6 +24,7 @@
 		E81C25962B15F39F009ACD4C /* Country.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Country.swift; sourceTree = "<group>"; };
 		E81C259A2B15F3B2009ACD4C /* PaymentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaymentViewModel.swift; sourceTree = "<group>"; };
 		E81C259D2B15F3BF009ACD4C /* PaymentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaymentView.swift; sourceTree = "<group>"; };
+		E83062E52B20AC300012870D /* SDK */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SDK; path = ../SDK; sourceTree = "<group>"; };
 		E881BFB629DEF7ED0034594D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E892E7FC29DEE9430015D5FA /* UserLinguaExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UserLinguaExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E892E7FF29DEE9430015D5FA /* UserLinguaExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserLinguaExampleApp.swift; sourceTree = "<group>"; };
@@ -73,6 +74,7 @@
 		E892E7F329DEE9430015D5FA = {
 			isa = PBXGroup;
 			children = (
+				E83062E52B20AC300012870D /* SDK */,
 				E892E7FE29DEE9430015D5FA /* UserLinguaExample */,
 				E892E7FD29DEE9430015D5FA /* Products */,
 				E8DB966529DEED9B00DF1CE3 /* Frameworks */,
@@ -166,7 +168,6 @@
 			);
 			mainGroup = E892E7F329DEE9430015D5FA;
 			packageReferences = (
-				E868B9B42B1F32860007B0C7 /* XCLocalSwiftPackageReference "../SDK" */,
 			);
 			productRefGroup = E892E7FD29DEE9430015D5FA /* Products */;
 			projectDirPath = "";
@@ -438,13 +439,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		E868B9B42B1F32860007B0C7 /* XCLocalSwiftPackageReference "../SDK" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../SDK;
-		};
-/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		E868B9B52B1F32860007B0C7 /* UserLingua */ = {

@@ -22,42 +22,12 @@ extension UserLinguaText {
     /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
     public init(
         _ key: LocalizedStringKey,
-        tableName: String,
-        bundle: Bundle,
-        comment: StaticString,
+        tableName: String? = nil,
+        bundle: Bundle = .main,
+        comment: StaticString? = nil,
         userLingua: Bool = true
     ) {
         let text = Text(key, tableName: tableName, bundle: bundle, comment: comment)
-        self.init(userLingua ? UserLingua.shared.processText(text) : text)
-    }
-    
-    /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
-    public init(
-        _ key: LocalizedStringKey,
-        tableName: String,
-        bundle: Bundle,
-        userLingua: Bool = true
-    ) {
-        let text = Text(key, tableName: tableName, bundle: bundle)
-        self.init(userLingua ? UserLingua.shared.processText(text) : text)
-    }
-    
-    /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
-    public init(
-        _ key: LocalizedStringKey,
-        tableName: String,
-        userLingua: Bool = true
-    ) {
-        let text = Text(key, tableName: tableName)
-        self.init(userLingua ? UserLingua.shared.processText(text) : text)
-    }
-    
-    /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
-    public init(
-        _ key: LocalizedStringKey,
-        userLingua: Bool = true
-    ) {
-        let text = Text(key)
         self.init(userLingua ? UserLingua.shared.processText(text) : text)
     }
     

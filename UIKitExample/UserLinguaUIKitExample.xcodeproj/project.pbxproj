@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -18,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E83062E42B20AC0E0012870D /* SDK */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SDK; path = ../SDK; sourceTree = "<group>"; };
 		E868B99A2B1F31FF0007B0C7 /* UserLinguaUIKitExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UserLinguaUIKitExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E868B99D2B1F31FF0007B0C7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E868B99F2B1F31FF0007B0C7 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -44,6 +45,7 @@
 		E868B9912B1F31FF0007B0C7 = {
 			isa = PBXGroup;
 			children = (
+				E83062E42B20AC0E0012870D /* SDK */,
 				E868B99C2B1F31FF0007B0C7 /* UserLinguaUIKitExample */,
 				E868B99B2B1F31FF0007B0C7 /* Products */,
 			);
@@ -120,7 +122,6 @@
 			);
 			mainGroup = E868B9912B1F31FF0007B0C7;
 			packageReferences = (
-				E868B9B12B1F32550007B0C7 /* XCLocalSwiftPackageReference "../SDK" */,
 			);
 			productRefGroup = E868B99B2B1F31FF0007B0C7 /* Products */;
 			projectDirPath = "";
@@ -375,13 +376,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		E868B9B12B1F32550007B0C7 /* XCLocalSwiftPackageReference "../SDK" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../SDK;
-		};
-/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		E868B9B22B1F32550007B0C7 /* UserLingua */ = {
