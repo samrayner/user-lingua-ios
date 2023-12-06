@@ -7,7 +7,6 @@ struct UserLinguaRootViewModifier: ViewModifier {
             .background {
                 WindowReader(handler: UserLingua.shared.setWindow)
             }
-            .onShake(perform: UserLingua.shared.didShake)
     }
 }
 

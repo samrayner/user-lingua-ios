@@ -73,6 +73,8 @@ final public class UserLingua: ObservableObject {
     
     public static let shared = UserLingua()
     
+    private var shakeObservation: NSObjectProtocol?
+    
     let db = Database()
     public var config = Configuration()
     var highlightedStrings: [RecordedString: [CGRect]] = [:]
@@ -83,9 +85,12 @@ final public class UserLingua: ObservableObject {
                 objectWillChange.send()
             }
         }
+        didSet {
+            NotificationCenter.default.post(name: .userLinguaObjectWillChange, object: nil)
+        }
     }
     
-    var window: UIWindow?
+    var window: UIWindow? = UIApplication.shared.keyWindow
     
     init() {}
     
@@ -93,10 +98,14 @@ final public class UserLingua: ObservableObject {
         self.config = config
         state = .recordingStrings
         swizzleUIKit()
+        shakeObservation = NotificationCenter.default.addObserver(forName: .deviceDidShake, object: nil, queue: nil) { [weak self] _ in
+            self?.didShake()
+        }
     }
     
     func swizzleUIKit() {
         Bundle.swizzle()
+        UILabel.swizzle()
     }
     
     func processString(
@@ -599,6 +608,45 @@ extension String {
         
         return String(utf16CodeUnits: foundPrefix, count: foundPrefix.count)
     }
+    
+    /// Goals of tokenization:
+    /// - Maximise string uniqueness
+    /// - Maintain exact wrapping of the original string (i.e. exact "word" widths)
+    /// - Do not decrease OCR accuracy (increase it if possible)
+    func tokenized() -> String {
+        //strip diacritics to improve OCR
+        let utf16 = self.folding(options: .diacriticInsensitive, locale: .current).utf16
+        var utf16Chars = Array(utf16)
+        
+        func characterIsSwappable(_ utf16Char: UTF16Char) -> Bool {
+            guard let currentChar = utf16Char.unicodeScalar
+            else { return false }
+            
+            return !CharacterSet.whitespaces
+                .union(.punctuationCharacters)
+                .contains(currentChar)
+        }
+        
+        var currentIndex = 0
+        var swapRangeStartIndex = 0
+        while currentIndex < utf16Chars.count {
+            defer { currentIndex += 1 }
+            
+            //maintain the positions of all whitespace and punctuation
+            //to preserve exact wrap points of original string
+            guard characterIsSwappable(utf16Chars[currentIndex]) else {
+                swapRangeStartIndex = currentIndex + 1
+                continue
+            }
+            
+            if currentIndex > swapRangeStartIndex + 1,
+               let previousIndex = (swapRangeStartIndex..<currentIndex).randomElement() {
+                utf16Chars.swapAt(currentIndex, previousIndex)
+            }
+        }
+        
+        return String(utf16CodeUnits: utf16Chars, count: utf16Chars.count)
+    }
 }
 
 extension FormatStyle {
@@ -606,5 +654,21 @@ extension FormatStyle {
         guard let input = input as? FormatInput else { return nil }
         let formatter = self.locale(locale)
         return formatter.format(input) as? String
+    }
+}
+
+extension UTF16Char {
+    var unicodeScalar: Unicode.Scalar? {
+        Unicode.Scalar(UInt32(self))
+    }
+}
+
+extension UIApplication {
+    var keyWindow: UIWindow? {
+        connectedScenes
+            .filter { $0.activationState == .foregroundActive }
+            .first(where: { $0 is UIWindowScene })
+            .flatMap({ $0 as? UIWindowScene })?.windows
+            .first(where: \.isKeyWindow)
     }
 }
