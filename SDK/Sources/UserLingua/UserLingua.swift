@@ -435,6 +435,7 @@ final class Database {
     }
     
     func record(localizedString: LocalizedString) {
+        guard localizedString.localization.bundle?.bundleURL.lastPathComponent != "UIKitCore.framework" else { return }
         stringRecord.append(RecordedString(localizedString.value, localization: localizedString.localization))
     }
     
@@ -468,18 +469,6 @@ final class Database {
     
     func recordedString(for original: String) -> RecordedString? {
         recordedStrings(for: original).last
-    }
-}
-
-private enum Reflection {
-    static func value(
-        _ label: String,
-        on object: Any
-    ) -> Any? {
-        let reflection = Mirror(reflecting: object)
-        return reflection.children
-            .first(where: { $0.label == label })?
-            .value
     }
 }
 

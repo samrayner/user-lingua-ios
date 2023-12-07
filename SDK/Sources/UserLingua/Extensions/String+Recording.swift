@@ -1,26 +1,36 @@
 import Foundation
 import SystemAPIAliases
 
+extension String.LocalizationValue {
+    var key: String? {
+        Reflection.value("key", on: self) as? String
+    }
+}
+
 extension String {
     public init(
         localized keyAndValue: String.LocalizationValue,
         table: String? = nil,
-        bundle: Bundle = .main,
+        bundle: Bundle? = nil,
         locale: Locale = .current,
-        comment: StaticString? = nil
+        comment: StaticString = ""
     ) {
         let value = SystemString.initLocalizedTableBundleLocaleComment(keyAndValue, table, bundle, locale, comment)
-        UserLingua.shared.db.record(
-            localizedString: LocalizedString(
-                value: value,
-                localization: Localization(
-                    key: String(describing: keyAndValue),
-                    bundle: bundle,
-                    tableName: table,
-                    comment: String(describing: comment)
+        
+        if let key = keyAndValue.key {
+            UserLingua.shared.db.record(
+                localizedString: LocalizedString(
+                    value: value,
+                    localization: Localization(
+                        key: key,
+                        bundle: bundle,
+                        tableName: table,
+                        comment: String(describing: comment)
+                    )
                 )
             )
-        )
+        }
+        
         self = value
     }
     
@@ -28,9 +38,9 @@ extension String {
         localized key: StaticString,
         defaultValue: String.LocalizationValue,
         table: String? = nil,
-        bundle: Bundle = .main,
+        bundle: Bundle? = nil,
         locale: Locale = .current,
-        comment: StaticString? = nil
+        comment: StaticString = ""
     ) {
         let value = SystemString.initLocalizedDefaultValueTableBundleLocaleComment(key, defaultValue, table, bundle, locale, comment)
         UserLingua.shared.db.record(
@@ -51,22 +61,25 @@ extension String {
         localized keyAndValue: String.LocalizationValue,
         options: String.LocalizationOptions,
         table: String? = nil,
-        bundle: Bundle = .main,
+        bundle: Bundle? = nil,
         locale: Locale = .current,
-        comment: StaticString? = nil
+        comment: StaticString = ""
     ) {
         let value = SystemString.initLocalizedOptionsTableBundleLocaleComment(keyAndValue, options, table, bundle, locale, comment)
-        UserLingua.shared.db.record(
-            localizedString: LocalizedString(
-                value: value,
-                localization: Localization(
-                    key: String(describing: keyAndValue),
-                    bundle: bundle,
-                    tableName: table,
-                    comment: String(describing: comment)
+        
+        if let key = keyAndValue.key {
+            UserLingua.shared.db.record(
+                localizedString: LocalizedString(
+                    value: value,
+                    localization: Localization(
+                        key: key,
+                        bundle: bundle,
+                        tableName: table,
+                        comment: String(describing: comment)
+                    )
                 )
             )
-        )
+        }
         self = value
     }
     
@@ -75,9 +88,9 @@ extension String {
         defaultValue: String.LocalizationValue,
         options: String.LocalizationOptions,
         table: String? = nil,
-        bundle: Bundle = .main,
+        bundle: Bundle? = nil,
         locale: Locale = .current,
-        comment: StaticString? = nil
+        comment: StaticString = ""
     ) {
         let value = SystemString.initLocalizedDefaultValueOptionsTableBundleLocaleComment(key, defaultValue, options, table, bundle, locale, comment)
         UserLingua.shared.db.record(
