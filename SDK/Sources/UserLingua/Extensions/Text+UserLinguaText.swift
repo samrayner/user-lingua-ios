@@ -23,8 +23,8 @@ extension UserLinguaText {
     public init(
         _ key: LocalizedStringKey,
         tableName: String? = nil,
-        bundle: Bundle = .main,
-        comment: StaticString? = nil,
+        bundle: Bundle? = nil,
+        comment: StaticString = "",
         userLingua: Bool = true
     ) {
         let text = Text(key, tableName: tableName, bundle: bundle, comment: comment)

@@ -1,12 +1,9 @@
 import SwiftUI
 
-struct UserLinguaRootViewModifier: ViewModifier {
+private struct UserLinguaRootViewModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .environmentObject(UserLingua.shared)
-            .background {
-                WindowReader(handler: UserLingua.shared.setWindow)
-            }
     }
 }
 

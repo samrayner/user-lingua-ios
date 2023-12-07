@@ -33,54 +33,55 @@ extension Bundle {
     }
 }
 
-extension UIView {
-    private static let observationAssociation = ObjectAssociation<NSObjectProtocol>()
+extension UILabel {
+    private static let notificationObservationAssociation = ObjectAssociation<NSObjectProtocol>()
+    private static let unprocessedTextAssociation = ObjectAssociation<NSString>()
     
-    var observation: NSObjectProtocol? {
-        get { return Self.observationAssociation[self] }
-        set { Self.observationAssociation[self] = newValue }
+    var notificationObservation: NSObjectProtocol? {
+        get { return Self.notificationObservationAssociation[self] }
+        set { Self.notificationObservationAssociation[self] = newValue }
+    }
+    
+    var unprocessedText: String? {
+        get { return Self.unprocessedTextAssociation[self] as String? }
+        set { Self.unprocessedTextAssociation[self] = newValue as NSString? }
     }
     
     static func swizzle() {
         swizzle(
-            original: #selector(layoutSubviews),
-            with: #selector(swizzledLayoutSubviews)
+            original: #selector(didMoveToSuperview),
+            with: #selector(swizzledDidMoveToSuperview)
+        )
+        
+        swizzle(
+            original: #selector(setter: text),
+            with: #selector(swizzledSetText)
         )
     }
     
-    @objc func swizzledLayoutSubviews() {
-        swizzledLayoutSubviews()
-        guard observation == nil else { return }
+    @objc func swizzledSetText(_ text: String?) {
+        unprocessedText = text
+        let processedString = text.map { UserLingua.shared.processString($0, localize: false) }
+        swizzledSetText(processedString) //confusingly, calls the unswizzled method
+    }
+    
+    @objc func swizzledDidMoveToSuperview() {
+        swizzledDidMoveToSuperview() //confusingly, calls the unswizzled method
+        guard notificationObservation == nil else { return }
         
-        switch self {
-        case is UILabel:
-            observation = NotificationCenter.default.addObserver(forName: .userLinguaObjectWillChange, object: nil, queue: nil) { [weak self] notification in
-                self?.didFire(notification)
-            }
-        default:
-            return
+        notificationObservation = NotificationCenter.default.addObserver(
+            forName: .userLinguaObjectDidChange,
+            object: nil,
+            queue: nil
+        ) { [weak self] notification in
+            self?.didFire(notification)
         }
     }
     
     @objc func didFire(_ notification: Notification) {
-        switch self {
-        case let label as UILabel:
-            if let oldText = label.text {
-                label.text = UserLingua.shared.processString(oldText, localize: false)
-            }
-        case let textField as UITextField:
-            if let oldPlaceholder = textField.placeholder {
-                textField.placeholder = UserLingua.shared.processString(oldPlaceholder, localize: false)
-            }
-            if let oldText = textField.text {
-                textField.text = UserLingua.shared.processString(oldText, localize: false)
-            }
-        case let textView as UITextView:
-            if let oldText = textView.text {
-                textView.text = UserLingua.shared.processString(oldText, localize: false)
-            }
-        default:
-            return
+        //call the swizzled text setter to re-evaluate the current text based on UserLingua's state
+        if unprocessedText != nil {
+            text = unprocessedText
         }
     }
 }
@@ -99,7 +100,7 @@ public final class ObjectAssociation<T: NSObjectProtocol> {
 }
 
 extension Notification.Name {
-    static let userLinguaObjectWillChange = Notification.Name("userLinguaObjectWillChange")
+    static let userLinguaObjectDidChange = Notification.Name("userLinguaObjectDidChange")
     static let deviceDidShake = NSNotification.Name("deviceDidShake")
 }
 

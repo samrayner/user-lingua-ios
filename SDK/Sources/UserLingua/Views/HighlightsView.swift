@@ -9,7 +9,7 @@ class SuggestionViewModel: ObservableObject {
             UserLingua.shared.db.suggestions[self.recordedString.original, default: []] = [
                 Suggestion(recordedString: self.recordedString, newValue: suggestion, locale: .current)
             ]
-            UserLingua.shared.objectWillChange.send()
+            UserLingua.shared.refreshViews()
         }
     }
     

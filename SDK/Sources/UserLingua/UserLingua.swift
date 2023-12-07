@@ -80,19 +80,19 @@ final public class UserLingua: ObservableObject {
     var highlightedStrings: [RecordedString: [CGRect]] = [:]
     
     var state: State = .disabled {
-        willSet {
-            if newValue != state {
-                objectWillChange.send()
-            }
-        }
         didSet {
-            NotificationCenter.default.post(name: .userLinguaObjectWillChange, object: nil)
+            refreshViews()
         }
     }
     
-    var window: UIWindow? = UIApplication.shared.keyWindow
+    var window: UIWindow? { UIApplication.shared.keyWindow }
     
     init() {}
+    
+    func refreshViews() {
+        objectWillChange.send()
+        NotificationCenter.default.post(name: .userLinguaObjectDidChange, object: nil)
+    }
     
     public func enable(config: Configuration = .init()) {
         self.config = config
@@ -212,10 +212,6 @@ final public class UserLingua: ObservableObject {
         view.frame = UIScreen.main.bounds
         view.backgroundColor = .clear
         window.addSubview(view)
-    }
-    
-    func setWindow(_ window: UIWindow?) {
-        self.window = window
     }
     
     private func verbatim(text: Text) -> String? {
@@ -356,7 +352,7 @@ final public class UserLingua: ObservableObject {
         request.automaticallyDetectsLanguage = false
         request.usesLanguageCorrection = false
         
-        let minimumTextPixelHeight: Double = 8
+        let minimumTextPixelHeight: Double = 6
         request.minimumTextHeight = Float(minimumTextPixelHeight / uiImage.size.height)
         
         do {
