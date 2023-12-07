@@ -28,8 +28,16 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7r1-92-K1l">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AdD-Qw-47a">
                                         <rect key="frame" x="0.0" y="128" width="373" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="tjp-Tz-LBm"/>
+                                        </constraints>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="filled" title="Button"/>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7r1-92-K1l">
+                                        <rect key="frame" x="0.0" y="256" width="373" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="esQ-Gt-tNr"/>
                                         </constraints>
@@ -38,7 +46,7 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="jm4-St-3FB">
-                                        <rect key="frame" x="0.0" y="256" width="373" height="51"/>
+                                        <rect key="frame" x="0.0" y="384" width="373" height="51"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="tNX-C9-G15"/>
                                         </constraints>
@@ -48,21 +56,13 @@
                                         </segments>
                                     </segmentedControl>
                                     <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="cQb-9F-xi1">
-                                        <rect key="frame" x="0.0" y="384" width="373" height="50"/>
+                                        <rect key="frame" x="0.0" y="512" width="373" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="JWx-jj-ctp"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits"/>
                                     </textField>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AdD-Qw-47a">
-                                        <rect key="frame" x="0.0" y="512" width="373" height="50"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="50" id="tjp-Tz-LBm"/>
-                                        </constraints>
-                                        <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="filled" title="Button"/>
-                                    </button>
                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" text="cm9-hh-cJ0.text" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="cm9-hh-cJ0">
                                         <rect key="frame" x="0.0" y="640" width="373" height="50"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>

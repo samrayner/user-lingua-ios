@@ -106,6 +106,7 @@ final public class UserLingua: ObservableObject {
     func swizzleUIKit() {
         Bundle.swizzle()
         UILabel.swizzle()
+        UIButton.swizzle()
     }
     
     func processString(
