@@ -453,7 +453,8 @@ final class Database {
     }
     
     func recordedString(for original: String) -> RecordedString? {
-        recordedStrings(for: original).last
+        let recorded = recordedStrings(for: original)
+        return recorded.last { $0.localization != nil } ?? recorded.last
     }
 }
 
