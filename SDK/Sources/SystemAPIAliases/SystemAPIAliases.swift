@@ -10,5 +10,6 @@ public enum SystemString {
 
 public enum SystemText {
     public static let initTableNameBundleComment = Text.init(_:tableName:bundle:comment:)
-    public static let initContent: (String) -> Text = Text.init(_:)
+    public static let initVerbatim: (String) -> Text = Text.init(verbatim:)
+    public static let initLocalizedStringResource: (LocalizedStringResource) -> Text = Text.init(_:)
 }

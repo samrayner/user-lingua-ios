@@ -8,6 +8,7 @@ extension String.LocalizationValue {
 }
 
 extension String {
+    /// A UserLingua overload that records the string localization asynchronously.
     public init(
         localized keyAndValue: String.LocalizationValue,
         table: String? = nil,
@@ -17,7 +18,7 @@ extension String {
     ) {
         let value = SystemString.initLocalizedTableBundleLocaleComment(keyAndValue, table, bundle, locale, comment)
         
-        if let key = keyAndValue.key {
+        if UserLingua.shared.state == .recordingStrings, let key = keyAndValue.key {
             UserLingua.shared.db.record(
                 localizedString: LocalizedString(
                     value: value,
@@ -34,6 +35,7 @@ extension String {
         self = value
     }
     
+    /// A UserLingua overload that records the string localization asynchronously.
     public init(
         localized key: StaticString,
         defaultValue: String.LocalizationValue,
@@ -43,20 +45,25 @@ extension String {
         comment: StaticString = ""
     ) {
         let value = SystemString.initLocalizedDefaultValueTableBundleLocaleComment(key, defaultValue, table, bundle, locale, comment)
-        UserLingua.shared.db.record(
-            localizedString: LocalizedString(
-                value: value,
-                localization: Localization(
-                    key: String(describing: key),
-                    bundle: bundle,
-                    tableName: table,
-                    comment: String(describing: comment)
+        
+        if UserLingua.shared.state == .recordingStrings {
+            UserLingua.shared.db.record(
+                localizedString: LocalizedString(
+                    value: value,
+                    localization: Localization(
+                        key: String(describing: key),
+                        bundle: bundle,
+                        tableName: table,
+                        comment: String(describing: comment)
+                    )
                 )
             )
-        )
+        }
+        
         self = value
     }
     
+    /// A UserLingua overload that records the string localization asynchronously.
     public init(
         localized keyAndValue: String.LocalizationValue,
         options: String.LocalizationOptions,
@@ -67,7 +74,7 @@ extension String {
     ) {
         let value = SystemString.initLocalizedOptionsTableBundleLocaleComment(keyAndValue, options, table, bundle, locale, comment)
         
-        if let key = keyAndValue.key {
+        if UserLingua.shared.state == .recordingStrings, let key = keyAndValue.key {
             UserLingua.shared.db.record(
                 localizedString: LocalizedString(
                     value: value,
@@ -80,9 +87,11 @@ extension String {
                 )
             )
         }
+        
         self = value
     }
     
+    /// A UserLingua overload that records the string localization asynchronously.
     public init(
         localized key: StaticString,
         defaultValue: String.LocalizationValue,
@@ -93,17 +102,21 @@ extension String {
         comment: StaticString = ""
     ) {
         let value = SystemString.initLocalizedDefaultValueOptionsTableBundleLocaleComment(key, defaultValue, options, table, bundle, locale, comment)
-        UserLingua.shared.db.record(
-            localizedString: LocalizedString(
-                value: value,
-                localization: Localization(
-                    key: String(describing: key),
-                    bundle: bundle,
-                    tableName: table,
-                    comment: String(describing: comment)
+        
+        if UserLingua.shared.state == .recordingStrings {
+            UserLingua.shared.db.record(
+                localizedString: LocalizedString(
+                    value: value,
+                    localization: Localization(
+                        key: String(describing: key),
+                        bundle: bundle,
+                        tableName: table,
+                        comment: String(describing: comment)
+                    )
                 )
             )
-        )
+        }
+        
         self = value
     }
 }

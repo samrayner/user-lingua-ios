@@ -2,18 +2,6 @@ import UIKit
 import SwiftUI
 import Vision
 
-struct Localization: Hashable {
-    var key: String
-    var bundle: Bundle?
-    var tableName: String?
-    var comment: String?
-}
-
-struct LocalizedString: Hashable {
-    var value: String
-    var localization: Localization
-}
-
 struct RecordedString: Hashable {
     let original: String
     let detectable: String
@@ -116,10 +104,7 @@ final public class UserLingua: ObservableObject {
         guard state != .disabled else { return string }
         
         if localize {
-            let localizedString = LocalizedString(
-                value: Bundle.main.localizedString(forKey: string, value: nil, table: nil),
-                localization: .init(key: string)
-            )
+            let localizedString = LocalizedString(string)
             
             if state == .recordingStrings {
                 db.record(localizedString: localizedString)

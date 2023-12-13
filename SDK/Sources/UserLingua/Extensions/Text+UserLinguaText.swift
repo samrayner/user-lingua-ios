@@ -1,4 +1,5 @@
 import SwiftUI
+import SystemAPIAliases
 
 public protocol UserLinguaText {
     init(_ text: Text)
@@ -19,6 +20,14 @@ extension Text {
 }
 
 extension UserLinguaText {
+    private init(_ localizedString: LocalizedString) {
+        if UserLingua.shared.state == .recordingStrings {
+            UserLingua.shared.db.record(localizedString: localizedString)
+        }
+        let displayString = UserLingua.shared.displayString(for: localizedString)
+        self.init(SystemText.initVerbatim(displayString))
+    }
+    
     /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
     public init(
         _ key: LocalizedStringKey,
@@ -27,8 +36,19 @@ extension UserLinguaText {
         comment: StaticString = "",
         userLingua: Bool = true
     ) {
-        let text = Text(key, tableName: tableName, bundle: bundle, comment: comment)
-        self.init(userLingua ? UserLingua.shared.processText(text) : text)
+        guard userLingua, UserLingua.shared.state != .disabled else {
+            self.init(SystemText.initTableNameBundleComment(key, tableName, bundle, comment))
+            return
+        }
+        
+        self.init(
+            LocalizedString(
+                key,
+                tableName: tableName,
+                bundle: bundle,
+                comment: comment
+            )
+        )
     }
     
     /// A UserLingua overload that forwards to`SwiftUI.Text(_ resource:)`.
@@ -36,8 +56,19 @@ extension UserLinguaText {
         localizedStringResource: LocalizedStringResource,
         userLingua: Bool = true
     ) {
-        let text = Text(localizedStringResource)
-        self.init(userLingua ? UserLingua.shared.processText(text) : text)
+        guard userLingua, UserLingua.shared.state != .disabled else {
+            self.init(SystemText.initLocalizedStringResource(localizedStringResource))
+            return
+        }
+        
+        self.init(
+            LocalizedString(
+                localizedStringResource.key,
+                tableName: localizedStringResource.table,
+                bundle: localizedStringResource.bundle,
+                comment: nil
+            )
+        )
     }
     
     /// A UserLingua overload that forwards to`SwiftUI.Text(_ string:)`.
@@ -45,7 +76,18 @@ extension UserLinguaText {
         _ content: S,
         userLingua: Bool = true
     ) {
-        let text = Text(content)
-        self.init(userLingua ? UserLingua.shared.processText(text) : text)
+        let content = String(content)
+        
+        guard userLingua, UserLingua.shared.state != .disabled else {
+            self.init(SystemText.initVerbatim(content))
+            return
+        }
+        
+        let string = UserLingua.shared.processString(
+            content,
+            localize: UserLingua.shared.config.localizeStringWhenOnlyParamOfTextInit
+        )
+        
+        self.init(SystemText.initVerbatim(string))
     }
 }
