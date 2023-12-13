@@ -14,13 +14,12 @@ struct Localization: Hashable {
 
 extension LocalizedString {
     init(
-        _ key: any ExpressibleByStringLiteral,
+        _ key: String,
         tableName: String? = nil,
         bundle: Bundle? = nil,
         comment: StaticString? = nil
     ) {
         let bundle = bundle ?? .main
-        let key = (key as? LocalizedStringKey)?.key ?? "\(key)"
         let value = bundle.localizedString(forKey: key, value: key, table: tableName)
         
         self.init(

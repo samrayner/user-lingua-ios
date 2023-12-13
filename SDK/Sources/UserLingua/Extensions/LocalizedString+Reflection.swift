@@ -18,9 +18,3 @@ extension String.LocalizationValue {
         Reflection.value("key", on: self) as? String
     }
 }
-
-extension LocalizedStringKey {
-    var key: String? {
-        Reflection.value("key", on: self) as? String
-    }
-}

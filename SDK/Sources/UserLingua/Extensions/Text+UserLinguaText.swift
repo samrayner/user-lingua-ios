@@ -21,20 +21,21 @@ extension Text {
         bundle: Bundle? = nil,
         comment: StaticString? = nil,
         userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
-    ) {
-        guard userLingua, UserLingua.shared.state != .disabled else {
+    ) {        
+        guard userLingua, 
+              UserLingua.shared.state != .disabled,
+              let localizedString = UserLingua.shared.localizedString(
+                  localizedStringKey: key,
+                  tableName: tableName,
+                  bundle: bundle,
+                  comment: String(describing: comment)
+              )
+        else {
             self = SystemText.initTableNameBundleComment(key, tableName, bundle, comment)
             return
         }
         
-        self.init(
-            LocalizedString(
-                key,
-                tableName: tableName,
-                bundle: bundle,
-                comment: comment
-            )
-        )
+        self.init(localizedString)
     }
     
     /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.

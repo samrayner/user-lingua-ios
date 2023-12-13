@@ -107,9 +107,7 @@ final public class UserLingua: ObservableObject {
     ) -> String {
         guard state != .disabled else { return string }
         
-        if localize {
-            let localizedString = LocalizedString(string)
-            
+        if localize, let localizedString = localizedString(localizedStringKey: .init(string)) {
             if state == .recordingStrings {
                 db.record(localizedString: localizedString)
             }
@@ -254,28 +252,25 @@ final public class UserLingua: ObservableObject {
         )
     }
     
-    private func localizedString(localizedTextStorage storage: Any) -> LocalizedString? {
-        guard let stringContainer = Reflection.value("key", on: storage)
+    func localizedString(
+        localizedStringKey: LocalizedStringKey,
+        tableName: String? = nil,
+        bundle: Bundle? = nil,
+        comment: String? = nil
+    ) -> LocalizedString? {
+        guard let key = Reflection.value("key", on: localizedStringKey) as? String
         else { return nil }
         
-        guard let key = Reflection.value("key", on: stringContainer) as? String
-        else { return nil }
+        let hasFormatting = Reflection.value("hasFormatting", on: localizedStringKey) as? Bool ?? false
         
-        let hasFormatting = Reflection.value("hasFormatting", on: stringContainer) as? Bool ?? false
-        let textBundle = Reflection.value("bundle", on: storage) as? Bundle
-        let tableName = Reflection.value("table", on: storage) as? String
-        let comment = Reflection.value("comment", on: storage) as? String
-        
-        let bundle = textBundle ?? .main
-        
-        var value = bundle.localizedString(
+        var value = (bundle ?? .main).localizedString(
             forKey: key,
             value: key,
             table: tableName
         )
         
         if hasFormatting {
-            let arguments = formattingArguments(stringContainer)
+            let arguments = formattingArguments(localizedStringKey)
             value = String(format: value, arguments: arguments)
         }
         
@@ -290,14 +285,30 @@ final public class UserLingua: ObservableObject {
         )
     }
     
-    private func formattingArguments(_ container: Any) -> [CVarArg] {
-        guard let arguments = Reflection.value("arguments", on: container) as? [Any]
+    private func localizedString(localizedTextStorage storage: Any) -> LocalizedString? {
+        guard let localizedStringKey = Reflection.value("key", on: storage) as? LocalizedStringKey
+        else { return nil }
+        
+        let bundle = Reflection.value("bundle", on: storage) as? Bundle
+        let tableName = Reflection.value("table", on: storage) as? String
+        let comment = Reflection.value("comment", on: storage) as? String
+        
+        return localizedString(
+            localizedStringKey: localizedStringKey,
+            tableName: tableName,
+            bundle: bundle,
+            comment: comment
+        )
+    }
+    
+    private func formattingArguments(_ localizedStringKey: LocalizedStringKey) -> [CVarArg] {
+        guard let arguments = Reflection.value("arguments", on: localizedStringKey) as? [Any]
         else { return [] }
         
-        return arguments.compactMap(formattingArguments)
+        return arguments.compactMap(formattingArgument)
     }
         
-    private func formattingArgument(_ container: Any, fallbackBundle: Bundle?) -> CVarArg? {
+    private func formattingArgument(_ container: Any) -> CVarArg? {
         guard let storage = Reflection.value("storage", on: container)
         else { return nil }
         
