@@ -1,11 +1,8 @@
 import SwiftUI
 import SystemAPIAliases
+import UserLingua
 
-extension Text {
-    public func userLingua() -> Text {
-        UserLingua.shared.processText(self)
-    }
-    
+extension Text {   
     private init(_ localizedString: LocalizedString) {
         if UserLingua.shared.state == .recordingStrings {
             UserLingua.shared.db.record(localizedString: localizedString)

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UserLingua
+import UserLinguaTextOptIn
 
 @main
 struct UserLinguaExampleApp: App {

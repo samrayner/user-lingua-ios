@@ -36,7 +36,7 @@ struct Suggestion {
 }
 
 final public class UserLingua: ObservableObject {
-    enum State: Equatable {
+    package enum State: Equatable {
         case disabled
         case recordingStrings
         case detectingStrings
@@ -67,11 +67,11 @@ final public class UserLingua: ObservableObject {
     
     private var shakeObservation: NSObjectProtocol?
     
-    let db = Database()
+    package let db = Database()
     public var config = Configuration()
     var highlightedStrings: [RecordedString: [CGRect]] = [:]
     
-    var state: State = .disabled {
+    package var state: State = .disabled {
         didSet {
             refreshViews()
         }
@@ -101,7 +101,7 @@ final public class UserLingua: ObservableObject {
         UIButton.swizzle()
     }
     
-    func processString(
+    package func processString(
         _ string: String,
         localize: Bool
     ) -> String {
@@ -122,7 +122,7 @@ final public class UserLingua: ObservableObject {
         }
     }
     
-    func processText(_ originalText: Text) -> Text {
+    package func processText(_ originalText: Text) -> Text {
         guard state != .disabled else { return originalText }
         
         if let localizedString = localizedString(text: originalText) {
@@ -144,7 +144,7 @@ final public class UserLingua: ObservableObject {
         return originalText
     }
     
-    func displayString(for localizedString: LocalizedString) -> String {
+    package func displayString(for localizedString: LocalizedString) -> String {
         switch state {
         case .disabled, .highlightingStrings, .recordingStrings:
             return localizedString.value
@@ -252,7 +252,7 @@ final public class UserLingua: ObservableObject {
         )
     }
     
-    func localizedString(
+    package func localizedString(
         localizedStringKey: LocalizedStringKey,
         tableName: String? = nil,
         bundle: Bundle? = nil,
@@ -427,7 +427,7 @@ final public class UserLingua: ObservableObject {
     }
 }
 
-final class Database {
+package final class Database {
     var stringRecord: [String: [RecordedString]] = [:]
     
     var suggestions: [String: [Suggestion]] = [:]
@@ -436,7 +436,7 @@ final class Database {
         stringRecord[string, default: []].append(RecordedString(string, localization: nil))
     }
     
-    func record(localizedString: LocalizedString) {
+    package func record(localizedString: LocalizedString) {
         guard localizedString.localization.bundle?.bundleURL.lastPathComponent != "UIKitCore.framework" 
         else { return }
         

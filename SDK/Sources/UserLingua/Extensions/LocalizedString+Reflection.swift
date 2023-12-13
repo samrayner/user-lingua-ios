@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension LocalizedStringResource {
-    var bundle: Bundle? {
+    package var bundle: Bundle? {
         let bundleURL = Reflection.value("_bundleURL", on: self) as? URL
         let localeIdentifier = self.locale.identifier
         
