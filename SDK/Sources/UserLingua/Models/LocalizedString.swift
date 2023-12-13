@@ -20,7 +20,7 @@ extension LocalizedString {
         comment: StaticString? = nil
     ) {
         let bundle = bundle ?? .main
-        let key = String(describing: key)
+        let key = (key as? LocalizedStringKey)?.key ?? "\(key)"
         let value = bundle.localizedString(forKey: key, value: key, table: tableName)
         
         self.init(

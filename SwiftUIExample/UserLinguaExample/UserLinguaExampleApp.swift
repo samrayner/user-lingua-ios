@@ -8,8 +8,6 @@
 import SwiftUI
 import UserLingua
 
-extension Text: UserLinguaText {}
-
 @main
 struct UserLinguaExampleApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate

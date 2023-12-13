@@ -1,12 +1,6 @@
 import Foundation
 import SystemAPIAliases
 
-extension String.LocalizationValue {
-    var key: String? {
-        Reflection.value("key", on: self) as? String
-    }
-}
-
 extension String {
     /// A UserLingua overload that records the string localization asynchronously.
     public init(

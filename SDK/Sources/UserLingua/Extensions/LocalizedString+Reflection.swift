@@ -1,4 +1,4 @@
-import Foundation
+import SwiftUI
 
 extension LocalizedStringResource {
     var bundle: Bundle? {
@@ -10,5 +10,17 @@ extension LocalizedStringResource {
             ofType: "lproj"
         )
         .flatMap(Bundle.init(path:))
+    }
+}
+
+extension String.LocalizationValue {
+    var key: String? {
+        Reflection.value("key", on: self) as? String
+    }
+}
+
+extension LocalizedStringKey {
+    var key: String? {
+        Reflection.value("key", on: self) as? String
     }
 }
