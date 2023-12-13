@@ -6,6 +6,7 @@ struct RecordedString: Hashable {
     let original: String
     let detectable: String
     let localization: Localization?
+    let recordedAt: Date = .now
     
     init(_ original: String, localization: Localization?) {
         self.original = original
@@ -364,6 +365,10 @@ final public class UserLingua: ObservableObject {
     private func matchRecognizedTextToKnownStrings(
         _ recognizedText: [VNRecognizedText]
     ) -> [RecordedString: [VNRecognizedText]] {
+        let recordedStrings = db.stringRecord
+            .flatMap { $0.value }
+            .sorted { $0.recordedAt > $1.recordedAt }
+        
         var textBlocks = recognizedText
         var matches: [RecordedString: [VNRecognizedText]] = [:]
         
@@ -371,7 +376,7 @@ final public class UserLingua: ObservableObject {
         while var textBlock = textBlocks.first {
             var recordedStringFoundForTextBlock = false
             
-            for recordedString in db.stringRecord where matches[recordedString] == nil {
+            for recordedString in recordedStrings where matches[recordedString] == nil {
                 var tokenized = recordedString.detectable
                 
                 //while the text block is found at the start of the token
@@ -409,19 +414,24 @@ final public class UserLingua: ObservableObject {
 }
 
 final class Database {
-    var stringRecord: [RecordedString] = [] {
-        didSet { stringRecord.trimFront() }
-    }
+    var stringRecord: [String: [RecordedString]] = [:]
     
     var suggestions: [String: [Suggestion]] = [:]
     
     func record(string: String) {
-        stringRecord.append(RecordedString(string, localization: nil))
+        stringRecord[string, default: []].append(RecordedString(string, localization: nil))
     }
     
     func record(localizedString: LocalizedString) {
-        guard localizedString.localization.bundle?.bundleURL.lastPathComponent != "UIKitCore.framework" else { return }
-        stringRecord.append(RecordedString(localizedString.value, localization: localizedString.localization))
+        guard localizedString.localization.bundle?.bundleURL.lastPathComponent != "UIKitCore.framework" 
+        else { return }
+        
+        let recordedString = RecordedString(
+            localizedString.value,
+            localization: localizedString.localization
+        )
+        
+        stringRecord[localizedString.value, default: []].append(recordedString)
     }
     
     private func suggestions(for oldValue: String) -> [Suggestion] {
@@ -442,7 +452,7 @@ final class Database {
     }
     
     private func recordedStrings(for original: String) -> [RecordedString] {
-        stringRecord.filter { $0.original == original }
+        stringRecord[original] ?? []
     }
     
     func recordedString(for localizedString: LocalizedString) -> RecordedString? {
@@ -455,14 +465,6 @@ final class Database {
     func recordedString(for original: String) -> RecordedString? {
         let recorded = recordedStrings(for: original)
         return recorded.last { $0.localization != nil } ?? recorded.last
-    }
-}
-
-extension Array {
-    mutating func trimFront(softLimit: Int = 1000, buffer: Int = 500) {
-        if count > softLimit + buffer {
-            removeFirst(buffer)
-        }
     }
 }
 
