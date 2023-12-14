@@ -83,7 +83,7 @@ extension UIButton {
             return
         }
         
-        let processedString = title.map { UserLingua.shared.processString($0, localize: false) }
+        let processedString = title.map { UserLingua.shared.processString($0) }
         swizzledSetTitle(processedString, for: state) //confusingly, calls the unswizzled method
     }
     

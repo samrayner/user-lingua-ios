@@ -20,7 +20,7 @@ extension String {
                         key: key,
                         bundle: bundle,
                         tableName: table,
-                        comment: String(describing: comment)
+                        comment: comment.description
                     )
                 )
             )
@@ -45,10 +45,10 @@ extension String {
                 localizedString: LocalizedString(
                     value: value,
                     localization: Localization(
-                        key: String(describing: key),
+                        key: key.description,
                         bundle: bundle,
                         tableName: table,
-                        comment: String(describing: comment)
+                        comment: comment.description
                     )
                 )
             )
@@ -76,7 +76,7 @@ extension String {
                         key: key,
                         bundle: bundle,
                         tableName: table,
-                        comment: String(describing: comment)
+                        comment: comment.description
                     )
                 )
             )
@@ -102,10 +102,10 @@ extension String {
                 localizedString: LocalizedString(
                     value: value,
                     localization: Localization(
-                        key: String(describing: key),
+                        key: key.description,
                         bundle: bundle,
                         tableName: table,
-                        comment: String(describing: comment)
+                        comment: comment.description
                     )
                 )
             )

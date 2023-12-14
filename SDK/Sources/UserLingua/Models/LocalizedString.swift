@@ -28,7 +28,7 @@ extension LocalizedString {
                 key: key,
                 bundle: bundle,
                 tableName: tableName,
-                comment: String(describing: comment)
+                comment: comment.map(\.description)
             )
         )
     }

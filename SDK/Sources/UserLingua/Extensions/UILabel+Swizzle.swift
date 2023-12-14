@@ -28,7 +28,7 @@ extension UILabel {
     
     @objc func swizzledSetText(_ text: String?) {
         unprocessedText = text
-        let processedString = text.map { UserLingua.shared.processString($0, localize: false) }
+        let processedString = text.map { UserLingua.shared.processString($0) }
         swizzledSetText(processedString) //confusingly, calls the unswizzled method
     }
     

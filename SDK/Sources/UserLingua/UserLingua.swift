@@ -45,20 +45,11 @@ final public class UserLingua: ObservableObject {
     }
     
     public struct Configuration {
-        public var automaticallyOptInTextViews: Bool
-        public var localizeStringWhenWrappedWithUL: Bool
-        public var localizeStringWhenOnlyParamOfTextInit: Bool
         public var locale: Locale
         
         public init(
-            automaticallyOptInTextViews: Bool = true,
-            localizeStringWhenWrappedWithUL: Bool = true,
-            localizeStringWhenOnlyParamOfTextInit: Bool = true,
             locale: Locale = .current
         ) {
-            self.automaticallyOptInTextViews = automaticallyOptInTextViews
-            self.localizeStringWhenWrappedWithUL = localizeStringWhenWrappedWithUL
-            self.localizeStringWhenOnlyParamOfTextInit = localizeStringWhenOnlyParamOfTextInit
             self.locale = locale
         }
     }
@@ -101,25 +92,22 @@ final public class UserLingua: ObservableObject {
         UIButton.swizzle()
     }
     
-    package func processString(
-        _ string: String,
-        localize: Bool
-    ) -> String {
-        guard state != .disabled else { return string }
+    package func processLocalizedStringKey(_ key: LocalizedStringKey) -> String {
+        let localizedString = localizedString(localizedStringKey: key)
         
-        if localize, let localizedString = localizedString(localizedStringKey: .init(string)) {
-            if state == .recordingStrings {
-                db.record(localizedString: localizedString)
-            }
-            
-            return displayString(for: localizedString)
-        } else {
-            if state == .recordingStrings {
-                db.record(string: string)
-            }
-            
-            return displayString(for: string)
+        if state == .recordingStrings {
+            db.record(localizedString: localizedString)
         }
+        
+        return displayString(for: localizedString)
+    }
+    
+    package func processString(_ string: String) -> String {
+        if state == .recordingStrings {
+            db.record(string: string)
+        }
+        
+        return displayString(for: string)
     }
     
     package func processText(_ originalText: Text) -> Text {
@@ -134,11 +122,7 @@ final public class UserLingua: ObservableObject {
         }
         
         if let verbatim = verbatim(text: originalText) {
-            let string = processString(
-                verbatim,
-                localize: config.localizeStringWhenOnlyParamOfTextInit
-            )
-            return Text(verbatim: string)
+            return Text(verbatim: processString(verbatim))
         }
         
         return originalText
@@ -257,9 +241,8 @@ final public class UserLingua: ObservableObject {
         tableName: String? = nil,
         bundle: Bundle? = nil,
         comment: String? = nil
-    ) -> LocalizedString? {
-        guard let key = Reflection.value("key", on: localizedStringKey) as? String
-        else { return nil }
+    ) -> LocalizedString {
+        let key = Reflection.value("key", on: localizedStringKey) as! String
         
         let hasFormatting = Reflection.value("hasFormatting", on: localizedStringKey) as? Bool ?? false
         

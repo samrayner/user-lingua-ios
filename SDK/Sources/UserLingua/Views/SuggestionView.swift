@@ -43,8 +43,8 @@ struct SuggestionView: View {
                             }
                             
                             HStack {
-                                Text("File:")
-                                Text(localization.tableName ?? "Localizable.strings")
+                                Text("Table:")
+                                Text(localization.tableName ?? "Localizable")
                             }
                             
                             HStack {

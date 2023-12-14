@@ -3,7 +3,7 @@ import SystemAPIAliases
 import UserLingua
 
 // Conform to this so we can test whether auto opt-in is enabled.
-extension Text: UserLinguaOptedIn {}
+extension Text: AutomaticallyOptedInToUserLingua {}
 
 extension Text {
     private init(_ localizedString: LocalizedString) {
@@ -14,35 +14,39 @@ extension Text {
         self = SystemText.initVerbatim(displayString)
     }
     
-    /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
-    public init(
+    // Note, private. Called by the overloads that use
+    // non-optional parameters or fewer parameters to overload
+    // the SwiftUI version of this initializer.
+    private init(
         key: LocalizedStringKey,
         tableName: String? = nil,
         bundle: Bundle? = nil,
         comment: StaticString? = nil,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = true
     ) {        
         guard userLingua, 
-              UserLingua.shared.state != .disabled,
-              let localizedString = UserLingua.shared.localizedString(
-                  localizedStringKey: key,
-                  tableName: tableName,
-                  bundle: bundle,
-                  comment: String(describing: comment)
-              )
+              UserLingua.shared.state != .disabled
         else {
             self = SystemText.initTableNameBundleComment(key, tableName, bundle, comment)
             return
         }
         
+        let localizedString = UserLingua.shared.localizedString(
+            localizedStringKey: key,
+            tableName: tableName,
+            bundle: bundle,
+            comment: comment.map(\.description)
+        )
+        
         self.init(localizedString)
     }
     
-    /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
+    // Takes precedence over the SwiftUI version
+    // due to fewer parameters. Used for Text("this").
     public init(
         _ key: LocalizedStringKey,
         tableName: String? = nil,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = true
     ) {
         self.init(
             key: key,
@@ -53,12 +57,65 @@ extension Text {
         )
     }
     
-    /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
+    // Takes precedence over the SwiftUI version
+    // due to fewer parameters. Avoids ambiguity
+    // by making bundle non-optional.
+    public init(
+        _ key: LocalizedStringKey,
+        bundle: Bundle,
+        userLingua: Bool = true
+    ) {
+        self.init(
+            key: key,
+            tableName: nil,
+            bundle: bundle,
+            comment: nil,
+            userLingua: userLingua
+        )
+    }
+    
+    // Takes precedence over the SwiftUI version
+    // due to fewer parameters. Avoids ambiguity
+    // by making comment non-optional.
+    public init(
+        _ key: LocalizedStringKey,
+        comment: StaticString,
+        userLingua: Bool = true
+    ) {
+        self.init(
+            key: key,
+            tableName: nil,
+            bundle: nil,
+            comment: comment,
+            userLingua: userLingua
+        )
+    }
+    
+    // Takes precedence over the SwiftUI version
+    // due to fewer parameters. Avoids ambiguity
+    // by making bundle and comment non-optional.
+    public init(
+        _ key: LocalizedStringKey,
+        bundle: Bundle,
+        comment: StaticString,
+        userLingua: Bool = true
+    ) {
+        self.init(
+            key: key,
+            tableName: nil,
+            bundle: bundle,
+            comment: comment,
+            userLingua: userLingua
+        )
+    }
+    
+    // Takes precedence over the SwiftUI version
+    // due to the non-optional tableName type.
     public init(
         _ key: LocalizedStringKey,
         tableName: String,
         bundle: Bundle? = nil,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = true
     ) {
         self.init(
             key: key,
@@ -69,13 +126,14 @@ extension Text {
         )
     }
     
-    /// A UserLingua overload that forwards to`SwiftUI.Text(_:tableName:bundle:comment:)`.
+    // Takes precedence over the SwiftUI version 
+    // due to the non-optional parameter types.
     public init(
         _ key: LocalizedStringKey,
         tableName: String,
         bundle: Bundle,
         comment: StaticString? = nil,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = true
     ) {
         self.init(
             key: key,
@@ -86,10 +144,11 @@ extension Text {
         )
     }
     
-    /// A UserLingua overload that forwards to`SwiftUI.Text(_ resource:)`.
+    // Unfortunately we can't overload this with an anonymous
+    // first parameter as it is ambiguous.
     public init(
         localizedStringResource: LocalizedStringResource,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = true
     ) {
         guard userLingua, UserLingua.shared.state != .disabled else {
             self = SystemText.initLocalizedStringResource(localizedStringResource)
@@ -106,23 +165,42 @@ extension Text {
         )
     }
     
-    /// A UserLingua overload that forwards to`SwiftUI.Text(_ string:)`.
-    public init<S: StringProtocol>(
-        _ content: S,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+    // Takes precedence over SwiftUI's
+    // @_disfavoredOverload init<S: StringProtocol>(_ content: S)
+    // due to the concrete content type giving higher specificity
+    // than the generic content type.
+    // Doesn't take precedence for init("a string literal")
+    // thanks to @_disfavoredOverload. Instead that will call
+    // init(LocalizedStringKey, ...) as LocalizedStringKey conforms
+    // to ExpressibleByStringLiteral. This matches the
+    // behaviour of SwiftUI's Text init methods.
+    @_disfavoredOverload public init(
+        _ content: String,
+        userLingua: Bool = true
     ) {
-        let content = String(content)
-        
         guard userLingua, UserLingua.shared.state != .disabled else {
             self = SystemText.initVerbatim(content)
             return
         }
         
-        let string = UserLingua.shared.processString(
-            content,
-            localize: UserLingua.shared.config.localizeStringWhenOnlyParamOfTextInit
-        )
+        let string = UserLingua.shared.processString(content)
         
         self = SystemText.initVerbatim(string)
+    }
+    
+    // Takes precedence over SwiftUI's
+    // @_disfavoredOverload init<S: StringProtocol>(_ content: S)
+    // due to the concrete content type giving higher specificity
+    // than the generic content type.
+    // Doesn't take precedence for init("a string literal")
+    // thanks to @_disfavoredOverload. Instead that will call
+    // init(LocalizedStringKey, ...) as LocalizedStringKey conforms
+    // to ExpressibleByStringLiteral. This matches the
+    // behaviour of SwiftUI's Text init methods.
+    @_disfavoredOverload public init(
+        _ content: Substring,
+        userLingua: Bool = true
+    ) {
+        self.init(String(content), userLingua: userLingua)
     }
 }

@@ -20,6 +20,18 @@ struct PaymentView: View {
     }()
 
     var body: some View {
+        let key = "payment.recipient.first_name"
+        return VStack {
+            Text("payment.recipient.section_title")
+            Text(key)
+            Text(key.prefix(999))
+            Text("payment.recipient.section_title", tableName: "Localizable")
+            Text("payment.recipient.section_title", tableName: "Localizable", bundle: .main)
+            Text("payment.recipient.section_title", tableName: "Localizable", bundle: .main, comment: "Hi")
+            Text("payment.recipient.section_title", bundle: .main)
+            Text("payment.recipient.section_title", comment: "Hi")
+            Text("payment.recipient.section_title", bundle: .main, comment: "Hi")
+        }
         Form {
             Section(header: Text("payment.recipient.section_title").userLingua()) {
                 TextField(
