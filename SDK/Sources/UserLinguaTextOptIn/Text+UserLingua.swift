@@ -2,7 +2,10 @@ import SwiftUI
 import SystemAPIAliases
 import UserLingua
 
-extension Text {   
+// Conform to this so we can test whether auto opt-in is enabled.
+extension Text: UserLinguaOptedIn {}
+
+extension Text {
     private init(_ localizedString: LocalizedString) {
         if UserLingua.shared.state == .recordingStrings {
             UserLingua.shared.db.record(localizedString: localizedString)
