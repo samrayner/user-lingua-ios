@@ -6,11 +6,16 @@
 //
 
 import UIKit
+import UserLingua
+
+class ULDisabledButton: UIButton, UserLinguaDisableable {
+    let userLinguaDisabled = true
+}
 
 class ViewController: UIViewController {
     @IBOutlet private(set) var localizedLabel: UILabel!
     @IBOutlet private(set) var unlocalizedLabel: UILabel!
-    @IBOutlet private(set) var button: UIButton!
+    @IBOutlet private(set) var button: ULDisabledButton!
     @IBOutlet private(set) var segmentedControl: UISegmentedControl!
     @IBOutlet private(set) var textView: UITextView!
     @IBOutlet private(set) var textField: UITextField!
