@@ -10,10 +10,6 @@ extension UIButton {
     private static let unprocessedApplicationTitleAssociation = ObjectAssociation<NSString>()
     private static let unprocessedReservedTitleAssociation = ObjectAssociation<NSString>()
     
-    private var setTitleSwizzleDisabled: Bool {
-        (self as? UserLinguaDisableable)?.userLinguaDisabled == true
-    }
-    
     var notificationObservation: NSObjectProtocol? {
         get { return Self.notificationObservationAssociation[self] }
         set { Self.notificationObservationAssociation[self] = newValue }
@@ -67,7 +63,7 @@ extension UIButton {
     }
     
     @objc func swizzledSetTitle(_ title: String?, for state: State) {
-        guard !setTitleSwizzleDisabled else {
+        guard !UserLingua.isDisabled(for: self) else {
             swizzledSetTitle(title, for: state) //confusingly, calls the unswizzled method
             return
         }

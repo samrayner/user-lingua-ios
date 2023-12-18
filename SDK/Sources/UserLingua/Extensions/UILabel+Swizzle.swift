@@ -4,10 +4,6 @@ extension UILabel {
     private static let notificationObservationAssociation = ObjectAssociation<NSObjectProtocol>()
     private static let unprocessedTextAssociation = ObjectAssociation<NSString>()
     
-    private var setTextSwizzleDisabled: Bool {
-        (self as? UserLinguaDisableable)?.userLinguaDisabled == true
-    }
-    
     var notificationObservation: NSObjectProtocol? {
         get { return Self.notificationObservationAssociation[self] }
         set { Self.notificationObservationAssociation[self] = newValue }
@@ -31,7 +27,7 @@ extension UILabel {
     }
     
     @objc func swizzledSetText(_ text: String?) {
-        guard !setTextSwizzleDisabled else {
+        guard !UserLingua.isDisabled(for: self) else {
             swizzledSetText(text) //confusingly, calls the unswizzled method
             return
         }

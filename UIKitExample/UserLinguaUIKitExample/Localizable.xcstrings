@@ -26,6 +26,9 @@
         }
       }
     },
+    "ul_disabled_label_text" : {
+
+    },
     "ul_label_text" : {
       "extractionState" : "manual",
       "localizations" : {

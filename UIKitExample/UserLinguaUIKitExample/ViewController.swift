@@ -12,10 +12,14 @@ class ULDisabledButton: UIButton, UserLinguaDisableable {
     let userLinguaDisabled = true
 }
 
+class ULDisabledStackView: UIStackView, UserLinguaDisabled {}
+
 class ViewController: UIViewController {
     @IBOutlet private(set) var localizedLabel: UILabel!
     @IBOutlet private(set) var unlocalizedLabel: UILabel!
     @IBOutlet private(set) var button: ULDisabledButton!
+    @IBOutlet private(set) var disabledStackView: ULDisabledStackView!
+    @IBOutlet private(set) var disabledLabel: UILabel!
     @IBOutlet private(set) var segmentedControl: UISegmentedControl!
     @IBOutlet private(set) var textView: UITextView!
     @IBOutlet private(set) var textField: UITextField!
@@ -32,5 +36,6 @@ class ViewController: UIViewController {
         //textField.text = NSLocalizedString("text_field_text", comment: "")
         textField.placeholder = String(localized: LocalizedStringResource("ul_text_field_placeholder"))
         tabBarItem.title = String(localized: "ul_tab_bar_1_title")
+        disabledLabel.text = String(localized: "ul_disabled_label_text")
     }
 }

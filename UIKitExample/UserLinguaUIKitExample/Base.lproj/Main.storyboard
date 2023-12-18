@@ -11,7 +11,7 @@
         <!--Item 1-->
         <scene sceneID="3Xc-qx-61H">
             <objects>
-                <viewController id="LKq-Zg-WNB" customClass="ViewController" customModule="UserLinguaUIKitExample" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="LKq-Zg-WNB" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Gye-Ro-4ew">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -29,15 +29,34 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AdD-Qw-47a">
-                                        <rect key="frame" x="0.0" y="128" width="373" height="50"/>
+                                        <rect key="frame" x="0.0" y="95.666666666666657" width="373" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="tjp-Tz-LBm"/>
                                         </constraints>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="filled" title="Button"/>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Set-ya-KIK" customClass="ULDisabledButton" customModule="UserLinguaUIKitExample" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="191.33333333333331" width="373" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="RSD-br-1k3"/>
+                                        </constraints>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="filled" title="Button"/>
+                                    </button>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="V8p-hB-wcJ" customClass="ULDisabledStackView" customModule="UserLinguaUIKitExample" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="287" width="373" height="20.333333333333314"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xxh-xK-qQu">
+                                                <rect key="frame" x="0.0" y="0.0" width="373" height="20.333333333333332"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7r1-92-K1l">
-                                        <rect key="frame" x="0.0" y="256" width="373" height="50"/>
+                                        <rect key="frame" x="0.0" y="353" width="373" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="esQ-Gt-tNr"/>
                                         </constraints>
@@ -46,7 +65,7 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="jm4-St-3FB">
-                                        <rect key="frame" x="0.0" y="384" width="373" height="51"/>
+                                        <rect key="frame" x="0.0" y="448.66666666666663" width="373" height="51"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="tNX-C9-G15"/>
                                         </constraints>
@@ -56,7 +75,7 @@
                                         </segments>
                                     </segmentedControl>
                                     <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="cQb-9F-xi1">
-                                        <rect key="frame" x="0.0" y="512" width="373" height="50"/>
+                                        <rect key="frame" x="0.0" y="544.33333333333337" width="373" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="JWx-jj-ctp"/>
                                         </constraints>
@@ -88,6 +107,8 @@
                     <tabBarItem key="tabBarItem" title="Item 1" id="Ttb-q2-y6i"/>
                     <connections>
                         <outlet property="button" destination="AdD-Qw-47a" id="Hve-zT-vR3"/>
+                        <outlet property="disabledLabel" destination="xxh-xK-qQu" id="2C3-df-7fo"/>
+                        <outlet property="disabledStackView" destination="V8p-hB-wcJ" id="LAq-Hk-nV6"/>
                         <outlet property="localizedLabel" destination="7r1-92-K1l" id="Iy4-xV-SAS"/>
                         <outlet property="segmentedControl" destination="jm4-St-3FB" id="1ak-Hi-dEK"/>
                         <outlet property="textField" destination="cQb-9F-xi1" id="FV9-dj-34T"/>
