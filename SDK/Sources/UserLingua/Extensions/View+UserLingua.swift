@@ -1,12 +1,6 @@
 import SwiftUI
 
 extension View {
-    @ViewBuilder public func userLinguaDisabled() -> some View {
-        self.redacted(
-            reason: UserLingua.shared.state == .detectingStrings ? .placeholder : []
-        )
-    }
-    
     /// Allows suggestions for the given string using UserLingua.
     ///
     /// For Text views, consider `import UserLinguaTextOptIn` instead.
