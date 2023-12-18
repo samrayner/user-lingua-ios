@@ -62,8 +62,20 @@ final public class UserLingua: ObservableObject {
     public var config = Configuration()
     var highlightedStrings: [RecordedString: [CGRect]] = [:]
     
-    package var state: State = .disabled {
-        didSet {
+    private var inPreviewsOrTests: Bool {
+        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+    
+    private var _state: State = .disabled
+    package var state: State {
+        get {
+            guard !inPreviewsOrTests else { return .disabled }
+            return _state
+        }
+        set {
+            guard !inPreviewsOrTests else { return }
+            _state = newValue
             refreshViews()
         }
     }

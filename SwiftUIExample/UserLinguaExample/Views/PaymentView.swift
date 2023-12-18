@@ -10,7 +10,7 @@ import UserLingua
 
 struct PaymentView: View {
     @StateObject var viewModel: PaymentViewModel = .init()
-    @EnvironmentObject var userLingua: UserLingua
+    @ObservedObject private(set) var userLingua = UserLingua.shared
 
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()

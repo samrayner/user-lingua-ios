@@ -18,7 +18,6 @@ struct UserLinguaExampleApp: App {
             NavigationView {
                 PaymentView()
             }
-            .userLinguaRootView()
         }
     }
 }
