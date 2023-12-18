@@ -19,8 +19,7 @@ extension LocalizedString {
         bundle: Bundle? = nil,
         comment: StaticString? = nil
     ) {
-        let bundle = bundle ?? .main
-        let value = bundle.localizedString(forKey: key, value: key, table: tableName)
+        let value = (bundle ?? .main).unswizzledLocalizedString(forKey: key, value: key, table: tableName)
         
         self.init(
             value: value,

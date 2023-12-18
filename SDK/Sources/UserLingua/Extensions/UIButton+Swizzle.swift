@@ -53,18 +53,20 @@ extension UIButton {
     static func swizzle() {
         swizzle(
             original: #selector(didMoveToSuperview),
-            with: #selector(swizzledDidMoveToSuperview)
+            with: #selector(unswizzledDidMoveToSuperview)
         )
         
         swizzle(
             original: #selector(setTitle),
-            with: #selector(swizzledSetTitle)
+            with: #selector(unswizzledSetTitle)
         )
     }
     
-    @objc func swizzledSetTitle(_ title: String?, for state: State) {
+    // After swizzling, unswizzled... will refer to the original implementation
+    // and the original method name will call the below implementation.
+    @objc func unswizzledSetTitle(_ title: String?, for state: State) {
         guard !UserLingua.isDisabled(for: self) else {
-            swizzledSetTitle(title, for: state) //confusingly, calls the unswizzled method
+            unswizzledSetTitle(title, for: state)
             return
         }
         
@@ -84,16 +86,16 @@ extension UIButton {
         case .reserved:
             unprocessedReservedTitle = title
         default:
-            swizzledSetTitle(title, for: state) //confusingly, calls the unswizzled method
+            unswizzledSetTitle(title, for: state) //confusingly, calls the unswizzled method
             return
         }
         
         let processedString = title.map { UserLingua.shared.processString($0) }
-        swizzledSetTitle(processedString, for: state) //confusingly, calls the unswizzled method
+        unswizzledSetTitle(processedString, for: state)
     }
     
-    @objc func swizzledDidMoveToSuperview() {
-        swizzledDidMoveToSuperview() //confusingly, calls the unswizzled method
+    @objc func unswizzledDidMoveToSuperview() {
+        unswizzledDidMoveToSuperview()
         guard notificationObservation == nil else { return }
         
         notificationObservation = NotificationCenter.default.addObserver(

@@ -17,28 +17,30 @@ extension UILabel {
     static func swizzle() {
         swizzle(
             original: #selector(didMoveToSuperview),
-            with: #selector(swizzledDidMoveToSuperview)
+            with: #selector(unswizzledDidMoveToSuperview)
         )
         
         swizzle(
             original: #selector(setter: text),
-            with: #selector(swizzledSetText)
+            with: #selector(unswizzledSetText)
         )
     }
     
-    @objc func swizzledSetText(_ text: String?) {
+    // After swizzling, unswizzled... will refer to the original implementation
+    // and the original method name will call the below implementation.
+    @objc func unswizzledSetText(_ text: String?) {
         guard !UserLingua.isDisabled(for: self) else {
-            swizzledSetText(text) //confusingly, calls the unswizzled method
+            unswizzledSetText(text)
             return
         }
         
         unprocessedText = text
         let processedString = text.map { UserLingua.shared.processString($0) }
-        swizzledSetText(processedString) //confusingly, calls the unswizzled method
+        unswizzledSetText(processedString)
     }
     
-    @objc func swizzledDidMoveToSuperview() {
-        swizzledDidMoveToSuperview() //confusingly, calls the unswizzled method
+    @objc func unswizzledDidMoveToSuperview() {
+        unswizzledDidMoveToSuperview()
         guard notificationObservation == nil else { return }
         
         notificationObservation = NotificationCenter.default.addObserver(

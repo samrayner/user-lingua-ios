@@ -11,7 +11,7 @@
         <!--Item 1-->
         <scene sceneID="3Xc-qx-61H">
             <objects>
-                <viewController id="LKq-Zg-WNB" sceneMemberID="viewController">
+                <viewController id="LKq-Zg-WNB" customClass="ViewController" customModule="UserLinguaUIKitExample" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Gye-Ro-4ew">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

@@ -27,7 +27,14 @@
       }
     },
     "ul_disabled_label_text" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disabled label"
+          }
+        }
+      }
     },
     "ul_label_text" : {
       "extractionState" : "manual",

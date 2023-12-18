@@ -20,20 +20,8 @@ struct PaymentView: View {
     }()
 
     var body: some View {
-        let key = "payment.recipient.first_name"
-        return VStack {
-            Text("payment.recipient.section_title")
-            Text(key)
-            Text(key.prefix(999))
-            Text("payment.recipient.section_title", tableName: "Localizable")
-            Text("payment.recipient.section_title", tableName: "Localizable", bundle: .main)
-            Text("payment.recipient.section_title", tableName: "Localizable", bundle: .main, comment: "Hi")
-            Text("payment.recipient.section_title", bundle: .main)
-            Text("payment.recipient.section_title", comment: "Hi")
-            Text("payment.recipient.section_title", bundle: .main, comment: "Hi")
-        }
         Form {
-            Section(header: Text("payment.recipient.section_title").userLingua()) {
+            Section(header: Text("payment.recipient.section_title")) {
                 TextField(
                     UL("payment.recipient.first_name"),
                     text: $viewModel.firstName
@@ -109,7 +97,7 @@ struct PaymentView: View {
                 if viewModel.isFetchingExchangeRates {
                     ProgressView()
                 } else if let lastUpdate = viewModel.exchangeRatesUpdatedAt {
-                    Text(LocalizedStringKey("payment.exchange_rates.updated_at \(dateFormatter.string(from: lastUpdate))"))
+                    Text("payment.exchange_rates.updated_at \(dateFormatter.string(from: lastUpdate))")
                 } else {
                     Text("payment.exchange_rates.fetch_error")
                         .foregroundColor(.red)

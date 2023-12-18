@@ -258,7 +258,7 @@ final public class UserLingua: ObservableObject {
         
         let hasFormatting = Reflection.value("hasFormatting", on: localizedStringKey) as? Bool ?? false
         
-        var value = (bundle ?? .main).localizedString(
+        var value = (bundle ?? .main).unswizzledLocalizedString(
             forKey: key,
             value: key,
             table: tableName
@@ -478,9 +478,13 @@ package final class Database {
 }
 
 extension String {
+    private var punctuationCharactersHandledInOcrMistakes: [UnicodeScalar] {
+        ["/"]
+    }
+    
     private var ocrMistakes: [String: [String]] {
         [
-            "l": ["I", "1"],
+            "l": ["I", "1", "/"],
             "i": ["j"],
             "w": ["vv"],
             "o": ["O", "0"],
@@ -503,16 +507,18 @@ extension String {
     
     func fuzzyFindPrefix(_ prefix: String, errorLimit: Double = 0.1) -> String? {
         let haystack = self
-        
-        //keep only word characters in the string we're finding, and lowercase it
-        var prefix = prefix.replacing(#/[\W_]/#) { _ in "" }
 
+        var prefix = prefix
+        
         //swap out all potentially misrecognized substrings with
         //the most likely character they could have been
         for (standard, possibleChars) in ocrMistakes {
             let regex = try! Regex("(\(possibleChars.joined(separator: "|")))")
             prefix = prefix.replacing(regex) { _ in standard }
         }
+        
+        //keep only word characters in the string we're finding
+        prefix = prefix.replacing(#/[\W_]/#) { _ in "" }
         
         let prefixUTF16Chars = Array(prefix.utf16)
         let haystackUTF16Chars = Array(haystack.utf16)
@@ -536,6 +542,7 @@ extension String {
             guard let haystackChar = haystackUTF16Char.unicodeScalar,
                   !CharacterSet.whitespaces
                     .union(.punctuationCharacters)
+                    .subtracting(.init(punctuationCharactersHandledInOcrMistakes))
                     .contains(haystackChar)
             else {
                 return [haystackUTF16Char]
