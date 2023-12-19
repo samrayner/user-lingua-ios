@@ -2,7 +2,8 @@ import SwiftUI
 import SystemAPIAliases
 import UserLingua
 
-// Conform to this so we can test whether auto opt-in is enabled.
+// Conform to this so we can test whether auto opt-in is enabled
+// by importing UserLinguaTextOptIn.
 extension Text: AutomaticallyOptedInToUserLingua {}
 
 extension Text {

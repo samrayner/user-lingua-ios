@@ -1,6 +1,7 @@
 import UIKit
 import SwiftUI
 import Vision
+import SystemAPIAliases
 
 struct RecordedString: Hashable {
     let original: String
@@ -266,7 +267,7 @@ final public class UserLingua: ObservableObject {
         
         if hasFormatting {
             let arguments = formattingArguments(localizedStringKey)
-            value = String(format: value, arguments: arguments)
+            value = SystemString.initFormatLocaleArguments(value, nil, arguments)
         }
         
         return LocalizedString(
@@ -385,7 +386,7 @@ final public class UserLingua: ObservableObject {
         while var textBlock = textBlocks.first {
             var recordedStringFoundForTextBlock = false
             
-            for recordedString in recordedStrings where matches[recordedString] == nil {
+            for recordedString in recordedStrings {
                 var tokenized = recordedString.detectable
                 
                 //while the text block is found at the start of the token
