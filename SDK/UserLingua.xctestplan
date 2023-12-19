@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "8BF8CED1-9635-45AE-AC46-823A51072112",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "UserLinguaTests",
+        "name" : "UserLinguaTests"
+      }
+    }
+  ],
+  "version" : 1
+}

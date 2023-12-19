@@ -8,9 +8,9 @@
 import SwiftUI
 import UserLingua
 
+@UserLingua
 struct PaymentView: View {
     @StateObject var viewModel: PaymentViewModel = .init()
-    @ObservedObject private(set) var userLingua = UserLingua.shared
 
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()

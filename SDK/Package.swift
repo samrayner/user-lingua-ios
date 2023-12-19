@@ -2,11 +2,12 @@
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
+import CompilerPluginSupport
 
 let package = Package(
     name: "UserLingua",
     defaultLocalization: "en",
-    platforms: [.iOS(.v16)],
+    platforms: [.iOS(.v16), .macOS(.v10_15)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
@@ -16,6 +17,7 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
+        .package(url: "https://github.com/apple/swift-syntax", "509.0.0"..<"510.0.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -23,7 +25,8 @@ let package = Package(
         .target(
             name: "UserLingua",
             dependencies: [
-                "SystemAPIAliases"
+                "SystemAPIAliases",
+                "Macros"
             ],
             resources: [
                 .process("Resources/Assets.xcassets")
@@ -42,6 +45,21 @@ let package = Package(
         ),
         .testTarget(
             name: "UserLinguaTests",
-            dependencies: ["UserLingua"]),
+            dependencies: [
+                "UserLingua",
+                "Macros",
+                .product(
+                    name: "SwiftSyntaxMacrosTestSupport",
+                    package: "swift-syntax"
+                )
+            ]
+        ),
+        .macro(
+            name: "Macros",
+            dependencies: [
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
+            ]
+        )
     ]
 )
