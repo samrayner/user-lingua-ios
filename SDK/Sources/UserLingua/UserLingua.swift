@@ -620,7 +620,7 @@ extension String {
             return []
         }
         
-        while prefixIndex < prefixUTF16Chars.count {
+        while prefixIndex < prefixUTF16Chars.count && haystackIndex < haystackUTF16Chars.count {
             let foundChars = findNextCharacters()
             if foundChars.isEmpty {
                 errorCount += 1
