@@ -68,7 +68,12 @@ final public class UserLingua: ObservableObject {
         || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
     
-    private var _state: State = .disabled
+    private var _state: State = .disabled {
+        didSet {
+            stateDidChange()
+        }
+    }
+    
     package var state: State {
         get {
             guard !inPreviewsOrTests else { return .disabled }
@@ -77,7 +82,6 @@ final public class UserLingua: ObservableObject {
         set {
             guard !inPreviewsOrTests else { return }
             _state = newValue
-            refreshViews()
         }
     }
     
@@ -99,7 +103,40 @@ final public class UserLingua: ObservableObject {
         }
     }
     
-    func swizzleUIKit() {
+    private func stateDidChange() {
+        refreshViews()
+        
+        switch state {
+        case .disabled, .recordingStrings, .detectingStrings, .highlightingStrings:
+            stopObservingKeyboardHeight()
+        case .previewingSuggestions:
+            startObservingKeyboardHeight()
+        }
+    }
+    
+    private func startObservingKeyboardHeight() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    private func stopObservingKeyboardHeight() {
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc func keyboardWillShow(notification: Notification) {
+        guard let keyboardHeight = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height else {
+            return
+        }
+
+        window?.layer.transform = CATransform3DTranslate(CATransform3DIdentity, 0, -keyboardHeight, 0)
+    }
+
+    @objc func keyboardWillHide(notification: Notification) {
+        window?.layer.transform = CATransform3DTranslate(CATransform3DIdentity, 0, 0, 0)
+    }
+    
+    private func swizzleUIKit() {
         Bundle.swizzle()
         UILabel.swizzle()
         UIButton.swizzle()
