@@ -2,16 +2,10 @@ import Foundation
 import SystemAPIAliases
 
 extension String {
-    // Takes precedence over Foundation version due to
-    // UserLinguaCVarArg inheriting CVarArg, thus being
-    // more specific.
-    public init(
-        format: String,
-        locale: Locale?,
-        arguments: [UserLinguaCVarArg]
+    private init(
+        value: String,
+        format: String
     ) {
-        let value = SystemString.initFormatLocaleArguments(format, locale, arguments)
-        
         guard UserLingua.shared.state == .recordingStrings else {
             self = value
             return
@@ -31,14 +25,17 @@ extension String {
         self = value
     }
     
+    
     // Takes precedence over Foundation version due to
     // UserLinguaCVarArg inheriting CVarArg, thus being
     // more specific.
-    public static func localizedStringWithFormat(
-        _ format: String,
-        _ arguments: UserLinguaCVarArg...
-    ) -> Self {
-        self.init(format: format, locale: nil, arguments: arguments)
+    public init(
+        format: String,
+        locale: Locale?,
+        arguments: [UserLinguaCVarArg]
+    ) {
+        let value = SystemString.initFormatLocaleArguments(format, locale, arguments)
+        self.init(value: value, format: format)
     }
     
     // Takes precedence over Foundation version due to
@@ -48,7 +45,18 @@ extension String {
         format: String,
         arguments: [UserLinguaCVarArg]
     ) {
-        self.init(format: format, locale: nil, arguments: arguments)
+        let value = SystemString.initFormatArguments(format, arguments)
+        self.init(value: value, format: format)
+    }
+    
+    // Takes precedence over Foundation version due to
+    // UserLinguaCVarArg inheriting CVarArg, thus being
+    // more specific.
+    public static func localizedStringWithFormat(
+        _ format: String,
+        _ arguments: UserLinguaCVarArg...
+    ) -> Self {
+        self.init(format: format, arguments: arguments)
     }
     
     // Takes precedence over Foundation version due to
@@ -69,7 +77,34 @@ extension String {
         format: String,
         _ arguments: UserLinguaCVarArg...
     ) {
-        self.init(format: format, locale: nil, arguments: arguments)
+        self.init(format: format, arguments: arguments)
+    }
+    
+    private init(
+        value: String,
+        key: String,
+        bundle: Bundle?,
+        tableName: String?,
+        comment: String?
+    ) {
+        guard UserLingua.shared.state == .recordingStrings else {
+            self = value
+            return
+        }
+        
+        UserLingua.shared.db.record(
+            localizedString: LocalizedString(
+                value: value,
+                localization: Localization(
+                    key: key,
+                    bundle: bundle,
+                    tableName: tableName,
+                    comment: comment
+                )
+            )
+        )
+        
+        self = value
     }
     
     // Takes precedence over Foundation version due to comment
@@ -85,24 +120,13 @@ extension String {
     ) {
         let value = SystemString.initLocalizedDefaultValueOptionsTableBundleLocaleComment(key, defaultValue, options, table, bundle, locale, comment)
         
-        guard UserLingua.shared.state == .recordingStrings else {
-            self = value
-            return
-        }
-        
-        UserLingua.shared.db.record(
-            localizedString: LocalizedString(
-                value: value,
-                localization: Localization(
-                    key: key.description,
-                    bundle: bundle,
-                    tableName: table,
-                    comment: comment.description
-                )
-            )
+        self.init(
+            value: value,
+            key: key.description,
+            bundle: bundle,
+            tableName: table,
+            comment: comment.description
         )
-        
-        self = value
     }
     
     // Takes precedence over Foundation version due to comment
@@ -115,14 +139,14 @@ extension String {
         locale: Locale = .current,
         comment: StaticString = ""
     ) {
+        let value = SystemString.initLocalizedDefaultValueTableBundleLocaleComment(key, defaultValue, table, bundle, locale, comment)
+        
         self.init(
-            localized: key,
-            defaultValue: defaultValue,
-            options: .init(),
-            table: table,
+            value: value,
+            key: key.description,
             bundle: bundle,
-            locale: locale,
-            comment: comment
+            tableName: table,
+            comment: comment.description
         )
     }
     
@@ -138,26 +162,18 @@ extension String {
     ) {
         let value = SystemString.initLocalizedOptionsTableBundleLocaleComment(keyAndValue, options, table, bundle, locale, comment)
         
-        guard UserLingua.shared.state == .recordingStrings else {
+        guard let key = keyAndValue.key else {
             self = value
             return
         }
         
-        if let key = keyAndValue.key {
-            UserLingua.shared.db.record(
-                localizedString: LocalizedString(
-                    value: value,
-                    localization: Localization(
-                        key: key,
-                        bundle: bundle,
-                        tableName: table,
-                        comment: comment.description
-                    )
-                )
-            )
-        }
-        
-        self = value
+        self.init(
+            value: value,
+            key: key,
+            bundle: bundle,
+            tableName: table,
+            comment: comment.description
+        )
     }
     
     // Takes precedence over Foundation version due to comment
@@ -169,13 +185,19 @@ extension String {
         locale: Locale = .current,
         comment: StaticString = ""
     ) {
+        let value = SystemString.initLocalizedTableBundleLocaleComment(keyAndValue, table, bundle, locale, comment)
+        
+        guard let key = keyAndValue.key else {
+            self = value
+            return
+        }
+        
         self.init(
-            localized: keyAndValue,
-            options: .init(),
-            table: table,
+            value: value,
+            key: key,
             bundle: bundle,
-            locale: locale,
-            comment: comment
+            tableName: table,
+            comment: comment.description
         )
     }
 }
