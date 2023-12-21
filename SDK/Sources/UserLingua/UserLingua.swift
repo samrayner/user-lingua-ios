@@ -86,6 +86,7 @@ final public class UserLingua: ObservableObject {
     }
     
     var window: UIWindow? { UIApplication.shared.keyWindow }
+    var newWindow: UIWindow?
     
     init() {}
     
@@ -228,12 +229,12 @@ final public class UserLingua: ObservableObject {
     }
     
     private func displayHighlightedStrings() {
-        guard let window else { return }
-        let view = UIHostingController(rootView: HighlightsView()).view!
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.frame = UIScreen.main.bounds
-        view.backgroundColor = .clear
-        window.addSubview(view)
+        newWindow = UIWindow(windowScene: window!.windowScene!)
+        newWindow?.backgroundColor = .clear
+        newWindow?.rootViewController = UIHostingController(rootView: HighlightsView())
+        newWindow?.rootViewController?.view.backgroundColor = .clear
+        newWindow?.windowLevel = .statusBar
+        newWindow?.makeKeyAndVisible()
     }
     
     private func verbatim(text: Text) -> String? {
