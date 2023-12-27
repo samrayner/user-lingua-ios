@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cp "Git Hooks/pre-commit" .git/hooks
+
+~/.mint/bin/mint bootstrap

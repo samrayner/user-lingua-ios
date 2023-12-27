@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Format files changed this commit with SwiftFormat.
+# You may need to swap python3 for a path to python
+# such as ~/.pyenv/shims/python if you face issues
+# commiting with a GUI Git client like Fork or Tower
+# after installing a non-system version of python.
+python3 "Git Hooks/git-format-staged" -f "~/.mint/bin/mint run swiftformat stdin --stdinpath '{}' --quiet" "*.swift" > /dev/null

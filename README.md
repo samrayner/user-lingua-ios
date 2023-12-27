@@ -1,1 +1,1 @@
-# user-lingua
+Run `./post-clone` after cloning

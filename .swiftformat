@@ -1,0 +1,21 @@
+--commas inline
+--funcattributes prev-line
+--header "{file}"
+--ifdef no-indent
+--importgrouping testable-last
+--indent 4
+--maxwidth 140
+--self init-only
+--semicolons never
+--typeattributes prev-line
+--varattributes same-line
+--wrapcollections before-first
+--wrapparameters before-first
+--asynccapturing expectAsync
+--throwcapturing expectAsync
+--selfrequired expectAsync,expectFirst
+--extensionacl on-declarations
+
+--enable blankLineAfterImports,blankLinesBetweenImports
+
+--disable andOperator,redundantType,wrapMultilineStatementBraces,preferKeyPath,trailingClosures
