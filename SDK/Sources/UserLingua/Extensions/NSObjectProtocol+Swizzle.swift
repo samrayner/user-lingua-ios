@@ -1,10 +1,12 @@
+// NSObjectProtocol+Swizzle.swift
+
 import UIKit
 
 extension NSObjectProtocol {
     static func swizzle(original originalSelector: Selector, with newSelector: Selector) {
         guard let originalMethod = class_getInstanceMethod(self, originalSelector) else { return }
         guard let newMethod = class_getInstanceMethod(self, newSelector) else { return }
-        
+
         if class_addMethod(self, originalSelector, method_getImplementation(newMethod), method_getTypeEncoding(newMethod)) {
             class_replaceMethod(self, newSelector, method_getImplementation(originalMethod), method_getTypeEncoding(originalMethod))
         } else {
@@ -21,7 +23,7 @@ final class ObjectAssociation<T: NSObjectProtocol> {
     }
 
     public subscript(index: NSObjectProtocol) -> T? {
-        get { return objc_getAssociatedObject(index, Unmanaged.passUnretained(self).toOpaque()) as! T? }
+        get { objc_getAssociatedObject(index, Unmanaged.passUnretained(self).toOpaque()) as! T? }
         set { objc_setAssociatedObject(index, Unmanaged.passUnretained(self).toOpaque(), newValue, policy) }
     }
 }

@@ -1,14 +1,16 @@
+// DetectionRedactionView.swift
+
 import SwiftUI
 
 extension RedactionReasons {
-    fileprivate static let userLingua = RedactionReasons(rawValue: 1 << 6745) //arbitrary to avoid collisions
+    fileprivate static let userLingua = RedactionReasons(rawValue: 1 << 6745) // arbitrary to avoid collisions
 }
 
 private struct DetectionRedactionView<Content: View>: View {
     @Environment(\.redactionReasons) var redactionReasons
     let content: Content
     let redact: Bool
-    
+
     var body: some View {
         switch UserLingua.shared.state {
         case .detectingStrings:

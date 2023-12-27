@@ -1,3 +1,5 @@
+// UserLinguaDisableable.swift
+
 import UIKit
 
 public protocol UserLinguaDisableable {

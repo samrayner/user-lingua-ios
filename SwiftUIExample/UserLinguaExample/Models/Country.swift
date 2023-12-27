@@ -1,9 +1,4 @@
-//
-//  Country.swift
-//  PenguinPay
-//
-//  Created by Sam Rayner on 19/03/2021.
-//
+// Country.swift
 
 import Foundation
 import SwiftUI

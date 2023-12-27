@@ -1,9 +1,11 @@
+// HighlightsView.swift
+
 import SwiftUI
 
 struct HighlightsView: View {
     let userLingua = UserLingua.shared
     @State var selectedRecordedString: RecordedString?
-    
+
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             if let selectedRecordedString {
@@ -16,7 +18,7 @@ struct HighlightsView: View {
                             .compositingGroup()
                             .luminanceToAlpha()
                     }
-                
+
                 highlights(color: .white.opacity(0.001)) { recordedString in
                     UserLingua.shared.state = .previewingSuggestions
                     selectedRecordedString = recordedString
@@ -25,7 +27,7 @@ struct HighlightsView: View {
         }
         .ignoresSafeArea()
     }
-    
+
     func highlights(color: Color, onTapGesture: @escaping (RecordedString) -> Void = { _ in }) -> some View {
         ZStack(alignment: .topLeading) {
             ForEach(Array(userLingua.highlightedStrings.keys), id: \.self) { recordedString in

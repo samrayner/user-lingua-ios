@@ -1,3 +1,5 @@
+// View+UserLingua.swift
+
 import SwiftUI
 
 extension View {
@@ -33,7 +35,7 @@ extension View {
     public func UL(_ key: LocalizedStringKey) -> String {
         UserLingua.shared.processLocalizedStringKey(key)
     }
-    
+
     /// Allows suggestions for the given string using UserLingua without localization.
     ///
     ///     UL(verbatim: "pencil") // Displays the string "pencil" in any locale.
@@ -45,7 +47,7 @@ extension View {
     public func UL(verbatim string: String) -> String {
         UserLingua.shared.processString(string)
     }
-    
+
     /// Allows suggestions for the given string using UserLingua without localization.
     ///
     ///     Text(someString) // Displays the contents of `someString` without localization.
@@ -59,7 +61,8 @@ extension View {
     /// strings, but if you do, you can first create a localized string key from
     /// the value, and pass that in. Using a key as input
     /// triggers `UL(LocalizedStringKey)` instead.
-    @_disfavoredOverload public func UL<S: StringProtocol>(_ string: S) -> String {
+    @_disfavoredOverload
+    public func UL(_ string: some StringProtocol) -> String {
         UL(verbatim: String(string))
     }
 }

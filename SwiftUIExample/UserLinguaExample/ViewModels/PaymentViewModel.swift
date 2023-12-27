@@ -1,12 +1,7 @@
-//
-//  PaymentViewModel.swift
-//  PenguinPay
-//
-//  Created by Sam Rayner on 19/03/2021.
-//
+// PaymentViewModel.swift
 
-import Foundation
 import Combine
+import Foundation
 
 final class PaymentViewModel: ObservableObject {
     @Published var firstName: String = "" {
@@ -44,7 +39,7 @@ final class PaymentViewModel: ObservableObject {
 
     var allFieldsValid: Bool {
         [firstName, lastName, binaryAmountIn, phoneNumber].allSatisfy { !$0.isEmpty }
-        && phoneNumber.count == country.validPhoneNumberLength
+            && phoneNumber.count == country.validPhoneNumberLength
     }
 
     private static func defaultRequestPublisher(url: URL) -> AnyPublisher<Data, URLError> {
@@ -59,19 +54,19 @@ final class PaymentViewModel: ObservableObject {
 
         $binaryAmountIn
             .merge(
-                //recalculate if exchange rates change
+                // recalculate if exchange rates change
                 with: $exchangeRates.map { _ in self.binaryAmountIn }
             )
             .compactMap { binary in
-                //convert binary String to Int
+                // convert binary String to Int
                 Int(binary, radix: 2)
             }
             .compactMap { [weak self] amountIn in
-                //echange using exchange rate if it exists
+                // echange using exchange rate if it exists
                 self?.exchangeAmount(amountIn)
             }
             .compactMap { amountOut in
-                //convert Int back to binary String
+                // convert Int back to binary String
                 String(amountOut, radix: 2)
             }
             .assign(to: &$binaryAmountOut)
@@ -126,9 +121,9 @@ final class PaymentViewModel: ObservableObject {
 
     private func formatBinary(_ value: String) -> String {
         value
-            //limit length so integer value < Int.max
+            // limit length so integer value < Int.max
             .prefix(18)
-            //remove all characters that aren't 0 or 1
+            // remove all characters that aren't 0 or 1
             .replacingOccurrences(
                 of: #"[^01]"#,
                 with: "",
@@ -137,14 +132,14 @@ final class PaymentViewModel: ObservableObject {
     }
 
     private func formatPhoneNumber(_ value: String) -> String {
-        //remove all non-digit characters
+        // remove all non-digit characters
         var phoneNumber = value.replacingOccurrences(
             of: #"[^\d]"#,
             with: "",
             options: .regularExpression
         )
 
-        //chunk and limit length based on country phone number format
+        // chunk and limit length based on country phone number format
         return country.phoneSuffixPartLengths.compactMap { length in
             let part = phoneNumber.prefix(length)
             guard !part.isEmpty else { return nil }

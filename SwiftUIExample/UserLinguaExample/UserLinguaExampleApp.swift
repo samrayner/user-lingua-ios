@@ -1,9 +1,4 @@
-//
-//  UserLinguaExampleApp.swift
-//  UserLinguaExample
-//
-//  Created by Sam Rayner on 06/04/2023.
-//
+// UserLinguaExampleApp.swift
 
 import SwiftUI
 import UserLingua
@@ -12,7 +7,7 @@ import UserLinguaTextOptIn
 @main
 struct UserLinguaExampleApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    
+
     var body: some Scene {
         WindowGroup {
             NavigationView {
@@ -23,7 +18,7 @@ struct UserLinguaExampleApp: App {
 }
 
 final class AppDelegate: UIResponder, UIApplicationDelegate {
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+    func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         let userLinguaConfig = UserLingua.Configuration(
         )
         UserLingua.shared.enable(config: userLinguaConfig)

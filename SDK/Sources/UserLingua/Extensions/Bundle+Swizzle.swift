@@ -1,3 +1,5 @@
+// Bundle+Swizzle.swift
+
 import UIKit
 
 extension Bundle {
@@ -7,10 +9,11 @@ extension Bundle {
             with: #selector(unswizzledLocalizedString(forKey:value:table:))
         )
     }
-    
+
     // After swizzling, unswizzled... will refer to the original implementation
     // and the original method name will call the below implementation.
-    @objc func unswizzledLocalizedString(forKey key: String, value: String?, table: String?) -> String {
+    @objc
+    func unswizzledLocalizedString(forKey key: String, value: String?, table: String?) -> String {
         let value = unswizzledLocalizedString(forKey: key, value: value, table: table)
         UserLingua.shared.db.record(
             localizedString: LocalizedString(

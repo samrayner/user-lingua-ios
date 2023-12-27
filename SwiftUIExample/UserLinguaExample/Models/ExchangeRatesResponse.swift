@@ -1,9 +1,4 @@
-//
-//  ExchangeResponse.swift
-//  PenguinPay
-//
-//  Created by Sam Rayner on 19/03/2021.
-//
+// ExchangeRatesResponse.swift
 
 import Foundation
 

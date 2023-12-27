@@ -1,3 +1,5 @@
+// UIButton+Swizzle.swift
+
 import UIKit
 
 extension UIButton {
@@ -9,67 +11,68 @@ extension UIButton {
     private static let unprocessedFocusedTitleAssociation = ObjectAssociation<NSString>()
     private static let unprocessedApplicationTitleAssociation = ObjectAssociation<NSString>()
     private static let unprocessedReservedTitleAssociation = ObjectAssociation<NSString>()
-    
+
     var notificationObservation: NSObjectProtocol? {
-        get { return Self.notificationObservationAssociation[self] }
+        get { Self.notificationObservationAssociation[self] }
         set { Self.notificationObservationAssociation[self] = newValue }
     }
-    
+
     var unprocessedNormalTitle: String? {
-        get { return Self.unprocessedNormalTitleAssociation[self] as String? }
+        get { Self.unprocessedNormalTitleAssociation[self] as String? }
         set { Self.unprocessedNormalTitleAssociation[self] = newValue as NSString? }
     }
-    
+
     var unprocessedHighlightedTitle: String? {
-        get { return Self.unprocessedHighlightedTitleAssociation[self] as String? }
+        get { Self.unprocessedHighlightedTitleAssociation[self] as String? }
         set { Self.unprocessedHighlightedTitleAssociation[self] = newValue as NSString? }
     }
-    
+
     var unprocessedDisabledTitle: String? {
-        get { return Self.unprocessedDisabledTitleAssociation[self] as String? }
+        get { Self.unprocessedDisabledTitleAssociation[self] as String? }
         set { Self.unprocessedDisabledTitleAssociation[self] = newValue as NSString? }
     }
-    
+
     var unprocessedSelectedTitle: String? {
-        get { return Self.unprocessedSelectedTitleAssociation[self] as String? }
+        get { Self.unprocessedSelectedTitleAssociation[self] as String? }
         set { Self.unprocessedSelectedTitleAssociation[self] = newValue as NSString? }
     }
-    
+
     var unprocessedFocusedTitle: String? {
-        get { return Self.unprocessedFocusedTitleAssociation[self] as String? }
+        get { Self.unprocessedFocusedTitleAssociation[self] as String? }
         set { Self.unprocessedFocusedTitleAssociation[self] = newValue as NSString? }
     }
-    
+
     var unprocessedApplicationTitle: String? {
-        get { return Self.unprocessedApplicationTitleAssociation[self] as String? }
+        get { Self.unprocessedApplicationTitleAssociation[self] as String? }
         set { Self.unprocessedApplicationTitleAssociation[self] = newValue as NSString? }
     }
-    
+
     var unprocessedReservedTitle: String? {
-        get { return Self.unprocessedReservedTitleAssociation[self] as String? }
+        get { Self.unprocessedReservedTitleAssociation[self] as String? }
         set { Self.unprocessedReservedTitleAssociation[self] = newValue as NSString? }
     }
-    
+
     static func swizzle() {
         swizzle(
             original: #selector(didMoveToSuperview),
             with: #selector(unswizzledDidMoveToSuperview)
         )
-        
+
         swizzle(
             original: #selector(setTitle),
             with: #selector(unswizzledSetTitle)
         )
     }
-    
+
     // After swizzling, unswizzled... will refer to the original implementation
     // and the original method name will call the below implementation.
-    @objc func unswizzledSetTitle(_ title: String?, for state: State) {
+    @objc
+    func unswizzledSetTitle(_ title: String?, for state: State) {
         guard !UserLingua.isDisabled(for: self) else {
             unswizzledSetTitle(title, for: state)
             return
         }
-        
+
         switch state {
         case .normal:
             unprocessedNormalTitle = title
@@ -86,18 +89,19 @@ extension UIButton {
         case .reserved:
             unprocessedReservedTitle = title
         default:
-            unswizzledSetTitle(title, for: state) //confusingly, calls the unswizzled method
+            unswizzledSetTitle(title, for: state) // confusingly, calls the unswizzled method
             return
         }
-        
+
         let processedString = title.map { UserLingua.shared.processString($0) }
         unswizzledSetTitle(processedString, for: state)
     }
-    
-    @objc func unswizzledDidMoveToSuperview() {
+
+    @objc
+    func unswizzledDidMoveToSuperview() {
         unswizzledDidMoveToSuperview()
         guard notificationObservation == nil else { return }
-        
+
         notificationObservation = NotificationCenter.default.addObserver(
             forName: .userLinguaObjectDidChange,
             object: nil,
@@ -106,10 +110,11 @@ extension UIButton {
             self?.userLinguaDidChange(notification)
         }
     }
-    
-    @objc func userLinguaDidChange(_ notification: Notification) {
-        //call the swizzled setTitle to re-evaluate the current title based on UserLingua's state
-        
+
+    @objc
+    func userLinguaDidChange(_: Notification) {
+        // call the swizzled setTitle to re-evaluate the current title based on UserLingua's state
+
         let unprocessedTitle: String? = switch state {
         case .normal:
             unprocessedNormalTitle
@@ -128,7 +133,7 @@ extension UIButton {
         default:
             nil
         }
-        
+
         if unprocessedTitle != nil {
             setTitle(unprocessedTitle, for: state)
         }

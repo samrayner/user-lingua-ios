@@ -1,3 +1,5 @@
+// NotificationName+UserLingua.swift
+
 import Foundation
 
 extension Notification.Name {

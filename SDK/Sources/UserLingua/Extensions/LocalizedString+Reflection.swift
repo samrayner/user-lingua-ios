@@ -1,10 +1,12 @@
+// LocalizedString+Reflection.swift
+
 import SwiftUI
 
 extension LocalizedStringResource {
     package var bundle: Bundle? {
         let bundleURL = Reflection.value("_bundleURL", on: self) as? URL
-        let localeIdentifier = self.locale.identifier
-        
+        let localeIdentifier = locale.identifier
+
         return (bundleURL.flatMap(Bundle.init(url:)) ?? .main).path(
             forResource: localeIdentifier.replacingOccurrences(of: "_", with: "-"),
             ofType: "lproj"

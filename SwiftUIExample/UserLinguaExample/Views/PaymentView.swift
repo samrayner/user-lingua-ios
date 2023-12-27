@@ -1,9 +1,4 @@
-//
-//  ContentView.swift
-//  PenguinPay
-//
-//  Created by Sam Rayner on 19/03/2021.
-//
+// PaymentView.swift
 
 import SwiftUI
 import UserLingua
@@ -112,7 +107,9 @@ struct PaymentView: View {
         .alert(isPresented: $viewModel.showingConfirmation) {
             Alert(
                 title: Text("payment.confirmation.title"),
-                message: Text("payment.confirmation.message \(viewModel.country.currencyCode) \(viewModel.binaryAmountOut) \(viewModel.firstName) \(viewModel.lastName)"),
+                message: Text(
+                    "payment.confirmation.message \(viewModel.country.currencyCode) \(viewModel.binaryAmountOut) \(viewModel.firstName) \(viewModel.lastName)"
+                ),
                 dismissButton: .default(Text("global.ok"))
             )
         }

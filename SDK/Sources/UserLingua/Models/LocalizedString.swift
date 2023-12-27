@@ -1,3 +1,5 @@
+// LocalizedString.swift
+
 import SwiftUI
 
 package struct LocalizedString: Hashable {
@@ -20,7 +22,7 @@ extension LocalizedString {
         comment: StaticString? = nil
     ) {
         let value = (bundle ?? .main).unswizzledLocalizedString(forKey: key, value: key, table: tableName)
-        
+
         self.init(
             value: value,
             localization: .init(

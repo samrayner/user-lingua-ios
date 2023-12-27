@@ -1,3 +1,5 @@
+// UserLinguaMacro.swift
+
 import SwiftCompilerPlugin
 import SwiftSyntax
 import SwiftSyntaxBuilder
@@ -5,14 +7,14 @@ import SwiftSyntaxMacros
 
 public enum UserLinguaMacro: MemberMacro {
     public static func expansion(
-        of node: AttributeSyntax,
+        of _: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
-        in context: some MacroExpansionContext
+        in _: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         guard declaration is StructDeclSyntax else {
             throw CustomError.message("@UserLingua can only be applied to structs.")
         }
-        
+
         return [
             "@ObservedObject private (set) var userLinguaObservedObject = UserLingua.shared"
         ]
@@ -21,11 +23,11 @@ public enum UserLinguaMacro: MemberMacro {
 
 private enum CustomError: Error, CustomStringConvertible {
     case message(String)
-    
+
     var description: String {
         switch self {
-        case .message(let text):
-            return text
+        case let .message(text):
+            text
         }
     }
 }
@@ -33,6 +35,6 @@ private enum CustomError: Error, CustomStringConvertible {
 @main
 struct UserLinguaPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
-        UserLinguaMacro.self,
+        UserLinguaMacro.self
     ]
 }

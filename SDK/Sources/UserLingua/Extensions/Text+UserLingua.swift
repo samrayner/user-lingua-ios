@@ -1,3 +1,5 @@
+// Text+UserLingua.swift
+
 import SwiftUI
 
 // Text conforms to this in the UserLinguaTextOptIn module.

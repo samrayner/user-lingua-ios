@@ -1,3 +1,5 @@
+// String+Recording.swift
+
 import Foundation
 import SystemAPIAliases
 
@@ -10,7 +12,7 @@ extension String {
             self = value
             return
         }
-        
+
         if let localization = UserLingua.shared.db.recordedString(for: format)?.localization {
             UserLingua.shared.db.record(
                 localizedString: .init(
@@ -21,11 +23,10 @@ extension String {
         } else {
             UserLingua.shared.db.record(string: value)
         }
-        
+
         self = value
     }
-    
-    
+
     // Takes precedence over Foundation version due to
     // UserLinguaCVarArg inheriting CVarArg, thus being
     // more specific.
@@ -37,7 +38,7 @@ extension String {
         let value = SystemString.initFormatLocaleArguments(format, locale, arguments)
         self.init(value: value, format: format)
     }
-    
+
     // Takes precedence over Foundation version due to
     // UserLinguaCVarArg inheriting CVarArg, thus being
     // more specific.
@@ -48,7 +49,7 @@ extension String {
         let value = SystemString.initFormatArguments(format, arguments)
         self.init(value: value, format: format)
     }
-    
+
     // Takes precedence over Foundation version due to
     // UserLinguaCVarArg inheriting CVarArg, thus being
     // more specific.
@@ -58,7 +59,7 @@ extension String {
     ) -> Self {
         self.init(format: format, arguments: arguments)
     }
-    
+
     // Takes precedence over Foundation version due to
     // UserLinguaCVarArg inheriting CVarArg, thus being
     // more specific.
@@ -69,7 +70,7 @@ extension String {
     ) {
         self.init(format: format, locale: locale, arguments: arguments)
     }
-    
+
     // Takes precedence over Foundation version due to
     // UserLinguaCVarArg inheriting CVarArg, thus being
     // more specific.
@@ -79,7 +80,7 @@ extension String {
     ) {
         self.init(format: format, arguments: arguments)
     }
-    
+
     private init(
         value: String,
         key: String,
@@ -91,7 +92,7 @@ extension String {
             self = value
             return
         }
-        
+
         UserLingua.shared.db.record(
             localizedString: LocalizedString(
                 value: value,
@@ -103,10 +104,10 @@ extension String {
                 )
             )
         )
-        
+
         self = value
     }
-    
+
     // Takes precedence over Foundation version due to comment
     // argument having a non-optional type.
     public init(
@@ -118,8 +119,16 @@ extension String {
         locale: Locale = .current,
         comment: StaticString = ""
     ) {
-        let value = SystemString.initLocalizedDefaultValueOptionsTableBundleLocaleComment(key, defaultValue, options, table, bundle, locale, comment)
-        
+        let value = SystemString.initLocalizedDefaultValueOptionsTableBundleLocaleComment(
+            key,
+            defaultValue,
+            options,
+            table,
+            bundle,
+            locale,
+            comment
+        )
+
         self.init(
             value: value,
             key: key.description,
@@ -128,7 +137,7 @@ extension String {
             comment: comment.description
         )
     }
-    
+
     // Takes precedence over Foundation version due to comment
     // argument having a non-optional type.
     public init(
@@ -140,7 +149,7 @@ extension String {
         comment: StaticString = ""
     ) {
         let value = SystemString.initLocalizedDefaultValueTableBundleLocaleComment(key, defaultValue, table, bundle, locale, comment)
-        
+
         self.init(
             value: value,
             key: key.description,
@@ -149,7 +158,7 @@ extension String {
             comment: comment.description
         )
     }
-    
+
     // Takes precedence over Foundation version due to comment
     // argument having a non-optional type.
     public init(
@@ -161,12 +170,12 @@ extension String {
         comment: StaticString = ""
     ) {
         let value = SystemString.initLocalizedOptionsTableBundleLocaleComment(keyAndValue, options, table, bundle, locale, comment)
-        
+
         guard let key = keyAndValue.key else {
             self = value
             return
         }
-        
+
         self.init(
             value: value,
             key: key,
@@ -175,7 +184,7 @@ extension String {
             comment: comment.description
         )
     }
-    
+
     // Takes precedence over Foundation version due to comment
     // argument having a non-optional type.
     public init(
@@ -186,12 +195,12 @@ extension String {
         comment: StaticString = ""
     ) {
         let value = SystemString.initLocalizedTableBundleLocaleComment(keyAndValue, table, bundle, locale, comment)
-        
+
         guard let key = keyAndValue.key else {
             self = value
             return
         }
-        
+
         self.init(
             value: value,
             key: key,
