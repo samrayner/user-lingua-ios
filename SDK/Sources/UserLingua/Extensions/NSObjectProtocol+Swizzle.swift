@@ -18,12 +18,15 @@ extension NSObjectProtocol {
 final class ObjectAssociation<T: NSObjectProtocol> {
     private let policy: objc_AssociationPolicy
 
-    public init(policy: objc_AssociationPolicy = .OBJC_ASSOCIATION_RETAIN_NONATOMIC) {
+    init(policy: objc_AssociationPolicy = .OBJC_ASSOCIATION_RETAIN_NONATOMIC) {
         self.policy = policy
     }
 
-    public subscript(index: NSObjectProtocol) -> T? {
-        get { objc_getAssociatedObject(index, Unmanaged.passUnretained(self).toOpaque()) as! T? }
+    subscript(index: NSObjectProtocol) -> T? {
+        get {
+            objc_getAssociatedObject(index, Unmanaged.passUnretained(self).toOpaque())
+                .flatMap { $0 as? T }
+        }
         set { objc_setAssociatedObject(index, Unmanaged.passUnretained(self).toOpaque(), newValue, policy) }
     }
 }

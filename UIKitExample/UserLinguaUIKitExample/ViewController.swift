@@ -10,14 +10,14 @@ class ULDisabledButton: UIButton, UserLinguaDisableable {
 class ULDisabledStackView: UIStackView, UserLinguaDisabled {}
 
 class ViewController: UIViewController {
-    @IBOutlet private(set) var localizedLabel: UILabel!
-    @IBOutlet private(set) var unlocalizedLabel: UILabel!
-    @IBOutlet private(set) var button: ULDisabledButton!
-    @IBOutlet private(set) var disabledStackView: ULDisabledStackView!
-    @IBOutlet private(set) var disabledLabel: UILabel!
-    @IBOutlet private(set) var segmentedControl: UISegmentedControl!
-    @IBOutlet private(set) var textView: UITextView!
-    @IBOutlet private(set) var textField: UITextField!
+    @IBOutlet private var localizedLabel: UILabel!
+    @IBOutlet private var unlocalizedLabel: UILabel!
+    @IBOutlet private var button: ULDisabledButton!
+    @IBOutlet private var disabledStackView: ULDisabledStackView!
+    @IBOutlet private var disabledLabel: UILabel!
+    @IBOutlet private var segmentedControl: UISegmentedControl!
+    @IBOutlet private var textView: UITextView!
+    @IBOutlet private var textField: UITextField!
 
     override func viewDidLoad() {
         super.viewDidLoad()

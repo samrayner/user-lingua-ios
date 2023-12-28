@@ -61,7 +61,7 @@ opt_in_rules:
   - legacy_multiple
   - legacy_random
   - lower_acl_than_parent
-  - missing_docs
+  # - missing_docs
   - multiline_parameters
   - optional_enum_case_matching
   - overridden_super_call

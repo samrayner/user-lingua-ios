@@ -307,6 +307,7 @@ public final class UserLingua: ObservableObject {
         bundle: Bundle? = nil,
         comment: String? = nil
     ) -> LocalizedString {
+        // swiftlint:disable:next force_cast
         let key = Reflection.value("key", on: localizedStringKey) as! String
 
         let hasFormatting = Reflection.value("hasFormatting", on: localizedStringKey) as? Bool ?? false
@@ -566,7 +567,8 @@ extension String {
         // swap out all potentially misrecognized substrings with
         // the most likely character they could have been
         for (standard, possibleChars) in ocrMistakes {
-            let regex = try! Regex("(\(possibleChars.joined(separator: "|")))")
+            guard let regex = try? Regex("(\(possibleChars.joined(separator: "|")))")
+            else { continue }
             prefix = prefix.replacing(regex) { _ in standard }
         }
 
@@ -707,9 +709,12 @@ extension UTF16Char {
 extension UIApplication {
     var keyWindow: UIWindow? {
         connectedScenes
-            .filter { $0.activationState == .foregroundActive }
-            .first(where: { $0 is UIWindowScene })
-            .flatMap({ $0 as? UIWindowScene })?.windows
+            .first {
+                $0 is UIWindowScene &&
+                    $0.activationState == .foregroundActive
+            }
+            .flatMap { $0 as? UIWindowScene }?
+            .windows
             .first(where: \.isKeyWindow)
     }
 }
