@@ -82,6 +82,7 @@
 			buildConfigurationList = E868B9AE2B1F32010007B0C7 /* Build configuration list for PBXNativeTarget "UserLinguaUIKitExample" */;
 			buildPhases = (
 				E868B9962B1F31FF0007B0C7 /* Sources */,
+				E89B3AB22B3D5B26000441ED /* SwiftLint */,
 				E868B9972B1F31FF0007B0C7 /* Frameworks */,
 				E868B9982B1F31FF0007B0C7 /* Resources */,
 			);
@@ -145,6 +146,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		E89B3AB22B3D5B26000441ED /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"${ENABLE_PREVIEWS}\" = \"YES\" ]; then\n  echo \"Previews enabled, exiting to prevent 'preview paused'.\"\n  exit 0;\nfi\n\nlint() {\n    ~/.mint/bin/mint run swiftlint --config ../.swiftlint.yml\n}\n\nlint\ncd ../SDK\nlint\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		E868B9962B1F31FF0007B0C7 /* Sources */ = {
@@ -306,6 +329,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = C4Y4L9QV9Z;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = UserLinguaUIKitExample/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -334,6 +358,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = C4Y4L9QV9Z;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = UserLinguaUIKitExample/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

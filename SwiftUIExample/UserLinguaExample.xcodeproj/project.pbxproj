@@ -127,6 +127,7 @@
 			buildConfigurationList = E892E80B29DEE9440015D5FA /* Build configuration list for PBXNativeTarget "UserLinguaExample" */;
 			buildPhases = (
 				E892E7F829DEE9430015D5FA /* Sources */,
+				E89B3AB12B3D5ADF000441ED /* SwiftLint */,
 				E892E7F929DEE9430015D5FA /* Frameworks */,
 				E892E7FA29DEE9430015D5FA /* Resources */,
 			);
@@ -190,6 +191,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		E89B3AB12B3D5ADF000441ED /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"${ENABLE_PREVIEWS}\" = \"YES\" ]; then\n  echo \"Previews enabled, exiting to prevent 'preview paused'.\"\n  exit 0;\nfi\n\nlint() {\n    ~/.mint/bin/mint run swiftlint --config ../.swiftlint.yml\n}\n\nlint\ncd ../SDK\nlint\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		E892E7F829DEE9430015D5FA /* Sources */ = {
@@ -350,6 +373,7 @@
 				DEVELOPMENT_TEAM = C4Y4L9QV9Z;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -390,6 +414,7 @@
 				DEVELOPMENT_TEAM = C4Y4L9QV9Z;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
