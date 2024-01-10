@@ -12,7 +12,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "UserLingua",
-            targets: ["UserLingua", "UserLinguaTextOptIn", "SystemAPIAliases"]
+            targets: ["UserLingua", "SystemAPIAliases"]
         )
     ],
     dependencies: [
@@ -30,13 +30,6 @@ let package = Package(
             ],
             resources: [
                 .process("Resources/Assets.xcassets")
-            ]
-        ),
-        .target(
-            name: "UserLinguaTextOptIn",
-            dependencies: [
-                "UserLingua",
-                "SystemAPIAliases"
             ]
         ),
         .target(

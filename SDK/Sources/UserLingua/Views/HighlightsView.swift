@@ -4,7 +4,7 @@ import SwiftUI
 
 struct HighlightsView: View {
     let userLingua = UserLingua.shared
-    @State var selectedRecordedString: RecordedString?
+    @State private var selectedRecordedString: RecordedString?
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {

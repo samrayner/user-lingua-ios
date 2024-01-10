@@ -49,11 +49,14 @@ public final class UserLingua: ObservableObject {
 
     public struct Configuration {
         public var locale: Locale
+        public var automaticallyOptInTextViews: Bool
 
         public init(
-            locale: Locale = .current
+            locale: Locale = .current,
+            automaticallyOptInTextViews: Bool = true
         ) {
             self.locale = locale
+            self.automaticallyOptInTextViews = automaticallyOptInTextViews
         }
     }
 
@@ -157,7 +160,7 @@ public final class UserLingua: ObservableObject {
         UIButton.swizzle()
     }
 
-    package func processLocalizedStringKey(_ key: LocalizedStringKey) -> String {
+    func processLocalizedStringKey(_ key: LocalizedStringKey) -> String {
         let localizedString = localizedString(localizedStringKey: key)
 
         if state == .recordingStrings {
@@ -167,7 +170,7 @@ public final class UserLingua: ObservableObject {
         return displayString(for: localizedString)
     }
 
-    package func processString(_ string: String) -> String {
+    func processString(_ string: String) -> String {
         if state == .recordingStrings {
             db.record(string: string)
         }
@@ -175,25 +178,7 @@ public final class UserLingua: ObservableObject {
         return displayString(for: string)
     }
 
-    package func processText(_ originalText: Text) -> Text {
-        guard state != .disabled else { return originalText }
-
-        if let localizedString = localizedString(text: originalText) {
-            if state == .recordingStrings {
-                db.record(localizedString: localizedString)
-            }
-
-            return Text(verbatim: displayString(for: localizedString))
-        }
-
-        if let verbatim = verbatim(text: originalText) {
-            return Text(verbatim: processString(verbatim))
-        }
-
-        return originalText
-    }
-
-    package func displayString(for localizedString: LocalizedString) -> String {
+    func displayString(for localizedString: LocalizedString) -> String {
         switch state {
         case .disabled, .highlightingStrings, .recordingStrings:
             return localizedString.value
@@ -301,7 +286,7 @@ public final class UserLingua: ObservableObject {
         )
     }
 
-    package func localizedString(
+    func localizedString(
         localizedStringKey: LocalizedStringKey,
         tableName: String? = nil,
         bundle: Bundle? = nil,
@@ -485,7 +470,7 @@ package final class Database {
         stringRecord[string, default: []].append(RecordedString(string, localization: nil))
     }
 
-    package func record(localizedString: LocalizedString) {
+    func record(localizedString: LocalizedString) {
         guard localizedString.localization.bundle?.bundleURL.lastPathComponent != "UIKitCore.framework"
         else { return }
 
@@ -559,6 +544,59 @@ extension String {
         return ocrMistakesUTF16
     }
 
+    private func findNextCharacters(
+        prefixUTF16Chars: [UTF16Char],
+        prefixIndex: inout Int,
+        haystackUTF16Chars: [UTF16Char],
+        haystackIndex: inout Int
+    ) -> [UTF16Char] {
+        let prefixUTF16Char = prefixUTF16Chars[prefixIndex]
+        let haystackUTF16Char = haystackUTF16Chars[haystackIndex]
+
+        // return whitespace and punctuation characters as found
+        // but don't advance the prefix cursor as they have already
+        // been removed from the prefix
+        guard let haystackChar = haystackUTF16Char.unicodeScalar,
+              !CharacterSet.whitespaces
+              .union(.punctuationCharacters)
+              .subtracting(.init(punctuationCharactersHandledInOcrMistakes))
+              .contains(haystackChar)
+        else {
+            return [haystackUTF16Char]
+        }
+
+        // from now on we want to advance to the next prefix
+        // character after matching this one, even if we don't find
+        // a match in haystack
+        defer {
+            prefixIndex += 1
+        }
+
+        // if the characters match (case insensitive) move on to next character
+        if Character(haystackChar).lowercased() == prefixUTF16Char.unicodeScalar.map(Character.init)?.lowercased() {
+            return [haystackUTF16Char]
+        }
+
+        // if there are potentially other characters that the prefix character
+        // could have been recognized as, loop through them looking for a match
+        if let alternatives = ocrMistakesUTF16[prefixUTF16Char] {
+            // loop for multi-character alternatives, e.g. nn representing m
+            for alternativeChars in alternatives {
+                // get the number of characters from the current point in
+                // haystack equal to the length of the alternative string
+                let rangeEnd = haystackIndex + alternativeChars.count - 1
+                guard rangeEnd < haystackUTF16Chars.count else { continue }
+                let haystackPrefixChars = Array(haystackUTF16Chars[haystackIndex ... rangeEnd])
+
+                if haystackPrefixChars == alternativeChars {
+                    return haystackPrefixChars
+                }
+            }
+        }
+
+        return []
+    }
+
     func fuzzyFindPrefix(_ prefix: String, errorLimit: Double = 0.1) -> String? {
         let haystack = self
 
@@ -587,56 +625,14 @@ extension String {
         var haystackIndex = 0
         var foundPrefix: [UTF16Char] = []
 
-        func findNextCharacters() -> [UTF16Char] {
-            let prefixUTF16Char = prefixUTF16Chars[prefixIndex]
-            let haystackUTF16Char = haystackUTF16Chars[haystackIndex]
-
-            // return whitespace and punctuation characters as found
-            // but don't advance the prefix cursor as they have already
-            // been removed from the prefix
-            guard let haystackChar = haystackUTF16Char.unicodeScalar,
-                  !CharacterSet.whitespaces
-                  .union(.punctuationCharacters)
-                  .subtracting(.init(punctuationCharactersHandledInOcrMistakes))
-                  .contains(haystackChar)
-            else {
-                return [haystackUTF16Char]
-            }
-
-            // from now on we want to advance to the next prefix
-            // character after matching this one, even if we don't find
-            // a match in haystack
-            defer {
-                prefixIndex += 1
-            }
-
-            // if the characters match (case insensitive) move on to next character
-            if Character(haystackChar).lowercased() == prefixUTF16Char.unicodeScalar.map(Character.init)?.lowercased() {
-                return [haystackUTF16Char]
-            }
-
-            // if there are potentially other characters that the prefix character
-            // could have been recognized as, loop through them looking for a match
-            if let alternatives = ocrMistakesUTF16[prefixUTF16Char] {
-                // loop for multi-character alternatives, e.g. nn representing m
-                for alternativeChars in alternatives {
-                    // get the number of characters from the current point in
-                    // haystack equal to the length of the alternative string
-                    let rangeEnd = haystackIndex + alternativeChars.count - 1
-                    guard rangeEnd < haystackUTF16Chars.count else { continue }
-                    let haystackPrefixChars = Array(haystackUTF16Chars[haystackIndex ... rangeEnd])
-
-                    if haystackPrefixChars == alternativeChars {
-                        return haystackPrefixChars
-                    }
-                }
-            }
-
-            return []
-        }
-
         while prefixIndex < prefixUTF16Chars.count && haystackIndex < haystackUTF16Chars.count {
-            let foundChars = findNextCharacters()
+            let foundChars = findNextCharacters(
+                prefixUTF16Chars: prefixUTF16Chars,
+                prefixIndex: &prefixIndex,
+                haystackUTF16Chars: haystackUTF16Chars,
+                haystackIndex: &haystackIndex
+            )
+
             if foundChars.isEmpty {
                 errorCount += 1
                 if errorCount > errorLimit {
