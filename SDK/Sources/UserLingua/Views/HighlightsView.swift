@@ -5,13 +5,15 @@ import SwiftUI
 struct HighlightsView: View {
     let userLingua = UserLingua.shared
     @State private var selectedRecordedString: RecordedString?
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             if let selectedRecordedString {
                 SuggestionView(recordedString: selectedRecordedString)
             } else {
-                Color.black.opacity(0.1)
+                (colorScheme == .dark ? Color.white : Color.black)
+                    .opacity(0.1)
                     .mask {
                         highlights(color: .black)
                             .background(.white)

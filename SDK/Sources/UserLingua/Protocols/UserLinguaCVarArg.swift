@@ -15,7 +15,6 @@ extension Bool: UserLinguaCVarArg {}
 extension Dictionary: UserLinguaCVarArg where Key: Hashable {}
 extension Double: UserLinguaCVarArg {}
 extension Float: UserLinguaCVarArg {}
-extension Float80: UserLinguaCVarArg {}
 extension Int: UserLinguaCVarArg {}
 extension Int16: UserLinguaCVarArg {}
 extension Int32: UserLinguaCVarArg {}

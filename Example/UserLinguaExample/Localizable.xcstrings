@@ -1,9 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "text_field_text" : {
-
-    },
     "ul_button_title_normal" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -76,6 +73,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "TabBar1Title"
+          }
+        }
+      }
+    },
+    "ul_tab_bar_2_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TabBar2Title"
           }
         }
       }

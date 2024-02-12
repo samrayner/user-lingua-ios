@@ -28,7 +28,6 @@ class ViewController: UIViewController {
         segmentedControl.setTitle(String(localized: "ul_segmented_control_1_title"), forSegmentAt: 0)
         segmentedControl.setTitle(String(localized: "ul_segmented_control_2_title"), forSegmentAt: 1)
         textView.text = String(localized: "ul_text_view_text")
-        // textField.text = NSLocalizedString("text_field_text", comment: "")
         textField.placeholder = String(localized: LocalizedStringResource("ul_text_field_placeholder"))
         tabBarItem.title = String(localized: "ul_tab_bar_1_title")
         disabledLabel.text = String(localized: "ul_disabled_label_text")

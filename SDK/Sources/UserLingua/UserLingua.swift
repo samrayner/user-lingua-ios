@@ -112,12 +112,12 @@ public final class UserLingua: ObservableObject {
     private func stateDidChange() {
         refreshViews()
 
-        switch state {
-        case .disabled, .recordingStrings, .detectingStrings, .highlightingStrings:
-            stopObservingKeyboardHeight()
-        case .previewingSuggestions:
-            startObservingKeyboardHeight()
-        }
+//        switch state {
+//        case .disabled, .recordingStrings, .detectingStrings, .highlightingStrings:
+//            stopObservingKeyboardHeight()
+//        case .previewingSuggestions:
+//            startObservingKeyboardHeight()
+//        }
     }
 
     private func startObservingKeyboardHeight() {
