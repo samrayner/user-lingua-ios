@@ -1,4 +1,4 @@
-// Text+UserLingua.swift
+// Text+InitOverloads.swift
 
 import SwiftUI
 import SystemAPIAliases
@@ -6,7 +6,7 @@ import SystemAPIAliases
 extension Text {
     private init(_ localizedString: LocalizedString) {
         if UserLingua.shared.state == .recordingStrings {
-            UserLingua.shared.db.record(localizedString: localizedString)
+            UserLingua.shared.stringsRepository.record(localizedString: localizedString)
         }
         let displayString = UserLingua.shared.displayString(for: localizedString)
         self = SystemText.initVerbatim(displayString)

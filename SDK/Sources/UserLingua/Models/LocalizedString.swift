@@ -2,12 +2,12 @@
 
 import SwiftUI
 
-package struct LocalizedString: Hashable {
+struct LocalizedString: Hashable {
     var value: String
     var localization: Localization
 }
 
-package struct Localization: Hashable {
+struct Localization: Hashable {
     var key: String
     var bundle: Bundle?
     var tableName: String?
@@ -15,7 +15,7 @@ package struct Localization: Hashable {
 }
 
 extension LocalizedString {
-    package init(
+    init(
         _ key: String,
         tableName: String? = nil,
         bundle: Bundle? = nil,

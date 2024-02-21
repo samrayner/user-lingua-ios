@@ -7,9 +7,9 @@ class SuggestionViewModel: ObservableObject {
 
     @Published var suggestion: String {
         didSet {
-            UserLingua.shared.db.suggestions[recordedString.original, default: []] = [
+            UserLingua.shared.suggestionsRepository.submitSuggestion(
                 Suggestion(recordedString: recordedString, newValue: suggestion, locale: .current)
-            ]
+            )
             UserLingua.shared.refreshViews()
         }
     }

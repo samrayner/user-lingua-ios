@@ -1,4 +1,4 @@
-// String+Recording.swift
+// String+InitOverloads.swift
 
 import Foundation
 import SystemAPIAliases
@@ -13,15 +13,15 @@ extension String {
             return
         }
 
-        if let localization = UserLingua.shared.db.recordedString(for: format)?.localization {
-            UserLingua.shared.db.record(
+        if let localization = UserLingua.shared.stringsRepository.recordedString(original: format)?.localization {
+            UserLingua.shared.stringsRepository.record(
                 localizedString: .init(
                     value: value,
                     localization: localization
                 )
             )
         } else {
-            UserLingua.shared.db.record(string: value)
+            UserLingua.shared.stringsRepository.record(string: value)
         }
 
         self = value
@@ -93,7 +93,7 @@ extension String {
             return
         }
 
-        UserLingua.shared.db.record(
+        UserLingua.shared.stringsRepository.record(
             localizedString: LocalizedString(
                 value: value,
                 localization: Localization(

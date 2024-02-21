@@ -3,7 +3,7 @@
 import SwiftUI
 
 extension RedactionReasons {
-    fileprivate static let userLingua = RedactionReasons(rawValue: 1 << 6745) // arbitrary to avoid collisions
+    fileprivate static let userLingua = RedactionReasons(rawValue: 1 << 170_819) // arbitrary to avoid collisions
 }
 
 private struct DetectionRedactionView<Content: View>: View {

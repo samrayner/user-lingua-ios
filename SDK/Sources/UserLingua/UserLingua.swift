@@ -5,41 +5,8 @@ import SystemAPIAliases
 import UIKit
 import Vision
 
-struct RecordedString: Hashable {
-    let original: String
-    let detectable: String
-    let localization: Localization?
-    let recordedAt: Date = .now
-
-    init(_ original: String, localization: Localization?) {
-        self.original = original
-        self.detectable = original.tokenized()
-        self.localization = localization
-    }
-
-    var localizedString: LocalizedString? {
-        localization.map { .init(value: original, localization: $0) }
-    }
-}
-
-extension RecordedString: Identifiable {
-    var id: String {
-        original
-    }
-}
-
-struct Suggestion {
-    var recordedString: RecordedString
-    var newValue: String
-    var locale: Locale
-    var createdAt: Date = .now
-    var modifiedAt: Date = .now
-    var isSubmitted = false
-    var screenshot: UIImage?
-}
-
 public final class UserLingua: ObservableObject {
-    package enum State: Equatable {
+    enum State: Equatable {
         case disabled
         case recordingStrings
         case detectingStrings
@@ -64,7 +31,9 @@ public final class UserLingua: ObservableObject {
 
     private var shakeObservation: NSObjectProtocol?
 
-    package let db = Database()
+    let stringsRepository: StringsRepositoryProtocol
+    let suggestionsRepository: SuggestionsRepositoryProtocol
+
     public var config = Configuration()
     var highlightedStrings: [RecordedString: [CGRect]] = [:]
 
@@ -79,7 +48,7 @@ public final class UserLingua: ObservableObject {
         }
     }
 
-    package var state: State {
+    var state: State {
         get {
             guard !inPreviewsOrTests else { return .disabled }
             return _state
@@ -93,7 +62,13 @@ public final class UserLingua: ObservableObject {
     var window: UIWindow? { UIApplication.shared.keyWindow }
     var newWindow: UIWindow?
 
-    init() {}
+    init(
+        stringsRepository: StringsRepositoryProtocol = StringsRepository(),
+        suggestionsRepository: SuggestionsRepositoryProtocol = SuggestionsRepository()
+    ) {
+        self.stringsRepository = stringsRepository
+        self.suggestionsRepository = suggestionsRepository
+    }
 
     func refreshViews() {
         objectWillChange.send()
@@ -164,7 +139,7 @@ public final class UserLingua: ObservableObject {
         let localizedString = localizedString(localizedStringKey: key)
 
         if state == .recordingStrings {
-            db.record(localizedString: localizedString)
+            stringsRepository.record(localizedString: localizedString)
         }
 
         return displayString(for: localizedString)
@@ -172,7 +147,7 @@ public final class UserLingua: ObservableObject {
 
     func processString(_ string: String) -> String {
         if state == .recordingStrings {
-            db.record(string: string)
+            stringsRepository.record(string: string)
         }
 
         return displayString(for: string)
@@ -183,12 +158,12 @@ public final class UserLingua: ObservableObject {
         case .disabled, .highlightingStrings, .recordingStrings:
             return localizedString.value
         case .detectingStrings:
-            guard let recordedString = db.recordedString(for: localizedString) else {
+            guard let recordedString = stringsRepository.recordedString(localizedOriginal: localizedString) else {
                 return localizedString.value
             }
             return recordedString.detectable
         case .previewingSuggestions:
-            guard let suggestion = db.suggestion(for: localizedString) else {
+            guard let suggestion = suggestionsRepository.suggestion(localizedOriginal: localizedString, locale: config.locale) else {
                 return localizedString.value
             }
             return suggestion.newValue
@@ -200,12 +175,12 @@ public final class UserLingua: ObservableObject {
         case .disabled, .highlightingStrings, .recordingStrings:
             return string
         case .detectingStrings:
-            guard let recordedString = db.recordedString(for: string) else {
+            guard let recordedString = stringsRepository.recordedString(original: string) else {
                 return string
             }
             return recordedString.detectable
         case .previewingSuggestions:
-            guard let suggestion = db.suggestion(for: string) else {
+            guard let suggestion = suggestionsRepository.suggestion(original: string, locale: config.locale) else {
                 return string
             }
             return suggestion.newValue
@@ -413,9 +388,7 @@ public final class UserLingua: ObservableObject {
     private func matchRecognizedTextToKnownStrings(
         _ recognizedText: [VNRecognizedText]
     ) -> [RecordedString: [VNRecognizedText]] {
-        let recordedStrings = db.stringRecord
-            .flatMap { $0.value }
-            .sorted { $0.recordedAt > $1.recordedAt }
+        let recordedStrings = stringsRepository.recordedStrings()
 
         var textBlocks = recognizedText
         var matches: [RecordedString: [VNRecognizedText]] = [:]
@@ -458,61 +431,6 @@ public final class UserLingua: ObservableObject {
         }
 
         return matches
-    }
-}
-
-package final class Database {
-    var stringRecord: [String: [RecordedString]] = [:]
-
-    var suggestions: [String: [Suggestion]] = [:]
-
-    func record(string: String) {
-        stringRecord[string, default: []].append(RecordedString(string, localization: nil))
-    }
-
-    func record(localizedString: LocalizedString) {
-        guard localizedString.localization.bundle?.bundleURL.lastPathComponent != "UIKitCore.framework"
-        else { return }
-
-        let recordedString = RecordedString(
-            localizedString.value,
-            localization: localizedString.localization
-        )
-
-        stringRecord[localizedString.value, default: []].append(recordedString)
-    }
-
-    private func suggestions(for oldValue: String) -> [Suggestion] {
-        suggestions[oldValue, default: []].filter {
-            $0.locale == .current
-        }
-    }
-
-    func suggestion(for localizedString: LocalizedString) -> Suggestion? {
-        let matchingValues = suggestions(for: localizedString.value)
-        return matchingValues.last {
-            $0.recordedString.localizedString == localizedString
-        } ?? matchingValues.last
-    }
-
-    func suggestion(for oldValue: String) -> Suggestion? {
-        suggestions(for: oldValue).first
-    }
-
-    private func recordedStrings(for original: String) -> [RecordedString] {
-        stringRecord[original] ?? []
-    }
-
-    func recordedString(for localizedString: LocalizedString) -> RecordedString? {
-        let matchingValues = recordedStrings(for: localizedString.value)
-        return matchingValues.last {
-            $0.localization == localizedString.localization
-        } ?? matchingValues.last
-    }
-
-    func recordedString(for original: String) -> RecordedString? {
-        let recorded = recordedStrings(for: original)
-        return recorded.last { $0.localization != nil } ?? recorded.last
     }
 }
 
