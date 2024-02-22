@@ -16,7 +16,7 @@ public enum UserLinguaMacro: MemberMacro {
         }
 
         return [
-            "@ObservedObject private (set) var userLinguaObservedObject = UserLingua.shared"
+            "@ObservedObject private (set) var _userLinguaObservedObject = UserLingua.shared"
         ]
     }
 }
