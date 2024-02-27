@@ -4,11 +4,11 @@ import SwiftUI
 import SystemAPIAliases
 
 extension Text {
-    private init(_ localizedString: LocalizedString) {
+    private init(_ formattedString: FormattedString) {
         if UserLingua.shared.state == .recordingStrings {
-            UserLingua.shared.stringsRepository.record(localizedString: localizedString)
+            UserLingua.shared.stringsRepository.record(formatted: formattedString)
         }
-        let displayString = UserLingua.shared.displayString(for: localizedString)
+        let displayString = UserLingua.shared.displayString(for: formattedString)
         self = SystemText.initVerbatim(displayString)
     }
 
@@ -29,7 +29,7 @@ extension Text {
             return
         }
 
-        let localizedString = UserLingua.shared.localizedString(
+        let localizedString = UserLingua.shared.stringExtractor.formattedString(
             localizedStringKey: key,
             tableName: tableName,
             bundle: bundle,
@@ -154,11 +154,13 @@ extension Text {
         }
 
         self.init(
-            LocalizedString(
-                localizedStringResource.key,
-                tableName: localizedStringResource.table,
-                bundle: localizedStringResource.bundle,
-                comment: nil
+            FormattedString(
+                LocalizedString(
+                    localizedStringResource.key,
+                    tableName: localizedStringResource.table,
+                    bundle: localizedStringResource.bundle,
+                    comment: nil
+                )
             )
         )
     }

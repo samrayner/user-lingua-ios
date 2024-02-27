@@ -2,25 +2,21 @@
 
 import Foundation
 
-struct RecordedString: Hashable {
-    let original: String
+struct RecordedString {
+    let formatted: FormattedString
     let detectable: String
-    let localization: Localization?
     let recordedAt: Date = .now
 
-    init(_ original: String, localization: Localization?) {
-        self.original = original
-        self.detectable = original.tokenized()
-        self.localization = localization
+    init(_ formatted: FormattedString) {
+        self.formatted = formatted
+        self.detectable = formatted.value.tokenized()
     }
 
-    var localizedString: LocalizedString? {
-        localization.map { .init(value: original, localization: $0) }
+    var localization: Localization? {
+        formatted.localization
     }
-}
 
-extension RecordedString: Identifiable {
-    var id: String {
-        original
+    var value: String {
+        formatted.value
     }
 }

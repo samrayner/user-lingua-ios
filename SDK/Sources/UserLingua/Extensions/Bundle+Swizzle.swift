@@ -16,7 +16,7 @@ extension Bundle {
     func unswizzledLocalizedString(forKey key: String, value: String?, table: String?) -> String {
         let value = unswizzledLocalizedString(forKey: key, value: value, table: table)
         UserLingua.shared.stringsRepository.record(
-            localizedString: LocalizedString(
+            localized: LocalizedString(
                 value: value,
                 localization: Localization(key: key, bundle: self, tableName: table, comment: nil)
             )

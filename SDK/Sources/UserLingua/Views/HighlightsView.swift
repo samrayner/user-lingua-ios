@@ -32,12 +32,12 @@ struct HighlightsView: View {
 
     func highlights(color: Color, onTapGesture: @escaping (RecordedString) -> Void = { _ in }) -> some View {
         ZStack(alignment: .topLeading) {
-            ForEach(Array(userLingua.highlightedStrings.keys), id: \.self) { recordedString in
-                ForEach(userLingua.highlightedStrings[recordedString, default: []]) { rect in
+            ForEach(userLingua.highlightedStrings, id: \.0.detectable) { recordedString, textBlocks in
+                ForEach(textBlocks, id: \.string) { textBlock in
                     color
                         .cornerRadius(5)
-                        .frame(width: rect.width + 20, height: rect.height + 20)
-                        .position(x: rect.midX, y: UIScreen.main.bounds.height - rect.midY)
+                        .frame(width: textBlock.boundingBox.width + 20, height: textBlock.boundingBox.height + 20)
+                        .position(x: textBlock.boundingBox.midX, y: UIScreen.main.bounds.height - textBlock.boundingBox.midY)
                         .onTapGesture {
                             onTapGesture(recordedString)
                         }

@@ -16,7 +16,7 @@ class SuggestionViewModel: ObservableObject {
 
     init(recordedString: RecordedString) {
         self.recordedString = recordedString
-        self.suggestion = recordedString.original
+        self.suggestion = recordedString.formatted.value
     }
 }
 

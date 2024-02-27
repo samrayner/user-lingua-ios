@@ -6,23 +6,21 @@ import SystemAPIAliases
 extension String {
     private init(
         value: String,
-        format: String
+        format: String,
+        arguments: [CVarArg]
     ) {
         guard UserLingua.shared.state == .recordingStrings else {
             self = value
             return
         }
 
-        if let localization = UserLingua.shared.stringsRepository.recordedString(original: format)?.localization {
-            UserLingua.shared.stringsRepository.record(
-                localizedString: .init(
-                    value: value,
-                    localization: localization
-                )
+        UserLingua.shared.stringsRepository.record(
+            formatted: .init(
+                value: value,
+                format: .init(format),
+                arguments: arguments.map { .cVarArg($0) }
             )
-        } else {
-            UserLingua.shared.stringsRepository.record(string: value)
-        }
+        )
 
         self = value
     }
@@ -36,7 +34,7 @@ extension String {
         arguments: [UserLinguaCVarArg]
     ) {
         let value = SystemString.initFormatLocaleArguments(format, locale, arguments)
-        self.init(value: value, format: format)
+        self.init(value: value, format: format, arguments: arguments)
     }
 
     // Takes precedence over Foundation version due to
@@ -47,7 +45,7 @@ extension String {
         arguments: [UserLinguaCVarArg]
     ) {
         let value = SystemString.initFormatArguments(format, arguments)
-        self.init(value: value, format: format)
+        self.init(value: value, format: format, arguments: arguments)
     }
 
     // Takes precedence over Foundation version due to
@@ -94,7 +92,7 @@ extension String {
         }
 
         UserLingua.shared.stringsRepository.record(
-            localizedString: LocalizedString(
+            localized: LocalizedString(
                 value: value,
                 localization: Localization(
                     key: key,

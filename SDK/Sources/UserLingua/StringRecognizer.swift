@@ -1,23 +1,81 @@
-// RecognizedTextIdentifier.swift
+// StringRecognizer.swift
 
 import Foundation
 import Spyable
+import UIKit
+import Vision
 
 @Spyable
-protocol RecognizedTextIdentifierProtocol {
-    func match(
-        recognizedText: [RecognizedText],
-        against recordedStrings: [RecordedString]
-    ) -> [RecordedString: [RecognizedText]]
+protocol StringRecognizerProtocol {
+    typealias RecognizedString = (recordedString: RecordedString, textBlocks: [RecognizedText])
+
+    func recognizeStrings(in image: UIImage) async throws -> [RecognizedString]
 }
 
-struct RecognizedTextIdentifier: RecognizedTextIdentifierProtocol {
-    func match(
-        recognizedText: [RecognizedText],
-        against recordedStrings: [RecordedString]
-    ) -> [RecordedString: [RecognizedText]] {
+struct StringRecognizer: StringRecognizerProtocol {
+    enum Error: Swift.Error {
+        case invalidImage
+        case recognitionRequestFailed(Swift.Error)
+    }
+
+    let stringsRepository: StringsRepositoryProtocol
+
+    init(stringsRepository: StringsRepositoryProtocol) {
+        self.stringsRepository = stringsRepository
+    }
+
+    func recognizeStrings(in image: UIImage) async throws -> [RecognizedString] {
+        try await identifyRecognizedText(recognizeText(in: image))
+    }
+
+    private func recognizeText(in image: UIImage) async throws -> [RecognizedText] {
+        guard let cgImage = image.cgImage else {
+            throw Error.invalidImage
+        }
+
+        let requestHandler = VNImageRequestHandler(cgImage: cgImage)
+
+        return try await withCheckedThrowingContinuation { continuation in
+            let request = VNRecognizeTextRequest { request, error in
+                if let error {
+                    continuation.resume(throwing: Error.recognitionRequestFailed(error))
+                    return
+                }
+
+                guard let observations = request.results as? [VNRecognizedTextObservation]
+                else {
+                    continuation.resume(returning: [])
+                    return
+                }
+
+                let recognizedText = observations
+                    .compactMap { observation in
+                        observation.topCandidates(1).first
+                    }
+                    .map(RecognizedText.init)
+
+                continuation.resume(returning: recognizedText)
+            }
+
+            request.recognitionLevel = .fast
+            request.automaticallyDetectsLanguage = false
+            request.usesLanguageCorrection = false
+
+            let minimumTextPixelHeight: Double = 6
+            request.minimumTextHeight = Float(minimumTextPixelHeight / image.size.height)
+
+            do {
+                try requestHandler.perform([request])
+            } catch {
+                continuation.resume(throwing: Error.recognitionRequestFailed(error))
+            }
+        }
+    }
+
+    func identifyRecognizedText(_ recognizedText: [RecognizedText]) -> [RecognizedString] {
+        let recordedStrings = stringsRepository.recordedStrings()
         var textBlocks = recognizedText
-        var matches: [RecordedString: [RecognizedText]] = [:]
+        var recognizedStrings: [RecognizedString] = []
 
         // loop recognized text blocks
         while var textBlock = textBlocks.first {
@@ -25,6 +83,13 @@ struct RecognizedTextIdentifier: RecognizedTextIdentifierProtocol {
 
             for recordedString in recordedStrings {
                 var tokenized = recordedString.detectable
+                var recognizedString: RecognizedString = (recordedString, [])
+
+                defer {
+                    if !recognizedString.textBlocks.isEmpty {
+                        recognizedStrings.append(recognizedString)
+                    }
+                }
 
                 // while the text block is found at the start of the token
                 while let foundPrefix = tokenized.fuzzyFindPrefix(textBlock.string) {
@@ -37,7 +102,7 @@ struct RecognizedTextIdentifier: RecognizedTextIdentifierProtocol {
 
                     // assign the text block to the token it was found in
                     // and remove it from the text blocks we're looking for
-                    matches[recordedString, default: []].append(textBlock)
+                    recognizedString.textBlocks.append(textBlock)
 
                     textBlocks.removeFirst()
 
@@ -45,7 +110,7 @@ struct RecognizedTextIdentifier: RecognizedTextIdentifierProtocol {
                         textBlock = nextTextBlock
                     } else {
                         // we've processed all text blocks, so we're done
-                        return matches
+                        return recognizedStrings
                     }
                 }
             }
@@ -56,7 +121,7 @@ struct RecognizedTextIdentifier: RecognizedTextIdentifierProtocol {
             }
         }
 
-        return matches
+        return recognizedStrings
     }
 }
 
@@ -235,5 +300,21 @@ extension String {
 extension UTF16Char {
     var unicodeScalar: Unicode.Scalar? {
         Unicode.Scalar(UInt32(self))
+    }
+}
+
+extension RecognizedText {
+    private static func rectForTextBlock(_ textBlock: VNRecognizedText) -> CGRect {
+        let stringRange = textBlock.string.startIndex ..< textBlock.string.endIndex
+        let box = try? textBlock.boundingBox(for: stringRange)
+        let boundingBox = box?.boundingBox ?? .zero
+        return VNImageRectForNormalizedRect(boundingBox, Int(UIScreen.main.bounds.width), Int(UIScreen.main.bounds.height))
+    }
+
+    init(_ vnRecognizedText: VNRecognizedText) {
+        self = .init(
+            string: vnRecognizedText.string,
+            boundingBox: Self.rectForTextBlock(vnRecognizedText)
+        )
     }
 }
