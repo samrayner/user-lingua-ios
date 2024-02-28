@@ -20,3 +20,13 @@ struct RecordedString {
         formatted.value
     }
 }
+
+extension RecordedString {
+    init(_ localizedString: LocalizedString) {
+        self.init(FormattedString(localizedString))
+    }
+
+    init(_ string: String) {
+        self.init(FormattedString(string))
+    }
+}

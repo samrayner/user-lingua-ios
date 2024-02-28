@@ -14,32 +14,55 @@ protocol StringsRepositoryProtocol {
 }
 
 final class StringsRepository: StringsRepositoryProtocol {
-    private var stringRecord: [String: [RecordedString]] = [:]
+    private var stringRecord: [String: [RecordedString]]
 
-    init() {}
+    init(stringRecord: [String: [RecordedString]] = [:]) {
+        self.stringRecord = stringRecord
+    }
 
     func record(formatted formattedString: FormattedString) {
-        for argument in formattedString.arguments {
-            switch argument {
+        var formattedString = formattedString
+
+        for index in 0 ..< formattedString.arguments.count {
+            switch formattedString.arguments[index] {
             case let .formattedString(formattedString):
-                record(formatted: formattedString)
-            case .cVarArg:
-                break // don't record
+                // all formatted string arguments should
+                // already have been recorded at this point
+                // except maybe Text arguments inside a
+                // LocalizedStringKey?
+                break // record(formatted: formattedString)
+            case let .cVarArg(cVarArg):
+                // if we've recorded a localization or format of the
+                // argument then we want to embed that information in
+                // the parent string record. It would be good to have
+                // a more reliable match than just a string lookup though
+                // as this could apply an unrelated localization for a common
+                // phrase
+                if let recorded = (cVarArg as? String).flatMap(recordedString(string:)) {
+                    formattedString.arguments[index] = .formattedString(recorded.formatted)
+                }
             }
         }
 
-        // TODO:
-        // if we find an existing record of the same string
-        // which is localized and has argument placeholders
-        // but no arguments then populate the arguments -
-        // this updates localized records with formatting because
-        // formatting always comes after localization of the format
-        // let old = stringRecord[formattedString.value]?.first {
+        // if we find an existing record of the same string format
+        // which has a number of unpopulated placeholders
+        // equal to the number of arguments we are recording
+        // then we can be reasonably confident we are recording
+        // the formatting of that previously recorded string
+        // so we can augment this record with the same localization
+        // and delete the unformatted record
+        if let unformattedRecordIndex = stringRecord[formattedString.value]?.lastIndex(where: {
+            $0.value == formattedString.format.value &&
+                $0.value.argumentPlaceholderCount == formattedString.arguments.count
+        }) {
+            let unformattedRecord = stringRecord[formattedString.value]?[unformattedRecordIndex]
+            formattedString.format.localization = unformattedRecord?.localization
+            stringRecord[formattedString.value]?.remove(at: unformattedRecordIndex)
+        }
 
-        // }
-
-        stringRecord[formattedString.value, default: []]
-            .append(RecordedString(formattedString))
+        stringRecord[formattedString.value, default: []].append(
+            RecordedString(formattedString)
+        )
     }
 
     func record(format: StringFormat) {
@@ -50,18 +73,18 @@ final class StringsRepository: StringsRepositoryProtocol {
         }
     }
 
-    func record(string: String) {
-        stringRecord[string, default: []].append(
-            RecordedString(FormattedString(StringFormat(string)))
-        )
-    }
-
     func record(localized localizedString: LocalizedString) {
         guard localizedString.localization.bundle?.bundleURL.lastPathComponent != "UIKitCore.framework"
         else { return }
 
         stringRecord[localizedString.value, default: []].append(
-            RecordedString(FormattedString(StringFormat(localizedString)))
+            RecordedString(localizedString)
+        )
+    }
+
+    func record(string: String) {
+        stringRecord[string, default: []].append(
+            RecordedString(string)
         )
     }
 
@@ -101,7 +124,7 @@ final class StringsRepository: StringsRepositoryProtocol {
 }
 
 extension String {
-    private var argumentPlaceholderCount: Int {
-        matches(of: #/[^%]%/#).count
+    fileprivate var argumentPlaceholderCount: Int {
+        matches(of: #/[^%]%[^%]/#).count
     }
 }

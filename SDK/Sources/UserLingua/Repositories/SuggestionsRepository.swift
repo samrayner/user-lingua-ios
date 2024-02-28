@@ -12,9 +12,11 @@ protocol SuggestionsRepositoryProtocol {
 }
 
 final class SuggestionsRepository: SuggestionsRepositoryProtocol {
-    private var suggestions: [String: [Locale: Suggestion]] = [:]
+    private var suggestions: [String: [Locale: Suggestion]]
 
-    init() {}
+    init(suggestions: [String: [Locale: Suggestion]] = [:]) {
+        self.suggestions = suggestions
+    }
 
     func submitSuggestion(_ suggestion: Suggestion) {
         suggestions[suggestion.recordedString.formatted.value, default: [:]][suggestion.locale] = suggestion
