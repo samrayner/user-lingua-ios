@@ -22,7 +22,7 @@ struct HighlightsView: View {
                     }
 
                 highlights(color: .white.opacity(0.001)) { recordedString in
-                    UserLingua.shared.state = .previewingSuggestions
+                    UserLingua.shared.state = .previewingSuggestions(locale: .current)
                     selectedRecordedString = recordedString
                 }
             }

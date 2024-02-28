@@ -25,7 +25,7 @@ final class StringsRepository: StringsRepositoryProtocol {
 
         for index in 0 ..< formattedString.arguments.count {
             switch formattedString.arguments[index] {
-            case let .formattedString(formattedString):
+            case .formattedString:
                 // all formatted string arguments should
                 // already have been recorded at this point
                 // except maybe Text arguments inside a

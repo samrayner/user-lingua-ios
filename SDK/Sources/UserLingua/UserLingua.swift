@@ -10,7 +10,16 @@ public final class UserLingua: ObservableObject {
         case recordingStrings
         case detectingStrings
         case highlightingStrings
-        case previewingSuggestions
+        case previewingSuggestions(locale: Locale)
+
+        var locale: Locale {
+            switch self {
+            case .disabled, .recordingStrings, .detectingStrings, .highlightingStrings:
+                .current
+            case let .previewingSuggestions(locale):
+                locale
+            }
+        }
     }
 
     public struct Configuration {
@@ -116,6 +125,21 @@ public final class UserLingua: ObservableObject {
         stringProcessor.displayString(for: formattedString, state: state)
     }
 
+    func formattedString(
+        localizedStringKey: LocalizedStringKey,
+        tableName: String?,
+        bundle: Bundle?,
+        comment: String?
+    ) -> FormattedString {
+        stringExtractor.formattedString(
+            localizedStringKey: localizedStringKey,
+            locale: state.locale,
+            tableName: tableName,
+            bundle: bundle,
+            comment: comment
+        )
+    }
+
     func didShake() {
         state = .detectingStrings
         // TODO: delay 0.1 seconds for SwiftUI to re-render
@@ -142,14 +166,6 @@ public final class UserLingua: ObservableObject {
         let screenshot = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return screenshot
-    }
-}
-
-extension FormatStyle {
-    func string(for input: Any, locale: Locale) -> String? {
-        guard let input = input as? FormatInput else { return nil }
-        let formatter = self.locale(locale)
-        return formatter.format(input) as? String
     }
 }
 

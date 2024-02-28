@@ -20,10 +20,6 @@ struct StringRecognizer: StringRecognizerProtocol {
 
     let stringsRepository: StringsRepositoryProtocol
 
-    init(stringsRepository: StringsRepositoryProtocol) {
-        self.stringsRepository = stringsRepository
-    }
-
     func recognizeStrings(in image: UIImage) async throws -> [RecognizedString] {
         try await identifyRecognizedText(recognizeText(in: image))
     }

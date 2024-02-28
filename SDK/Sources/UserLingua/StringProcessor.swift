@@ -15,18 +15,14 @@ struct StringProcessor: StringProcessorProtocol {
     let stringsRepository: StringsRepositoryProtocol
     let suggestionsRepository: SuggestionsRepositoryProtocol
 
-    init(
-        stringExtractor: StringExtractorProtocol,
-        stringsRepository: StringsRepositoryProtocol,
-        suggestionsRepository: SuggestionsRepositoryProtocol
-    ) {
-        self.stringExtractor = stringExtractor
-        self.stringsRepository = stringsRepository
-        self.suggestionsRepository = suggestionsRepository
-    }
-
     func processLocalizedStringKey(_ key: LocalizedStringKey, state: UserLingua.State) -> String {
-        let formattedString = stringExtractor.formattedString(localizedStringKey: key)
+        let formattedString = stringExtractor.formattedString(
+            localizedStringKey: key,
+            locale: state.locale,
+            tableName: nil,
+            bundle: nil,
+            comment: nil
+        )
 
         if state == .recordingStrings {
             stringsRepository.record(formatted: formattedString)
@@ -53,8 +49,7 @@ struct StringProcessor: StringProcessorProtocol {
             }
             return recordedString.detectable
         case .previewingSuggestions:
-            // TODO: set locale from State not .current
-            guard let suggestion = suggestionsRepository.suggestion(formatted: formattedString, locale: .current) else {
+            guard let suggestion = suggestionsRepository.suggestion(formatted: formattedString, locale: state.locale) else {
                 return formattedString.value
             }
             return suggestion.newValue

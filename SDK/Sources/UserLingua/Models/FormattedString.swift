@@ -8,22 +8,25 @@ struct FormattedString {
     var arguments: [FormattedStringArgument]
 
     func value(
-        substitution substitute: (StringFormat) -> String = { $0.value }
+        locale: Locale,
+        substitution substitute: (StringFormat, Locale) -> String = { format, _ in
+            format.value
+        }
     ) -> String {
-        if arguments.isEmpty { return substitute(format) }
+        if arguments.isEmpty { return substitute(format, locale) }
 
         var formattedArguments: [CVarArg] = []
 
         for argument in arguments {
             switch argument {
             case let .formattedString(formattedString):
-                formattedArguments.append(formattedString.value())
+                formattedArguments.append(formattedString.value(locale: locale))
             case let .cVarArg(cVarArg):
                 formattedArguments.append(cVarArg)
             }
         }
 
-        return String(format: substitute(format), arguments: formattedArguments)
+        return String(format: substitute(format, locale), arguments: formattedArguments)
     }
 }
 
@@ -34,13 +37,13 @@ extension FormattedString {
         self.arguments = []
     }
 
-    init(format: StringFormat, arguments: [FormattedStringArgument]) {
+    init(format: StringFormat, locale: Locale, arguments: [FormattedStringArgument]) {
         self.init(
             value: "",
             format: format,
             arguments: arguments
         )
-        self.value = value()
+        self.value = value(locale: locale)
     }
 
     init(_ string: String) {

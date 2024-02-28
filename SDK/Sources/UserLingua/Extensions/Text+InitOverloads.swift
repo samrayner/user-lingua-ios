@@ -29,7 +29,7 @@ extension Text {
             return
         }
 
-        let localizedString = UserLingua.shared.stringExtractor.formattedString(
+        let localizedString = UserLingua.shared.formattedString(
             localizedStringKey: key,
             tableName: tableName,
             bundle: bundle,
