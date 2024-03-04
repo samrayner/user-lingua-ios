@@ -1,32 +1,30 @@
 // FormattedString.swift
 
 import Foundation
+import SystemAPIAliases
 
 struct FormattedString {
     var value: String
     var format: StringFormat
     var arguments: [FormattedStringArgument]
 
-    func value(
-        locale: Locale,
-        substitution substitute: (StringFormat, Locale) -> String = { format, _ in
-            format.value
-        }
-    ) -> String {
-        if arguments.isEmpty { return substitute(format, locale) }
+    func localizedValue(locale: Locale) -> String {
+        let localizedFormat = format.localizedValue(locale: locale)
+
+        if arguments.isEmpty { return localizedFormat }
 
         var formattedArguments: [CVarArg] = []
 
         for argument in arguments {
             switch argument {
             case let .formattedString(formattedString):
-                formattedArguments.append(formattedString.value(locale: locale))
+                formattedArguments.append(formattedString.localizedValue(locale: locale))
             case let .cVarArg(cVarArg):
                 formattedArguments.append(cVarArg)
             }
         }
 
-        return String(format: substitute(format, locale), arguments: formattedArguments)
+        return SystemString.initFormatLocaleArguments(localizedFormat, locale, formattedArguments)
     }
 }
 
@@ -43,7 +41,7 @@ extension FormattedString {
             format: format,
             arguments: arguments
         )
-        self.value = value(locale: locale)
+        self.value = localizedValue(locale: locale)
     }
 
     init(_ string: String) {

@@ -66,7 +66,7 @@ final class StringsRepository: StringsRepositoryProtocol {
     }
 
     func record(format: StringFormat) {
-        if let localizedString = format.localizedValue {
+        if let localizedString = format.localized {
             record(localized: localizedString)
         } else {
             record(string: format.value)
@@ -103,7 +103,7 @@ final class StringsRepository: StringsRepositoryProtocol {
     }
 
     func recordedString(format: StringFormat) -> RecordedString? {
-        if let localizedString = format.localizedValue {
+        if let localizedString = format.localized {
             recordedString(localized: localizedString)
         } else {
             recordedString(string: format.value)

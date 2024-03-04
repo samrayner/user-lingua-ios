@@ -5,10 +5,8 @@ import Foundation
 struct StringFormat {
     var value: String
     var localization: Localization?
-}
 
-extension StringFormat {
-    var localizedValue: LocalizedString? {
+    var localized: LocalizedString? {
         localization.map { LocalizedString(value: value, localization: $0) }
     }
 
@@ -16,6 +14,12 @@ extension StringFormat {
         localization != nil
     }
 
+    func localizedValue(locale: Locale) -> String {
+        localization?.value(locale: locale) ?? value
+    }
+}
+
+extension StringFormat {
     init(_ string: String) {
         self.value = string
         self.localization = nil

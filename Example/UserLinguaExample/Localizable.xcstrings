@@ -9,6 +9,12 @@
             "state" : "translated",
             "value" : "Button normal"
           }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GB Button normal"
+          }
         }
       }
     },
@@ -20,6 +26,12 @@
             "state" : "translated",
             "value" : "Button selected"
           }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GB Button selected"
+          }
         }
       }
     },
@@ -29,6 +41,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Disabled label"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GB Disabled label"
           }
         }
       }
@@ -41,6 +59,12 @@
             "state" : "translated",
             "value" : "My label"
           }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GB My label"
+          }
         }
       }
     },
@@ -51,6 +75,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "SegCon1Title"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GB SegCon1Title"
           }
         }
       }
@@ -63,6 +93,12 @@
             "state" : "translated",
             "value" : "SegCon2Title"
           }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GB SegCon2Title"
+          }
         }
       }
     },
@@ -73,6 +109,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "TabBar1Title"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GB TabBar1Title"
           }
         }
       }
@@ -85,6 +127,12 @@
             "state" : "translated",
             "value" : "TabBar2Title"
           }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GB TabBar2Title"
+          }
         }
       }
     },
@@ -95,6 +143,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Text field placeholder"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GB Text field placeholder"
           }
         }
       }
@@ -107,6 +161,12 @@
             "state" : "translated",
             "value" : "Text field text"
           }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GB Text field text"
+          }
         }
       }
     },
@@ -117,6 +177,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Text view text"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GB Text view text"
           }
         }
       }

@@ -5,13 +5,10 @@ import SwiftUI
 struct LocalizedString: Hashable {
     var value: String
     var localization: Localization
-}
 
-struct Localization: Hashable {
-    var key: String
-    var bundle: Bundle?
-    var tableName: String?
-    var comment: String?
+    func localizedValue(locale: Locale) -> String? {
+        localization.value(locale: locale)
+    }
 }
 
 extension LocalizedString {
@@ -21,16 +18,16 @@ extension LocalizedString {
         bundle: Bundle? = nil,
         comment: StaticString? = nil
     ) {
-        let value = (bundle ?? .main).unswizzledLocalizedString(forKey: key, value: key, table: tableName)
+        let localization = Localization(
+            key: key,
+            bundle: bundle,
+            tableName: tableName,
+            comment: comment.map(\.description)
+        )
 
         self.init(
-            value: value,
-            localization: .init(
-                key: key,
-                bundle: bundle,
-                tableName: tableName,
-                comment: comment.map(\.description)
-            )
+            value: localization.value(),
+            localization: localization
         )
     }
 }

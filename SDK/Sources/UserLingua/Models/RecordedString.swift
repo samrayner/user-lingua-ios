@@ -19,6 +19,10 @@ struct RecordedString {
     var value: String {
         formatted.value
     }
+
+    func localizedValue(locale: Locale) -> String {
+        formatted.localizedValue(locale: locale)
+    }
 }
 
 extension RecordedString {

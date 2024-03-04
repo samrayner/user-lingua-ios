@@ -4,6 +4,16 @@ import SwiftUI
 
 class SuggestionViewModel: ObservableObject {
     let recordedString: RecordedString
+    var languageIdentifier: String = Locale.current.identifier {
+        didSet {
+            let locale = Locale(identifier: languageIdentifier)
+            UserLingua.shared.state = .previewingSuggestions(locale: locale)
+            suggestion = UserLingua.shared.suggestionsRepository.suggestion(
+                formatted: recordedString.formatted,
+                locale: locale
+            )?.newValue ?? recordedString.localizedValue(locale: locale)
+        }
+    }
 
     @Published var suggestion: String {
         didSet {
@@ -32,6 +42,14 @@ struct SuggestionView: View {
             Spacer()
 
             Form {
+                Picker("Language", selection: $viewModel.languageIdentifier) {
+                    ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
+                        Text(Locale.current.localizedString(forIdentifier: identifier) ?? "")
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(height: 50)
+
                 Section("Suggestion") {
                     TextField("Hi!", text: $viewModel.suggestion)
                 }

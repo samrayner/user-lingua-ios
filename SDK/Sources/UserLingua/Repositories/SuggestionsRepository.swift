@@ -23,7 +23,7 @@ final class SuggestionsRepository: SuggestionsRepositoryProtocol {
     }
 
     func suggestion(formatted formattedString: FormattedString, locale: Locale) -> Suggestion? {
-        if let localizedString = formattedString.format.localizedValue {
+        if let localizedString = formattedString.format.localized {
             suggestion(localized: localizedString, locale: locale)
         } else {
             suggestion(string: formattedString.value, locale: locale)
@@ -31,7 +31,7 @@ final class SuggestionsRepository: SuggestionsRepositoryProtocol {
     }
 
     func suggestion(format: StringFormat, locale: Locale) -> Suggestion? {
-        if let localizedString = format.localizedValue {
+        if let localizedString = format.localized {
             suggestion(localized: localizedString, locale: locale)
         } else {
             suggestion(string: format.value, locale: locale)
