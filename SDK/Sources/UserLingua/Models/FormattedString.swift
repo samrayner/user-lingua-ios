@@ -3,7 +3,7 @@
 import Foundation
 import SystemAPIAliases
 
-struct FormattedString {
+struct FormattedString: Equatable {
     var value: String
     var format: StringFormat
     var arguments: [FormattedStringArgument]

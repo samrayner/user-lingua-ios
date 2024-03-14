@@ -64,15 +64,22 @@ extension UIButton {
         )
     }
 
+    static func unswizzle() {
+        swizzle(
+            original: #selector(unswizzledDidMoveToSuperview),
+            with: #selector(didMoveToSuperview)
+        )
+
+        swizzle(
+            original: #selector(unswizzledSetTitle),
+            with: #selector(setTitle)
+        )
+    }
+
     // After swizzling, unswizzled... will refer to the original implementation
     // and the original method name will call the below implementation.
     @objc
     func unswizzledSetTitle(_ title: String?, for state: State) {
-        guard !UserLingua.isDisabled(for: self) else {
-            unswizzledSetTitle(title, for: state)
-            return
-        }
-
         switch state {
         case .normal:
             unprocessedNormalTitle = title

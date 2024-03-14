@@ -1,5 +1,6 @@
 // StringRecognizer.swift
 
+import ComposableArchitecture
 import Foundation
 import Spyable
 import UIKit
@@ -7,8 +8,6 @@ import Vision
 
 @Spyable
 protocol StringRecognizerProtocol {
-    typealias RecognizedString = (recordedString: RecordedString, textBlocks: [RecognizedText])
-
     func recognizeStrings(in image: UIImage) async throws -> [RecognizedString]
 }
 
@@ -21,10 +20,10 @@ struct StringRecognizer: StringRecognizerProtocol {
     let stringsRepository: StringsRepositoryProtocol
 
     func recognizeStrings(in image: UIImage) async throws -> [RecognizedString] {
-        try await identifyRecognizedText(recognizeText(in: image))
+        try await identifyRecognizedLines(recognizeLines(in: image))
     }
 
-    private func recognizeText(in image: UIImage) async throws -> [RecognizedText] {
+    private func recognizeLines(in image: UIImage) async throws -> [RecognizedLine] {
         guard let cgImage = image.cgImage else {
             throw Error.invalidImage
         }
@@ -48,7 +47,7 @@ struct StringRecognizer: StringRecognizerProtocol {
                     .compactMap { observation in
                         observation.topCandidates(1).first
                     }
-                    .map(RecognizedText.init)
+                    .map(RecognizedLine.init)
 
                 continuation.resume(returning: recognizedText)
             }
@@ -68,27 +67,27 @@ struct StringRecognizer: StringRecognizerProtocol {
         }
     }
 
-    func identifyRecognizedText(_ recognizedText: [RecognizedText]) -> [RecognizedString] {
+    func identifyRecognizedLines(_ lines: [RecognizedLine]) -> [RecognizedString] {
         let recordedStrings = stringsRepository.recordedStrings()
-        var textBlocks = recognizedText
+        var lines = lines
         var recognizedStrings: [RecognizedString] = []
 
         // loop recognized text blocks
-        while var textBlock = textBlocks.first {
+        while var line = lines.first {
             var recordedStringFoundForTextBlock = false
 
             for recordedString in recordedStrings {
                 var tokenized = recordedString.detectable
-                var recognizedString: RecognizedString = (recordedString, [])
+                var recognizedString = RecognizedString(recordedString: recordedString, lines: [])
 
                 defer {
-                    if !recognizedString.textBlocks.isEmpty {
+                    if !recognizedString.lines.isEmpty {
                         recognizedStrings.append(recognizedString)
                     }
                 }
 
                 // while the text block is found at the start of the token
-                while let foundPrefix = tokenized.fuzzyFindPrefix(textBlock.string) {
+                while let foundPrefix = tokenized.fuzzyFindPrefix(line.string) {
                     recordedStringFoundForTextBlock = true
 
                     // remove the text block from start of the token
@@ -98,12 +97,12 @@ struct StringRecognizer: StringRecognizerProtocol {
 
                     // assign the text block to the token it was found in
                     // and remove it from the text blocks we're looking for
-                    recognizedString.textBlocks.append(textBlock)
+                    recognizedString.lines.append(line)
 
-                    textBlocks.removeFirst()
+                    lines.removeFirst()
 
-                    if let nextTextBlock = textBlocks.first {
-                        textBlock = nextTextBlock
+                    if let nextTextBlock = lines.first {
+                        line = nextTextBlock
                     } else {
                         // we've processed all text blocks, so we're done
                         return recognizedStrings
@@ -113,7 +112,7 @@ struct StringRecognizer: StringRecognizerProtocol {
 
             if !recordedStringFoundForTextBlock {
                 // no matches found for text block, so give up and move onto next
-                textBlocks.removeFirst()
+                lines.removeFirst()
             }
         }
 
@@ -299,10 +298,10 @@ extension UTF16Char {
     }
 }
 
-extension RecognizedText {
-    private static func rectForTextBlock(_ textBlock: VNRecognizedText) -> CGRect {
-        let stringRange = textBlock.string.startIndex ..< textBlock.string.endIndex
-        let box = try? textBlock.boundingBox(for: stringRange)
+extension RecognizedLine {
+    private static func rectForTextBlock(_ line: VNRecognizedText) -> CGRect {
+        let stringRange = line.string.startIndex ..< line.string.endIndex
+        let box = try? line.boundingBox(for: stringRange)
         let boundingBox = box?.boundingBox ?? .zero
         return VNImageRectForNormalizedRect(boundingBox, Int(UIScreen.main.bounds.width), Int(UIScreen.main.bounds.height))
     }
@@ -313,4 +312,10 @@ extension RecognizedText {
             boundingBox: Self.rectForTextBlock(vnRecognizedText)
         )
     }
+}
+
+enum StringRecognizerDependency: DependencyKey {
+    static let liveValue: any StringRecognizerProtocol = StringRecognizer(stringsRepository: StringsRepository())
+    static let previewValue: any StringRecognizerProtocol = StringRecognizerProtocolSpy()
+    static let testValue: any StringRecognizerProtocol = StringRecognizerProtocolSpy()
 }

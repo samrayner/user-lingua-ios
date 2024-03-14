@@ -2,7 +2,7 @@
 
 import SwiftUI
 
-struct LocalizedString: Hashable {
+struct LocalizedString {
     var value: String
     var localization: Localization
 

@@ -28,15 +28,22 @@ extension UILabel {
         )
     }
 
+    static func unswizzle() {
+        swizzle(
+            original: #selector(unswizzledDidMoveToSuperview),
+            with: #selector(didMoveToSuperview)
+        )
+
+        swizzle(
+            original: #selector(unswizzledSetText),
+            with: #selector(setter: text)
+        )
+    }
+
     // After swizzling, unswizzled... will refer to the original implementation
     // and the original method name will call the below implementation.
     @objc
     func unswizzledSetText(_ text: String?) {
-        guard !UserLingua.isDisabled(for: self) else {
-            unswizzledSetText(text)
-            return
-        }
-
         unprocessedText = text
         let processedString = text.map { UserLingua.shared.processString($0) }
         unswizzledSetText(processedString)

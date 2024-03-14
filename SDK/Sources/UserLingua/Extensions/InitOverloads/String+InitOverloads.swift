@@ -9,7 +9,7 @@ extension String {
         format: String,
         arguments: [CVarArg]
     ) {
-        guard UserLingua.shared.state == .recordingStrings else {
+        guard UserLingua.shared.mode == .recording else {
             self = value
             return
         }
@@ -86,7 +86,7 @@ extension String {
         tableName: String?,
         comment: String?
     ) {
-        guard UserLingua.shared.state == .recordingStrings else {
+        guard UserLingua.shared.mode == .recording else {
             self = value
             return
         }

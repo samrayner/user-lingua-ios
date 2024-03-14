@@ -2,7 +2,7 @@
 
 import Foundation
 
-struct StringFormat {
+struct StringFormat: Equatable {
     var value: String
     var localization: Localization?
 

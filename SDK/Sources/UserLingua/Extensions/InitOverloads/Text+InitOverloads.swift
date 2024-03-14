@@ -5,7 +5,7 @@ import SystemAPIAliases
 
 extension Text {
     private init(_ formattedString: FormattedString) {
-        if UserLingua.shared.state == .recordingStrings {
+        if UserLingua.shared.mode == .recording {
             UserLingua.shared.stringsRepository.record(formatted: formattedString)
         }
         let displayString = UserLingua.shared.displayString(for: formattedString)
@@ -20,10 +20,10 @@ extension Text {
         tableName: String? = nil,
         bundle: Bundle? = nil,
         comment: StaticString? = nil,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = UserLingua.shared.configuration.automaticallyOptInTextViews
     ) {
         guard userLingua,
-              UserLingua.shared.state != .disabled
+              UserLingua.shared.mode != .disabled
         else {
             self = SystemText.initTableNameBundleComment(key, tableName, bundle, comment)
             return
@@ -44,7 +44,7 @@ extension Text {
     public init(
         _ key: LocalizedStringKey,
         tableName: String? = nil,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = UserLingua.shared.configuration.automaticallyOptInTextViews
     ) {
         self.init(
             key: key,
@@ -61,7 +61,7 @@ extension Text {
     public init(
         _ key: LocalizedStringKey,
         bundle: Bundle,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = UserLingua.shared.configuration.automaticallyOptInTextViews
     ) {
         self.init(
             key: key,
@@ -78,7 +78,7 @@ extension Text {
     public init(
         _ key: LocalizedStringKey,
         comment: StaticString,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = UserLingua.shared.configuration.automaticallyOptInTextViews
     ) {
         self.init(
             key: key,
@@ -96,7 +96,7 @@ extension Text {
         _ key: LocalizedStringKey,
         bundle: Bundle,
         comment: StaticString,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = UserLingua.shared.configuration.automaticallyOptInTextViews
     ) {
         self.init(
             key: key,
@@ -113,7 +113,7 @@ extension Text {
         _ key: LocalizedStringKey,
         tableName: String,
         bundle: Bundle? = nil,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = UserLingua.shared.configuration.automaticallyOptInTextViews
     ) {
         self.init(
             key: key,
@@ -131,7 +131,7 @@ extension Text {
         tableName: String,
         bundle: Bundle,
         comment: StaticString? = nil,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = UserLingua.shared.configuration.automaticallyOptInTextViews
     ) {
         self.init(
             key: key,
@@ -146,9 +146,9 @@ extension Text {
     // first parameter as it is ambiguous.
     public init(
         localizedStringResource: LocalizedStringResource,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = UserLingua.shared.configuration.automaticallyOptInTextViews
     ) {
-        guard userLingua, UserLingua.shared.state != .disabled else {
+        guard userLingua, UserLingua.shared.mode != .disabled else {
             self = SystemText.initLocalizedStringResource(localizedStringResource)
             return
         }
@@ -177,9 +177,9 @@ extension Text {
     @_disfavoredOverload
     public init(
         _ content: String,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = UserLingua.shared.configuration.automaticallyOptInTextViews
     ) {
-        guard userLingua, UserLingua.shared.state != .disabled else {
+        guard userLingua, UserLingua.shared.mode != .disabled else {
             self = SystemText.initVerbatim(content)
             return
         }
@@ -201,7 +201,7 @@ extension Text {
     @_disfavoredOverload
     public init(
         _ content: Substring,
-        userLingua: Bool = UserLingua.shared.config.automaticallyOptInTextViews
+        userLingua: Bool = UserLingua.shared.configuration.automaticallyOptInTextViews
     ) {
         self.init(String(content), userLingua: userLingua)
     }

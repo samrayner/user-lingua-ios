@@ -2,7 +2,7 @@
 
 import Foundation
 
-struct Localization: Hashable {
+struct Localization: Equatable {
     var key: String
     var bundle: Bundle?
     var tableName: String?

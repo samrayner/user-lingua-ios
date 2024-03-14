@@ -10,6 +10,13 @@ extension Bundle {
         )
     }
 
+    static func unswizzle() {
+        swizzle(
+            original: #selector(unswizzledLocalizedString(forKey:value:table:)),
+            with: #selector(localizedString(forKey:value:table:))
+        )
+    }
+
     // After swizzling, unswizzled... will refer to the original implementation
     // and the original method name will call the below implementation.
     @objc

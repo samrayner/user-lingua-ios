@@ -1,38 +1,13 @@
 // UserLingua.swift
 
+import ComposableArchitecture
 import SwiftUI
-import SystemAPIAliases
 import UIKit
 
-public final class UserLingua: ObservableObject {
-    enum State: Equatable {
-        case disabled
-        case recordingStrings
-        case detectingStrings
-        case highlightingStrings
-        case previewingSuggestions(locale: Locale)
-
-        var locale: Locale {
-            switch self {
-            case .disabled, .recordingStrings, .detectingStrings, .highlightingStrings:
-                .current
-            case let .previewingSuggestions(locale):
-                locale
-            }
-        }
-    }
-
-    public struct Configuration {
-        public var automaticallyOptInTextViews: Bool
-
-        public init(
-            automaticallyOptInTextViews: Bool = true
-        ) {
-            self.automaticallyOptInTextViews = automaticallyOptInTextViews
-        }
-    }
-
+public final class UserLingua {
     public static let shared = UserLingua()
+
+    public let observableObject = UserLinguaObservableObject()
 
     private var shakeObservation: NSObjectProtocol?
 
@@ -42,40 +17,24 @@ public final class UserLingua: ObservableObject {
     let stringExtractor: StringExtractorProtocol
     private let stringProcessor: StringProcessorProtocol
 
-    public var config = Configuration()
-    var highlightedStrings: [(RecordedString, [RecognizedText])] = [] {
-        didSet {
-            DispatchQueue.main.async {
-                self.state = .highlightingStrings
-                self.displayHighlightedStrings()
-            }
-        }
-    }
-
     private var inPreviewsOrTests: Bool {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
             || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 
-    private var _state: State = .disabled {
-        didSet {
-            stateDidChange()
-        }
+    let store = StoreOf<RootFeature>(initialState: .init()) {
+        RootFeature()._printChanges()
     }
 
-    var state: State {
-        get {
-            guard !inPreviewsOrTests else { return .disabled }
-            return _state
-        }
-        set {
-            guard !inPreviewsOrTests else { return }
-            _state = newValue
-        }
-    }
-
-    var window: UIWindow? { UIApplication.shared.keyWindow }
-    var newWindow: UIWindow?
+    private lazy var _window: UIWindow = {
+        let window = UIApplication.shared.windowScene.map(UIWindow.init) ?? UIWindow(frame: UIScreen.main.bounds)
+        window.isHidden = true
+        window.backgroundColor = .clear
+        window.rootViewController = UIHostingController(rootView: RootFeatureView(store: store))
+        window.rootViewController?.view.backgroundColor = .clear
+        window.windowLevel = .statusBar
+        return window
+    }()
 
     init() {
         self.stringsRepository = StringsRepository()
@@ -89,40 +48,47 @@ public final class UserLingua: ObservableObject {
         )
     }
 
-    func refreshViews() {
-        objectWillChange.send()
-        NotificationCenter.default.post(name: .userLinguaObjectDidChange, object: nil)
+    var mode: RootFeature.Mode.State {
+        store.state.mode
     }
 
-    public func enable(config: Configuration = .init()) {
-        self.config = config
-        state = .recordingStrings
-        swizzleUIKit()
+    public var configuration: UserLinguaConfiguration {
+        store.state.configuration
+    }
+
+    public func disable() {
+        store.send(.didDisable)
+    }
+
+    public func configure(_ configuration: UserLinguaConfiguration) {
+        store.send(.didConfigure(configuration))
+    }
+
+    public func enable() {
+        guard !inPreviewsOrTests else { return }
+        store.send(.didEnable)
+    }
+
+    func startObservingShake() {
         shakeObservation = NotificationCenter.default.addObserver(forName: .deviceDidShake, object: nil, queue: nil) { [weak self] _ in
-            self?.didShake()
+            self?.store.send(.didShake)
         }
     }
 
-    private func stateDidChange() {
-        refreshViews()
-    }
-
-    private func swizzleUIKit() {
-        Bundle.swizzle()
-        UILabel.swizzle()
-        UIButton.swizzle()
+    func stopObservingShake() {
+        shakeObservation = nil
     }
 
     func processLocalizedStringKey(_ key: LocalizedStringKey) -> String {
-        stringProcessor.processLocalizedStringKey(key, state: state)
+        stringProcessor.processLocalizedStringKey(key, state: store.state)
     }
 
     func processString(_ string: String) -> String {
-        stringProcessor.processString(string, state: state)
+        stringProcessor.processString(string, state: store.state)
     }
 
     func displayString(for formattedString: FormattedString) -> String {
-        stringProcessor.displayString(for: formattedString, state: state)
+        stringProcessor.displayString(for: formattedString, state: store.state)
     }
 
     func formattedString(
@@ -133,51 +99,48 @@ public final class UserLingua: ObservableObject {
     ) -> FormattedString {
         stringExtractor.formattedString(
             localizedStringKey: localizedStringKey,
-            locale: state.locale,
+            locale: store.state.locale,
             tableName: tableName,
             bundle: bundle,
             comment: comment
         )
     }
 
-    func didShake() {
-        state = .detectingStrings
-        // TODO: delay 0.1 seconds for SwiftUI to re-render
-        let snapshot = snapshot(window: window!)!
-        Task { [self] in
-            highlightedStrings = try await stringRecognizer.recognizeStrings(in: snapshot)
-        }
-    }
+    func screenshotApp() -> UIImage? {
+        guard let appWindow = appWindow() else { return nil }
 
-    private func displayHighlightedStrings() {
-        newWindow = UIWindow(windowScene: window!.windowScene!)
-        newWindow?.backgroundColor = .clear
-        newWindow?.rootViewController = UIHostingController(rootView: HighlightsView())
-        newWindow?.rootViewController?.view.backgroundColor = .clear
-        newWindow?.windowLevel = .statusBar
-        newWindow?.makeKeyAndVisible()
-    }
+        UIGraphicsBeginImageContextWithOptions(
+            appWindow.layer.frame.size,
+            false,
+            UIScreen.main.scale
+        )
 
-    private func snapshot(window: UIWindow) -> UIImage? {
-        let scale = UIScreen.main.scale
-        UIGraphicsBeginImageContextWithOptions(window.layer.frame.size, false, scale)
+        guard let context = UIGraphicsGetCurrentContext() else { return nil }
 
-        window.layer.render(in: UIGraphicsGetCurrentContext()!)
+        appWindow.layer.render(in: context)
         let screenshot = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return screenshot
     }
+
+    func appWindow() -> UIWindow? {
+        let windows = UIApplication.shared.windowScene?.windows.filter { $0 != _window }
+        return windows?.first(where: \.isKeyWindow) ?? windows?.last
+    }
+
+    func window() -> UIWindow {
+        _window.windowScene = UIApplication.shared.windowScene
+        return _window
+    }
 }
 
 extension UIApplication {
-    var keyWindow: UIWindow? {
+    var windowScene: UIWindowScene? {
         connectedScenes
             .first {
                 $0 is UIWindowScene &&
                     $0.activationState == .foregroundActive
             }
-            .flatMap { $0 as? UIWindowScene }?
-            .windows
-            .first(where: \.isKeyWindow)
+            .flatMap { $0 as? UIWindowScene }
     }
 }

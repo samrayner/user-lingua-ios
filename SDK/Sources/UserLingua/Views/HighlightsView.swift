@@ -3,53 +3,41 @@
 import SwiftUI
 
 struct HighlightsView: View {
-    let userLingua = UserLingua.shared
-    @State private var selectedRecordedString: RecordedString?
+    let recognizedStrings: [RecognizedString]
+    let onSelectString: (RecordedString) -> Void
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            if let selectedRecordedString {
-                SuggestionView(recordedString: selectedRecordedString)
-            } else {
-                (colorScheme == .dark ? Color.white : Color.black)
-                    .opacity(0.1)
-                    .mask {
-                        highlights(color: .black)
-                            .background(.white)
-                            .compositingGroup()
-                            .luminanceToAlpha()
-                    }
-
-                highlights(color: .white.opacity(0.001)) { recordedString in
-                    UserLingua.shared.state = .previewingSuggestions(locale: .current)
-                    selectedRecordedString = recordedString
+        EmptyView()
+        ZStack {
+            (colorScheme == .dark ? Color.white : Color.black)
+                .opacity(0.1)
+                .mask {
+                    highlights(color: .black)
+                        .background(.white)
+                        .compositingGroup()
+                        .luminanceToAlpha()
                 }
-            }
+
+            highlights(color: .white.opacity(0.001), onSelectString: onSelectString)
         }
         .ignoresSafeArea()
     }
 
-    func highlights(color: Color, onTapGesture: @escaping (RecordedString) -> Void = { _ in }) -> some View {
+    func highlights(color: Color, onSelectString: @escaping (RecordedString) -> Void = { _ in }) -> some View {
         ZStack(alignment: .topLeading) {
-            ForEach(userLingua.highlightedStrings, id: \.0.detectable) { recordedString, textBlocks in
-                ForEach(textBlocks, id: \.string) { textBlock in
+            ForEach(recognizedStrings, id: \.recordedString.detectable) { recognizedString in
+                ForEach(recognizedString.lines, id: \.string) { line in
                     color
                         .cornerRadius(5)
-                        .frame(width: textBlock.boundingBox.width + 20, height: textBlock.boundingBox.height + 20)
-                        .position(x: textBlock.boundingBox.midX, y: UIScreen.main.bounds.height - textBlock.boundingBox.midY)
+                        .frame(width: line.boundingBox.width + 20, height: line.boundingBox.height + 20)
+                        .position(x: line.boundingBox.midX, y: UIScreen.main.bounds.height - line.boundingBox.midY)
                         .onTapGesture {
-                            onTapGesture(recordedString)
+                            onSelectString(recognizedString.recordedString)
                         }
                 }
             }
         }
         .ignoresSafeArea()
-    }
-}
-
-extension CGRect: Identifiable {
-    public var id: String {
-        "\(self)"
     }
 }

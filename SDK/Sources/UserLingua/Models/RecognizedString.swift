@@ -1,8 +1,6 @@
 // RecognizedString.swift
 
-import Foundation
-
-struct RecognizedText {
-    var string: String
-    var boundingBox: CGRect
+struct RecognizedString: Equatable {
+    var recordedString: RecordedString
+    var lines: [RecognizedLine]
 }

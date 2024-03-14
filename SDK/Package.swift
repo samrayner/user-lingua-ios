@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 5.10
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import CompilerPluginSupport
@@ -17,9 +17,8 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/apple/swift-syntax", "509.0.0" ..< "510.0.0"),
-        // .package(url: "https://github.com/apple/swift-async-algorithms", .upToNextMinor(from: "1.0.0")),
-        // .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMinor(from: "1.8.0")),
+        .package(url: "https://github.com/apple/swift-syntax", "509.0.0" ..< "511.0.0"),
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMinor(from: "1.9.2")),
         .package(url: "https://github.com/Matejkob/swift-spyable", .upToNextMinor(from: "0.3.0"))
     ],
     targets: [
@@ -30,8 +29,7 @@ let package = Package(
             dependencies: [
                 "SystemAPIAliases",
                 "Macros",
-                // .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
-                // .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
                 .product(name: "Spyable", package: "swift-spyable")
             ],
             resources: [

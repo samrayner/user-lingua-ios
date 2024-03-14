@@ -2,7 +2,7 @@
 
 import Foundation
 
-struct RecordedString {
+struct RecordedString: Equatable {
     let formatted: FormattedString
     let detectable: String
     let recordedAt: Date = .now
