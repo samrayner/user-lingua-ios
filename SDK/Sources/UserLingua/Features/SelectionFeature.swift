@@ -11,22 +11,28 @@ struct SelectionFeature {
     @ObservableState
     struct State: Equatable {
         enum Stage: Equatable {
+            case preparingForScreenshot
             case takingScreenshot
             case recognizingStrings
             case presentingStrings([RecognizedString])
         }
 
-        var stage: Stage = .takingScreenshot
+        var stage: Stage = .preparingForScreenshot
+
+        var isDetectingStrings: Bool {
+            [.preparingForScreenshot, .takingScreenshot].contains(stage)
+        }
     }
 
     enum Action {
         case onAppear
+        case didPrepareForScreenshot
         case didRecognizeStrings([RecognizedString])
         case delegate(Delegate)
 
         @CasePathable
         enum Delegate {
-            case didHide
+            case didDismiss
             case didSelectString(RecordedString)
         }
     }
@@ -35,13 +41,23 @@ struct SelectionFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                return .run { send in
+                    UserLingua.shared.reloadViews()
+                    try await Task.sleep(for: .seconds(0.1))
+                    await send(.didPrepareForScreenshot)
+                }
+            case .didPrepareForScreenshot:
+                state.stage = .takingScreenshot
+
                 // TODO: ScreenshotProvider dependency
                 guard let screenshot = UserLingua.shared.screenshotApp() else {
-                    state.stage = State.Stage.presentingStrings([])
+                    state.stage = .presentingStrings([])
                     return .none
                 }
 
                 state.stage = .recognizingStrings
+
+                UserLingua.shared.reloadViews()
 
                 return .run { send in
                     let recognizedStrings = try await stringRecognizer.recognizeStrings(in: screenshot)
@@ -63,7 +79,7 @@ struct SelectionFeatureView: View {
     var body: some View {
         WithPerceptionTracking {
             switch store.state.stage {
-            case .takingScreenshot:
+            case .preparingForScreenshot, .takingScreenshot:
                 EmptyView()
             case .recognizingStrings:
                 ProgressView()
@@ -74,5 +90,6 @@ struct SelectionFeatureView: View {
                 )
             }
         }
+        .onAppear { store.send(.onAppear) }
     }
 }

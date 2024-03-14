@@ -20,7 +20,13 @@ struct InspectionFeature {
 
     enum Action {
         case didSetLocale(Locale)
-        case path(StackAction<Path.State, Path.Action>) // StackActionOf<Path> in TCA 1.9
+        case delegate(Delegate)
+        case path(StackAction<Path.State, Path.Action>) // StackActionOf<Path> in next TCA version
+
+        @CasePathable
+        enum Delegate {
+            case didDismiss
+        }
     }
 
     var body: some ReducerOf<Self> {
@@ -28,6 +34,8 @@ struct InspectionFeature {
             switch action {
             case let .didSetLocale(locale):
                 state.locale = locale
+                return .none
+            case .delegate:
                 return .none
             case .path:
                 return .none
@@ -47,6 +55,9 @@ struct InspectionFeatureView: View {
             Form {
                 Section {
                     Text("Inspector")
+                    Button("Dismiss") {
+                        store.send(.delegate(.didDismiss))
+                    }
                 }
             }
             .navigationTitle("Inspector")

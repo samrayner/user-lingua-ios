@@ -65,8 +65,9 @@ struct RootFeature {
             case let .didConfigure(configuration):
                 state.configuration = configuration
                 return .none
-            case .mode(.selection(.delegate(.didHide))):
-                state.mode = .disabled
+            case .mode(.selection(.delegate(.didDismiss))),
+                 .mode(.inspection(.delegate(.didDismiss))):
+                state.mode = .recording
                 return .none
             case let .mode(.selection(.delegate(.didSelectString(recordedString)))):
                 state.mode = .inspection(.init(recordedString: recordedString))

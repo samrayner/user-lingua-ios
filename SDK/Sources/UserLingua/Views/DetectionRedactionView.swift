@@ -13,7 +13,7 @@ private struct DetectionRedactionView<Content: View>: View {
 
     var body: some View {
         switch UserLingua.shared.mode {
-        case let .selection(state) where state.stage == .takingScreenshot:
+        case let .selection(state) where state.isDetectingStrings:
             if redact {
                 content.redacted(reason: [.placeholder, .userLingua])
             } else if redactionReasons.contains(.userLingua) {

@@ -56,6 +56,10 @@ public final class UserLingua {
         store.state.configuration
     }
 
+    func reloadViews() {
+        observableObject.objectWillChange.send()
+    }
+
     public func disable() {
         store.send(.didDisable)
     }

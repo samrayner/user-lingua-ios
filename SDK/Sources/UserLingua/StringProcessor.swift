@@ -41,7 +41,7 @@ struct StringProcessor: StringProcessorProtocol {
 
     func displayString(for formattedString: FormattedString, state: RootFeature.State) -> String {
         switch state.mode {
-        case let .selection(state) where state.stage == .takingScreenshot:
+        case let .selection(state) where state.isDetectingStrings:
             guard let recordedString = stringsRepository.recordedString(formatted: formattedString) else {
                 return formattedString.value
             }
