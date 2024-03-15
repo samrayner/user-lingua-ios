@@ -6,6 +6,10 @@ import SwiftUI
 
 @Reducer
 struct RootFeature {
+    @Dependency(WindowManagerDependency.self) var windowManager
+    @Dependency(TriggerObserverDependency.self) var triggerObserver
+    @Dependency(SwizzlerDependency.self) var swizzler
+
     @Reducer(state: .equatable)
     enum Mode {
         case disabled
@@ -29,10 +33,12 @@ struct RootFeature {
     }
 
     enum Action {
-        case didDisable
-        case didEnable
+        case disable
+        case enable
+        case configure(UserLinguaConfiguration)
         case didShake
-        case didConfigure(UserLinguaConfiguration)
+        case interfaceDidAppear
+        case interfaceDidDisappear
         case mode(Mode.Action)
     }
 
@@ -49,21 +55,21 @@ struct RootFeature {
 
         Reduce { state, action in
             switch action {
-            case .didEnable:
-                swizzle()
-                UserLingua.shared.startObservingShake() // TODO: use Dependency instead of singleton
+            case .enable:
+                swizzler.swizzle()
+                triggerObserver.startObservingShake()
                 state.mode = .recording
                 return .none
-            case .didDisable:
-                unswizzle()
-                UserLingua.shared.stopObservingShake() // TODO: use Dependency instead of singleton
+            case .disable:
+                swizzler.unswizzle()
+                triggerObserver.stopObservingShake()
                 state.mode = .disabled
+                return .none
+            case let .configure(configuration):
+                state.configuration = configuration
                 return .none
             case .didShake:
                 state.mode = .selection(.init())
-                return .none
-            case let .didConfigure(configuration):
-                state.configuration = configuration
                 return .none
             case .mode(.selection(.delegate(.didDismiss))),
                  .mode(.inspection(.delegate(.didDismiss))):
@@ -74,20 +80,14 @@ struct RootFeature {
                 return .none
             case .mode:
                 return .none
+            case .interfaceDidAppear:
+                windowManager.showWindow()
+                return .none
+            case .interfaceDidDisappear:
+                windowManager.hideWindow()
+                return .none
             }
         }
-    }
-
-    private func swizzle() {
-        Bundle.swizzle()
-        UILabel.swizzle()
-        UIButton.swizzle()
-    }
-
-    private func unswizzle() {
-        Bundle.unswizzle()
-        UILabel.unswizzle()
-        UIButton.unswizzle()
     }
 }
 
@@ -96,15 +96,22 @@ struct RootFeatureView: View {
 
     var body: some View {
         WithPerceptionTracking {
-            if let store = store.scope(state: \.mode.selection, action: \.mode.selection) {
-                SelectionFeatureView(store: store)
-            } else if let store = store.scope(state: \.mode.inspection, action: \.mode.inspection) {
-                VStack {
-                    Spacer()
-                    InspectionFeatureView(store: store)
-                }
-            } else {
+            switch store.mode {
+            case .disabled, .recording:
                 EmptyView()
+            case .selection, .inspection:
+                Group {
+                    if let store = store.scope(state: \.mode.selection, action: \.mode.selection) {
+                        SelectionFeatureView(store: store)
+                    } else if let store = store.scope(state: \.mode.inspection, action: \.mode.inspection) {
+                        VStack {
+                            Spacer()
+                            InspectionFeatureView(store: store)
+                        }
+                    }
+                }
+                .onAppear { store.send(.interfaceDidAppear) }
+                .onDisappear { store.send(.interfaceDidDisappear) }
             }
         }
     }

@@ -1,6 +1,6 @@
 // StringRecognizer.swift
 
-import ComposableArchitecture
+import Dependencies
 import Foundation
 import Spyable
 import UIKit
@@ -72,9 +72,9 @@ struct StringRecognizer: StringRecognizerProtocol {
         var lines = lines
         var recognizedStrings: [RecognizedString] = []
 
-        // loop recognized text blocks
+        // loop recognized lines
         while var line = lines.first {
-            var recordedStringFoundForTextBlock = false
+            var recordedStringFoundForLine = false
 
             for recordedString in recordedStrings {
                 var tokenized = recordedString.detectable
@@ -86,32 +86,32 @@ struct StringRecognizer: StringRecognizerProtocol {
                     }
                 }
 
-                // while the text block is found at the start of the token
+                // while the line is found at the start of the token
                 while let foundPrefix = tokenized.fuzzyFindPrefix(line.string) {
-                    recordedStringFoundForTextBlock = true
+                    recordedStringFoundForLine = true
 
-                    // remove the text block from start of the token
+                    // remove the line from start of the token
                     tokenized = tokenized
                         .dropFirst(foundPrefix.count)
                         .trimmingCharacters(in: .whitespaces)
 
-                    // assign the text block to the token it was found in
-                    // and remove it from the text blocks we're looking for
+                    // assign the line to the token it was found in
+                    // and remove it from the lines we're looking for
                     recognizedString.lines.append(line)
 
                     lines.removeFirst()
 
-                    if let nextTextBlock = lines.first {
-                        line = nextTextBlock
+                    if let nextLine = lines.first {
+                        line = nextLine
                     } else {
-                        // we've processed all text blocks, so we're done
+                        // we've processed all lines, so we're done
                         return recognizedStrings
                     }
                 }
             }
 
-            if !recordedStringFoundForTextBlock {
-                // no matches found for text block, so give up and move onto next
+            if !recordedStringFoundForLine {
+                // no matches found for line, so give up and move onto next
                 lines.removeFirst()
             }
         }
@@ -299,9 +299,9 @@ extension UTF16Char {
 }
 
 extension RecognizedLine {
-    private static func rectForTextBlock(_ line: VNRecognizedText) -> CGRect {
-        let stringRange = line.string.startIndex ..< line.string.endIndex
-        let box = try? line.boundingBox(for: stringRange)
+    private static func boundingBoxOfRecognizedText(_ recognizedText: VNRecognizedText) -> CGRect {
+        let stringRange = recognizedText.string.startIndex ..< recognizedText.string.endIndex
+        let box = try? recognizedText.boundingBox(for: stringRange)
         let boundingBox = box?.boundingBox ?? .zero
         return VNImageRectForNormalizedRect(boundingBox, Int(UIScreen.main.bounds.width), Int(UIScreen.main.bounds.height))
     }
@@ -309,7 +309,7 @@ extension RecognizedLine {
     init(_ vnRecognizedText: VNRecognizedText) {
         self = .init(
             string: vnRecognizedText.string,
-            boundingBox: Self.rectForTextBlock(vnRecognizedText)
+            boundingBox: Self.boundingBoxOfRecognizedText(vnRecognizedText)
         )
     }
 }

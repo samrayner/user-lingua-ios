@@ -7,27 +7,34 @@ import SwiftUI
 @Reducer
 struct SelectionFeature {
     @Dependency(StringRecognizerDependency.self) var stringRecognizer
+    @Dependency(WindowManagerDependency.self) var windowManager
+    @Dependency(UserLinguaObservableDependency.self) var userLinguaViewModel
 
     @ObservableState
     struct State: Equatable {
         enum Stage: Equatable {
-            case preparingForScreenshot
-            case takingScreenshot
+            case preparingForRecognition
+            case obscuringApp(with: UIImage)
             case recognizingStrings
             case presentingStrings([RecognizedString])
         }
 
-        var stage: Stage = .preparingForScreenshot
+        var stage: Stage = .preparingForRecognition
 
-        var isDetectingStrings: Bool {
-            [.preparingForScreenshot, .takingScreenshot].contains(stage)
+        var isCapturingAppWindow: Bool {
+            switch stage {
+            case .preparingForRecognition, .obscuringApp:
+                true
+            default:
+                false
+            }
         }
     }
 
     enum Action {
         case onAppear
-        case didPrepareForScreenshot
-        case didRecognizeStrings([RecognizedString])
+        case recognizeStrings
+        case presentStrings([RecognizedString])
         case delegate(Delegate)
 
         @CasePathable
@@ -41,29 +48,34 @@ struct SelectionFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                return .run { send in
-                    UserLingua.shared.reloadViews()
-                    try await Task.sleep(for: .seconds(0.1))
-                    await send(.didPrepareForScreenshot)
+                guard let screenshot = windowManager.screenshotAppWindow() else {
+                    state.stage = .presentingStrings([])
+                    return .none
                 }
-            case .didPrepareForScreenshot:
-                state.stage = .takingScreenshot
 
-                // TODO: ScreenshotProvider dependency
-                guard let screenshot = UserLingua.shared.screenshotApp() else {
+                state.stage = .obscuringApp(with: screenshot)
+
+                userLinguaViewModel.refresh() // refresh views with scrambled text
+
+                return .run { send in
+                    try await Task.sleep(for: .seconds(0.1)) // allow for views to refresh
+                    await send(.recognizeStrings)
+                }
+            case .recognizeStrings:
+                guard let screenshot = windowManager.screenshotAppWindow() else {
                     state.stage = .presentingStrings([])
                     return .none
                 }
 
                 state.stage = .recognizingStrings
 
-                UserLingua.shared.reloadViews()
+                userLinguaViewModel.refresh() // refresh views with unscrambled text
 
                 return .run { send in
                     let recognizedStrings = try await stringRecognizer.recognizeStrings(in: screenshot)
-                    await send(.didRecognizeStrings(recognizedStrings))
+                    await send(.presentStrings(recognizedStrings))
                 }
-            case let .didRecognizeStrings(strings):
+            case let .presentStrings(strings):
                 state.stage = .presentingStrings(strings)
                 return .none
             case .delegate:
@@ -79,8 +91,10 @@ struct SelectionFeatureView: View {
     var body: some View {
         WithPerceptionTracking {
             switch store.state.stage {
-            case .preparingForScreenshot, .takingScreenshot:
+            case .preparingForRecognition:
                 EmptyView()
+            case let .obscuringApp(with: image):
+                Image(uiImage: image)
             case .recognizingStrings:
                 ProgressView()
             case let .presentingStrings(recognizedStrings):

@@ -105,6 +105,6 @@ expiring_todo:
 custom_rules:
   todo_format:
     name: "TODO Format"
-    regex: '\/\/ ?TODO:? (?!\[\d{4}-\d{1,2}-\d{1,2}\] \([a-zA-ZÀ-ž_-]+\)) .*'
+    regex: '\/\/ ?TODO:? (?!\[\d{4}-\d{1,2}-\d{1,2}\] \([a-zA-ZÀ-ž_-]+\))'
     message: "Please follow expiring TODO format: `// TODO: [2022-12-25] (responsible_developer_name) Refactor this by Christmas day!`"
     severity: warning

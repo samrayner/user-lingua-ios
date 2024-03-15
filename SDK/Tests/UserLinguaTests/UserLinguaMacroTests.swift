@@ -16,7 +16,7 @@ final class UserLinguaMacroTests: XCTestCase {
                              expandedSource: """
                              struct MyView: View {
 
-                                 @ObservedObject private (set) var _userLinguaObservedObject = UserLingua.shared
+                                 @ObservedObject private (set) var _userLinguaViewModel = UserLingua.shared.viewModel
                              }
                              """,
                              macros: macros,

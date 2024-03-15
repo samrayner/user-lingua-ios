@@ -7,9 +7,7 @@ import UIKit
 public final class UserLingua {
     public static let shared = UserLingua()
 
-    public let observableObject = UserLinguaObservableObject()
-
-    private var shakeObservation: NSObjectProtocol?
+    public let viewModel = UserLinguaObservable()
 
     let stringsRepository: StringsRepositoryProtocol
     let suggestionsRepository: SuggestionsRepositoryProtocol
@@ -22,19 +20,12 @@ public final class UserLingua {
             || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 
-    let store = StoreOf<RootFeature>(initialState: .init()) {
-        RootFeature()._printChanges()
-    }
-
-    private lazy var _window: UIWindow = {
-        let window = UIApplication.shared.windowScene.map(UIWindow.init) ?? UIWindow(frame: UIScreen.main.bounds)
-        window.isHidden = true
-        window.backgroundColor = .clear
-        window.rootViewController = UIHostingController(rootView: RootFeatureView(store: store))
-        window.rootViewController?.view.backgroundColor = .clear
-        window.windowLevel = .statusBar
-        return window
-    }()
+    lazy var store: StoreOf<RootFeature> = .init(
+        initialState: .init(),
+        reducer: { RootFeature()._printChanges() },
+        withDependencies: { _ in
+        }
+    )
 
     init() {
         self.stringsRepository = StringsRepository()
@@ -56,31 +47,17 @@ public final class UserLingua {
         store.state.configuration
     }
 
-    func reloadViews() {
-        observableObject.objectWillChange.send()
-    }
-
     public func disable() {
-        store.send(.didDisable)
+        store.send(.disable)
     }
 
     public func configure(_ configuration: UserLinguaConfiguration) {
-        store.send(.didConfigure(configuration))
+        store.send(.configure(configuration))
     }
 
     public func enable() {
         guard !inPreviewsOrTests else { return }
-        store.send(.didEnable)
-    }
-
-    func startObservingShake() {
-        shakeObservation = NotificationCenter.default.addObserver(forName: .deviceDidShake, object: nil, queue: nil) { [weak self] _ in
-            self?.store.send(.didShake)
-        }
-    }
-
-    func stopObservingShake() {
-        shakeObservation = nil
+        store.send(.enable)
     }
 
     func processLocalizedStringKey(_ key: LocalizedStringKey) -> String {
@@ -108,43 +85,5 @@ public final class UserLingua {
             bundle: bundle,
             comment: comment
         )
-    }
-
-    func screenshotApp() -> UIImage? {
-        guard let appWindow = appWindow() else { return nil }
-
-        UIGraphicsBeginImageContextWithOptions(
-            appWindow.layer.frame.size,
-            false,
-            UIScreen.main.scale
-        )
-
-        guard let context = UIGraphicsGetCurrentContext() else { return nil }
-
-        appWindow.layer.render(in: context)
-        let screenshot = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return screenshot
-    }
-
-    func appWindow() -> UIWindow? {
-        let windows = UIApplication.shared.windowScene?.windows.filter { $0 != _window }
-        return windows?.first(where: \.isKeyWindow) ?? windows?.last
-    }
-
-    func window() -> UIWindow {
-        _window.windowScene = UIApplication.shared.windowScene
-        return _window
-    }
-}
-
-extension UIApplication {
-    var windowScene: UIWindowScene? {
-        connectedScenes
-            .first {
-                $0 is UIWindowScene &&
-                    $0.activationState == .foregroundActive
-            }
-            .flatMap { $0 as? UIWindowScene }
     }
 }
