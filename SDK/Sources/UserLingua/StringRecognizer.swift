@@ -11,13 +11,17 @@ protocol StringRecognizerProtocol {
     func recognizeStrings(in image: UIImage) async throws -> [RecognizedString]
 }
 
-struct StringRecognizer: StringRecognizerProtocol {
+final class StringRecognizer: StringRecognizerProtocol {
     enum Error: Swift.Error {
         case invalidImage
         case recognitionRequestFailed(Swift.Error)
     }
 
     let stringsRepository: StringsRepositoryProtocol
+
+    init(stringsRepository: StringsRepositoryProtocol) {
+        self.stringsRepository = stringsRepository
+    }
 
     func recognizeStrings(in image: UIImage) async throws -> [RecognizedString] {
         try await identifyRecognizedLines(recognizeLines(in: image))
@@ -315,7 +319,7 @@ extension RecognizedLine {
 }
 
 enum StringRecognizerDependency: DependencyKey {
-    static let liveValue: any StringRecognizerProtocol = StringRecognizer(stringsRepository: StringsRepository())
+    static let liveValue: any StringRecognizerProtocol = { fatalError("String recognizer not supplied.") }()
     static let previewValue: any StringRecognizerProtocol = StringRecognizerProtocolSpy()
     static let testValue: any StringRecognizerProtocol = StringRecognizerProtocolSpy()
 }

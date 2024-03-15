@@ -11,9 +11,7 @@ protocol SizzlerProtocol {
     func unswizzle()
 }
 
-final class Swizzler: SizzlerProtocol {
-    init() {}
-
+struct Swizzler: SizzlerProtocol {
     func swizzle() {
         Bundle.swizzle()
         UILabel.swizzle()

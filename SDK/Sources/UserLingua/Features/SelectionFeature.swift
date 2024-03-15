@@ -9,6 +9,7 @@ struct SelectionFeature {
     @Dependency(StringRecognizerDependency.self) var stringRecognizer
     @Dependency(WindowManagerDependency.self) var windowManager
     @Dependency(UserLinguaObservableDependency.self) var userLinguaViewModel
+    @Dependency(\.continuousClock) var clock
 
     @ObservableState
     struct State: Equatable {
@@ -58,7 +59,7 @@ struct SelectionFeature {
                 userLinguaViewModel.refresh() // refresh views with scrambled text
 
                 return .run { send in
-                    try await Task.sleep(for: .seconds(0.1)) // allow for views to refresh
+                    try await clock.sleep(for: .seconds(0.1)) // allow for views to refresh
                     await send(.recognizeStrings)
                 }
             case .recognizeStrings:

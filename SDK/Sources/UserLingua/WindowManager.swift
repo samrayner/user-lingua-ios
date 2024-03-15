@@ -1,33 +1,26 @@
 // WindowManager.swift
 
 import Dependencies
-import Spyable
 import SwiftUI
 import UIKit
 
-@Spyable
 protocol WindowManagerProtocol {
     func screenshotAppWindow() -> UIImage?
-    func showWindow()
+    func showWindow(rootView: some View)
     func hideWindow()
 }
 
-final class WindowManager {
-    private let userLinguaWindow: UIWindow
+final class WindowManager: WindowManagerProtocol {
+    init() {}
 
-    init(rootView: some View) {
-        self.userLinguaWindow = Self.makeWindow(rootView: rootView)
-    }
-
-    private static func makeWindow(rootView: some View) -> UIWindow {
+    private let userLinguaWindow: UIWindow = {
         let window = UIApplication.shared.windowScene.map(UIWindow.init) ?? UIWindow(frame: UIScreen.main.bounds)
         window.isHidden = true
         window.backgroundColor = .clear
-        window.rootViewController = UIHostingController(rootView: rootView)
         window.rootViewController?.view.backgroundColor = .clear
         window.windowLevel = .statusBar
         return window
-    }
+    }()
 
     private func screenshot(window: UIWindow) -> UIImage? {
         UIGraphicsBeginImageContextWithOptions(
@@ -53,12 +46,13 @@ final class WindowManager {
         return windows?.first(where: \.isKeyWindow) ?? windows?.last
     }
 
-    func showUserLinguaWindow() {
+    func showWindow(rootView: some View) {
         userLinguaWindow.windowScene = UIApplication.shared.windowScene
+        userLinguaWindow.rootViewController = UIHostingController(rootView: rootView)
         userLinguaWindow.makeKeyAndVisible()
     }
 
-    func hideUserLinguaWindow() {
+    func hideWindow() {
         appWindow()?.makeKeyAndVisible()
         userLinguaWindow.isHidden = true
     }
@@ -75,8 +69,53 @@ extension UIApplication {
     }
 }
 
+// Spyable doesn't handle `some View` properly
+class WindowManagerProtocolSpy: WindowManagerProtocol {
+    var screenshotAppWindowCallsCount = 0
+    var screenshotAppWindowCalled: Bool {
+        screenshotAppWindowCallsCount > 0
+    }
+
+    var screenshotAppWindowReturnValue: UIImage?
+    var screenshotAppWindowClosure: (() -> UIImage?)?
+    func screenshotAppWindow() -> UIImage? {
+        screenshotAppWindowCallsCount += 1
+        if screenshotAppWindowClosure != nil {
+            return screenshotAppWindowClosure!()
+        } else {
+            return screenshotAppWindowReturnValue
+        }
+    }
+
+    var showWindowRootViewCallsCount = 0
+    var showWindowRootViewCalled: Bool {
+        showWindowRootViewCallsCount > 0
+    }
+
+    var showWindowRootViewReceivedRootView: (any View)?
+    var showWindowRootViewReceivedInvocations: [any View] = []
+    var showWindowRootViewClosure: ((any View) -> Void)?
+    func showWindow(rootView: some View) {
+        showWindowRootViewCallsCount += 1
+        showWindowRootViewReceivedRootView = rootView
+        showWindowRootViewReceivedInvocations.append(rootView)
+        showWindowRootViewClosure?(rootView)
+    }
+
+    var hideWindowCallsCount = 0
+    var hideWindowCalled: Bool {
+        hideWindowCallsCount > 0
+    }
+
+    var hideWindowClosure: (() -> Void)?
+    func hideWindow() {
+        hideWindowCallsCount += 1
+        hideWindowClosure?()
+    }
+}
+
 enum WindowManagerDependency: DependencyKey {
-    static let liveValue: any WindowManagerProtocol = { fatalError("WindowManager not supplied") }()
+    static let liveValue: any WindowManagerProtocol = WindowManager()
     static let previewValue: any WindowManagerProtocol = WindowManagerProtocolSpy()
     static let testValue: any WindowManagerProtocol = WindowManagerProtocolSpy()
 }

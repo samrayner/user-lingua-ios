@@ -37,7 +37,7 @@ struct RootFeature {
         case enable
         case configure(UserLinguaConfiguration)
         case didShake
-        case interfaceDidAppear
+        case interfaceDidAppear(any View)
         case interfaceDidDisappear
         case mode(Mode.Action)
     }
@@ -80,8 +80,8 @@ struct RootFeature {
                 return .none
             case .mode:
                 return .none
-            case .interfaceDidAppear:
-                windowManager.showWindow()
+            case let .interfaceDidAppear(view):
+                windowManager.showWindow(rootView: view)
                 return .none
             case .interfaceDidDisappear:
                 windowManager.hideWindow()
@@ -110,7 +110,7 @@ struct RootFeatureView: View {
                         }
                     }
                 }
-                .onAppear { store.send(.interfaceDidAppear) }
+                .onAppear { store.send(.interfaceDidAppear(self)) }
                 .onDisappear { store.send(.interfaceDidDisappear) }
             }
         }

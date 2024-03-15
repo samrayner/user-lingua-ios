@@ -10,7 +10,6 @@ public final class UserLingua {
     public let viewModel = UserLinguaObservable()
 
     let stringsRepository: StringsRepositoryProtocol
-    let suggestionsRepository: SuggestionsRepositoryProtocol
     let stringRecognizer: StringRecognizerProtocol
     let stringExtractor: StringExtractorProtocol
     private let stringProcessor: StringProcessorProtocol
@@ -23,19 +22,23 @@ public final class UserLingua {
     lazy var store: StoreOf<RootFeature> = .init(
         initialState: .init(),
         reducer: { RootFeature()._printChanges() },
-        withDependencies: { _ in
+        withDependencies: {
+            $0[TriggerObserverDependency.self] = TriggerObserver(
+                onShake: { self.onShake() }
+            )
+
+            $0[StringRecognizerDependency.self] = self.stringRecognizer
         }
     )
 
     init() {
         self.stringsRepository = StringsRepository()
-        self.suggestionsRepository = SuggestionsRepository()
         self.stringExtractor = StringExtractor()
         self.stringRecognizer = StringRecognizer(stringsRepository: stringsRepository)
         self.stringProcessor = StringProcessor(
             stringExtractor: stringExtractor,
             stringsRepository: stringsRepository,
-            suggestionsRepository: suggestionsRepository
+            suggestionsRepository: SuggestionsRepository()
         )
     }
 
@@ -58,6 +61,10 @@ public final class UserLingua {
     public func enable() {
         guard !inPreviewsOrTests else { return }
         store.send(.enable)
+    }
+
+    private func onShake() {
+        store.send(.didShake)
     }
 
     func processLocalizedStringKey(_ key: LocalizedStringKey) -> String {
