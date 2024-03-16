@@ -9,6 +9,7 @@ public final class UserLingua {
 
     public let viewModel = UserLinguaObservable()
 
+    let windowManager: WindowManagerProtocol
     let stringsRepository: StringsRepositoryProtocol
     let stringRecognizer: StringRecognizerProtocol
     let stringExtractor: StringExtractorProtocol
@@ -28,10 +29,12 @@ public final class UserLingua {
             )
 
             $0[StringRecognizerDependency.self] = self.stringRecognizer
+            $0[WindowManagerDependency.self] = self.windowManager
         }
     )
 
     init() {
+        self.windowManager = WindowManager()
         self.stringsRepository = StringsRepository()
         self.stringExtractor = StringExtractor()
         self.stringRecognizer = StringRecognizer(stringsRepository: stringsRepository)
@@ -40,6 +43,8 @@ public final class UserLingua {
             stringsRepository: stringsRepository,
             suggestionsRepository: SuggestionsRepository()
         )
+
+        windowManager.setRootView(RootFeatureView(store: store))
     }
 
     var mode: RootFeature.Mode.State {

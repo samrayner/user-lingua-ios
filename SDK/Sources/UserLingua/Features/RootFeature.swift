@@ -6,9 +6,9 @@ import SwiftUI
 
 @Reducer
 struct RootFeature {
-    @Dependency(WindowManagerDependency.self) var windowManager
     @Dependency(TriggerObserverDependency.self) var triggerObserver
     @Dependency(SwizzlerDependency.self) var swizzler
+    @Dependency(WindowManagerDependency.self) var windowManager
 
     @Reducer(state: .equatable)
     enum Mode {
@@ -37,8 +37,6 @@ struct RootFeature {
         case enable
         case configure(UserLinguaConfiguration)
         case didShake
-        case interfaceDidAppear(any View)
-        case interfaceDidDisappear
         case mode(Mode.Action)
     }
 
@@ -69,22 +67,18 @@ struct RootFeature {
                 state.configuration = configuration
                 return .none
             case .didShake:
+                windowManager.showWindow()
                 state.mode = .selection(.init())
                 return .none
             case .mode(.selection(.delegate(.didDismiss))),
                  .mode(.inspection(.delegate(.didDismiss))):
                 state.mode = .recording
+                windowManager.hideWindow()
                 return .none
             case let .mode(.selection(.delegate(.didSelectString(recordedString)))):
                 state.mode = .inspection(.init(recordedString: recordedString))
                 return .none
             case .mode:
-                return .none
-            case let .interfaceDidAppear(view):
-                windowManager.showWindow(rootView: view)
-                return .none
-            case .interfaceDidDisappear:
-                windowManager.hideWindow()
                 return .none
             }
         }
@@ -110,8 +104,6 @@ struct RootFeatureView: View {
                         }
                     }
                 }
-                .onAppear { store.send(.interfaceDidAppear(self)) }
-                .onDisappear { store.send(.interfaceDidDisappear) }
             }
         }
     }

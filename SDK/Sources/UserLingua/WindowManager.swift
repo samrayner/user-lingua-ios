@@ -5,8 +5,9 @@ import SwiftUI
 import UIKit
 
 protocol WindowManagerProtocol {
+    func setRootView(_: some View)
     func screenshotAppWindow() -> UIImage?
-    func showWindow(rootView: some View)
+    func showWindow()
     func hideWindow()
 }
 
@@ -17,10 +18,14 @@ final class WindowManager: WindowManagerProtocol {
         let window = UIApplication.shared.windowScene.map(UIWindow.init) ?? UIWindow(frame: UIScreen.main.bounds)
         window.isHidden = true
         window.backgroundColor = .clear
-        window.rootViewController?.view.backgroundColor = .clear
         window.windowLevel = .statusBar
         return window
     }()
+
+    func setRootView(_ rootView: some View) {
+        userLinguaWindow.rootViewController = UIHostingController(rootView: rootView)
+        userLinguaWindow.rootViewController?.view.backgroundColor = .clear
+    }
 
     private func screenshot(window: UIWindow) -> UIImage? {
         UIGraphicsBeginImageContextWithOptions(
@@ -46,9 +51,8 @@ final class WindowManager: WindowManagerProtocol {
         return windows?.first(where: \.isKeyWindow) ?? windows?.last
     }
 
-    func showWindow(rootView: some View) {
+    func showWindow() {
         userLinguaWindow.windowScene = UIApplication.shared.windowScene
-        userLinguaWindow.rootViewController = UIHostingController(rootView: rootView)
         userLinguaWindow.makeKeyAndVisible()
     }
 
@@ -71,6 +75,21 @@ extension UIApplication {
 
 // Spyable doesn't handle `some View` properly
 class WindowManagerProtocolSpy: WindowManagerProtocol {
+    var setRootViewCallsCount = 0
+    var setRootViewCalled: Bool {
+        setRootViewCallsCount > 0
+    }
+
+    var setRootViewReceived: (any View)?
+    var setRootViewReceivedInvocations: [any View] = []
+    var setRootViewClosure: ((any View) -> Void)?
+    func setRootView(_ rootView: some View) {
+        setRootViewCallsCount += 1
+        setRootViewReceived = rootView
+        setRootViewReceivedInvocations.append(rootView)
+        setRootViewClosure?(rootView)
+    }
+
     var screenshotAppWindowCallsCount = 0
     var screenshotAppWindowCalled: Bool {
         screenshotAppWindowCallsCount > 0
@@ -87,19 +106,15 @@ class WindowManagerProtocolSpy: WindowManagerProtocol {
         }
     }
 
-    var showWindowRootViewCallsCount = 0
-    var showWindowRootViewCalled: Bool {
-        showWindowRootViewCallsCount > 0
+    var showWindowCallsCount = 0
+    var showWindowCalled: Bool {
+        showWindowCallsCount > 0
     }
 
-    var showWindowRootViewReceivedRootView: (any View)?
-    var showWindowRootViewReceivedInvocations: [any View] = []
-    var showWindowRootViewClosure: ((any View) -> Void)?
-    func showWindow(rootView: some View) {
-        showWindowRootViewCallsCount += 1
-        showWindowRootViewReceivedRootView = rootView
-        showWindowRootViewReceivedInvocations.append(rootView)
-        showWindowRootViewClosure?(rootView)
+    var showWindowClosure: (() -> Void)?
+    func showWindow() {
+        showWindowCallsCount += 1
+        showWindowClosure?()
     }
 
     var hideWindowCallsCount = 0
@@ -115,7 +130,7 @@ class WindowManagerProtocolSpy: WindowManagerProtocol {
 }
 
 enum WindowManagerDependency: DependencyKey {
-    static let liveValue: any WindowManagerProtocol = WindowManager()
+    static let liveValue: any WindowManagerProtocol = { fatalError("String recognizer not supplied.") }()
     static let previewValue: any WindowManagerProtocol = WindowManagerProtocolSpy()
     static let testValue: any WindowManagerProtocol = WindowManagerProtocolSpy()
 }

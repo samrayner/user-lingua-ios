@@ -13,6 +13,7 @@ struct SelectionFeature {
 
     @ObservableState
     struct State: Equatable {
+        @ObservableState
         enum Stage: Equatable {
             case preparingForRecognition
             case obscuringApp(with: UIImage)
@@ -93,7 +94,8 @@ struct SelectionFeatureView: View {
         WithPerceptionTracking {
             switch store.state.stage {
             case .preparingForRecognition:
-                EmptyView()
+                Color(.clear)
+                    .onAppear { store.send(.onAppear) }
             case let .obscuringApp(with: image):
                 Image(uiImage: image)
             case .recognizingStrings:
@@ -105,6 +107,5 @@ struct SelectionFeatureView: View {
                 )
             }
         }
-        .onAppear { store.send(.onAppear) }
     }
 }
