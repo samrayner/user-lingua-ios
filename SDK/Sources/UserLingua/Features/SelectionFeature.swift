@@ -8,7 +8,7 @@ import SwiftUI
 struct SelectionFeature {
     @Dependency(StringRecognizerDependency.self) var stringRecognizer
     @Dependency(WindowManagerDependency.self) var windowManager
-    @Dependency(UserLinguaObservableDependency.self) var userLinguaViewModel
+    @Dependency(UserLinguaObservableDependency.self) var appViewModel
     @Dependency(\.continuousClock) var clock
 
     @ObservableState
@@ -57,10 +57,10 @@ struct SelectionFeature {
 
                 state.stage = .obscuringApp(with: screenshot)
 
-                userLinguaViewModel.refresh() // refresh views with scrambled text
+                appViewModel.refresh() // refresh views with scrambled text
 
                 return .run { send in
-                    try await clock.sleep(for: .seconds(0.1)) // allow for views to refresh
+                    try await clock.sleep(for: .seconds(0.2)) // allow for views to refresh
                     await send(.recognizeStrings)
                 }
             case .recognizeStrings:
@@ -71,7 +71,7 @@ struct SelectionFeature {
 
                 state.stage = .recognizingStrings
 
-                userLinguaViewModel.refresh() // refresh views with unscrambled text
+                appViewModel.refresh() // refresh views with unscrambled text
 
                 return .run { send in
                     let recognizedStrings = try await stringRecognizer.recognizeStrings(in: screenshot)
@@ -107,5 +107,6 @@ struct SelectionFeatureView: View {
                 )
             }
         }
+        .ignoresSafeArea()
     }
 }

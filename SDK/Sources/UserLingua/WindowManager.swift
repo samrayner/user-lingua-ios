@@ -14,6 +14,8 @@ protocol WindowManagerProtocol {
 final class WindowManager: WindowManagerProtocol {
     init() {}
 
+    var appWindow: UIWindow?
+
     private let userLinguaWindow: UIWindow = {
         let window = UIApplication.shared.windowScene.map(UIWindow.init) ?? UIWindow(frame: UIScreen.main.bounds)
         window.isHidden = true
@@ -43,21 +45,21 @@ final class WindowManager: WindowManagerProtocol {
     }
 
     func screenshotAppWindow() -> UIImage? {
-        appWindow().flatMap(screenshot)
-    }
-
-    private func appWindow() -> UIWindow? {
-        let windows = UIApplication.shared.windowScene?.windows.filter { $0 != userLinguaWindow }
-        return windows?.first(where: \.isKeyWindow) ?? windows?.last
+        appWindow.flatMap(screenshot)
     }
 
     func showWindow() {
+        if appWindow == nil {
+            let windows = UIApplication.shared.windowScene?.windows
+            appWindow = windows?.first(where: \.isKeyWindow) ?? windows?.first(where: \.isOpaque)
+        }
         userLinguaWindow.windowScene = UIApplication.shared.windowScene
         userLinguaWindow.makeKeyAndVisible()
     }
 
     func hideWindow() {
-        appWindow()?.makeKeyAndVisible()
+        appWindow?.makeKeyAndVisible()
+        appWindow = nil
         userLinguaWindow.isHidden = true
     }
 }

@@ -16,7 +16,7 @@ public final class UserLinguaObservable: UserLinguaObservableProtocol {
 }
 
 enum UserLinguaObservableDependency: DependencyKey {
-    static let liveValue: any UserLinguaObservableProtocol = UserLinguaObservable()
+    static let liveValue: any UserLinguaObservableProtocol = UserLingua.shared.viewModel
     static let previewValue: any UserLinguaObservableProtocol = UserLinguaObservableProtocolSpy()
     static let testValue: any UserLinguaObservableProtocol = UserLinguaObservableProtocolSpy()
 }
