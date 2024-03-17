@@ -9,28 +9,29 @@ struct SelectionFeature {
     @Dependency(StringRecognizerDependency.self) var stringRecognizer
     @Dependency(WindowManagerDependency.self) var windowManager
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
-    @Dependency(\.continuousClock) var clock
 
     @ObservableState
     struct State: Equatable {
         @ObservableState
         enum Stage: Equatable {
-            case preparingForRecognition
-            case obscuringApp(with: UIImage)
+            case preparingFacade
+            case takingScreenshot
             case recognizingStrings
             case presentingStrings([RecognizedString])
-        }
 
-        var stage: Stage = .preparingForRecognition
-
-        var isCapturingAppWindow: Bool {
-            switch stage {
-            case .preparingForRecognition, .obscuringApp:
-                true
-            default:
-                false
+            var isLoading: Bool {
+                switch self {
+                case .preparingFacade, .takingScreenshot, .recognizingStrings:
+                    true
+                case .presentingStrings:
+                    false
+                }
             }
         }
+
+        var facade: UIImage?
+
+        var stage: Stage = .preparingFacade
     }
 
     enum Action {
@@ -50,31 +51,30 @@ struct SelectionFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                guard let screenshot = windowManager.screenshotAppWindow() else {
-                    state.stage = .presentingStrings([])
-                    return .none
-                }
-
-                state.stage = .obscuringApp(with: screenshot)
+                state.facade = windowManager.screenshotAppWindow()
+                state.stage = .takingScreenshot
 
                 appViewModel.refresh() // refresh app views with scrambled text
 
                 return .run { send in
-                    try await clock.sleep(for: .seconds(0.1)) // allow for views to refresh
+                    // screenshot the scrambled strings on the next run loop to
+                    // allow the views to re-render after objectWillChange.send()
                     await send(.recognizeStrings)
                 }
             case .recognizeStrings:
-                guard let screenshot = windowManager.screenshotAppWindow() else {
-                    state.stage = .presentingStrings([])
-                    return .none
-                }
+                let recognitionScreenshot = windowManager.screenshotAppWindow()
 
                 state.stage = .recognizingStrings
 
                 appViewModel.refresh() // refresh app views with unscrambled text
 
                 return .run { send in
-                    let recognizedStrings = try await stringRecognizer.recognizeStrings(in: screenshot)
+                    var recognizedStrings: [RecognizedString] = []
+
+                    if let recognitionScreenshot {
+                        recognizedStrings = try await stringRecognizer.recognizeStrings(in: recognitionScreenshot)
+                    }
+
                     await send(.presentStrings(recognizedStrings))
                 }
             case let .presentStrings(strings):
@@ -88,25 +88,30 @@ struct SelectionFeature {
 }
 
 struct SelectionFeatureView: View {
-    @Perception.Bindable var store: StoreOf<SelectionFeature>
+    let store: StoreOf<SelectionFeature>
 
     var body: some View {
         WithPerceptionTracking {
-            switch store.state.stage {
-            case .preparingForRecognition:
-                Color(.clear)
-                    .onAppear { store.send(.onAppear) }
-            case let .obscuringApp(with: image):
-                Image(uiImage: image)
-            case .recognizingStrings:
-                ProgressView()
-            case let .presentingStrings(recognizedStrings):
-                HighlightsView(
-                    recognizedStrings: recognizedStrings,
-                    onSelectString: { store.send(.delegate(.didSelectString($0))) }
-                )
+            ZStack {
+                if case let .presentingStrings(recognizedStrings) = store.state.stage {
+                    HighlightsView(
+                        recognizedStrings: recognizedStrings,
+                        onSelectString: { store.send(.delegate(.didSelectString($0))) }
+                    )
+                }
+
+                if store.state.stage.isLoading {
+                    ZStack {
+                        if let facade = store.state.facade {
+                            Image(uiImage: facade)
+                        }
+
+                        ProgressView()
+                    }
+                }
             }
+            .ignoresSafeArea()
+            .onAppear { store.send(.onAppear) }
         }
-        .ignoresSafeArea()
     }
 }

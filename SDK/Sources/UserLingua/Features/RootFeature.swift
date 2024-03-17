@@ -86,7 +86,7 @@ struct RootFeature {
 }
 
 struct RootFeatureView: View {
-    @Perception.Bindable var store: StoreOf<RootFeature>
+    let store: StoreOf<RootFeature>
 
     var body: some View {
         WithPerceptionTracking {

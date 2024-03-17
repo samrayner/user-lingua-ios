@@ -12,7 +12,9 @@ protocol UserLinguaObservableProtocol: ObservableObject {
 
 public final class UserLinguaObservable: UserLinguaObservableProtocol {
     func refresh() {
-        objectWillChange.send()
+        Task { @MainActor in
+            objectWillChange.send()
+        }
     }
 
     var refreshPublisher: AnyPublisher<Void, Never> {
