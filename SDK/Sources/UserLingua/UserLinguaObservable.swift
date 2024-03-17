@@ -1,17 +1,22 @@
 // UserLinguaObservable.swift
 
+import Combine
 import Dependencies
 import Spyable
-import SwiftUI
 
 @Spyable
 protocol UserLinguaObservableProtocol: ObservableObject {
     func refresh()
+    var refreshPublisher: AnyPublisher<Void, Never> { get }
 }
 
 public final class UserLinguaObservable: UserLinguaObservableProtocol {
     func refresh() {
         objectWillChange.send()
+    }
+
+    var refreshPublisher: AnyPublisher<Void, Never> {
+        objectWillChange.eraseToAnyPublisher()
     }
 }
 

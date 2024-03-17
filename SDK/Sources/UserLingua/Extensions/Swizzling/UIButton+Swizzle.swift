@@ -1,9 +1,10 @@
 // UIButton+Swizzle.swift
 
+import Combine
 import UIKit
 
 extension UIButton {
-    private static let notificationObservationAssociation = ObjectAssociation<NSObjectProtocol>()
+    private static let refreshCancellableAssociation = ObjectAssociation<NSObjectWrapper<AnyCancellable>>()
     private static let unprocessedNormalTitleAssociation = ObjectAssociation<NSString>()
     private static let unprocessedHighlightedTitleAssociation = ObjectAssociation<NSString>()
     private static let unprocessedDisabledTitleAssociation = ObjectAssociation<NSString>()
@@ -12,9 +13,9 @@ extension UIButton {
     private static let unprocessedApplicationTitleAssociation = ObjectAssociation<NSString>()
     private static let unprocessedReservedTitleAssociation = ObjectAssociation<NSString>()
 
-    var notificationObservation: NSObjectProtocol? {
-        get { Self.notificationObservationAssociation[self] }
-        set { Self.notificationObservationAssociation[self] = newValue }
+    var refreshCancellable: AnyCancellable? {
+        get { Self.refreshCancellableAssociation[self]?.wrapped }
+        set { Self.refreshCancellableAssociation[self] = newValue.map(NSObjectWrapper.init) }
     }
 
     var unprocessedNormalTitle: String? {
@@ -107,19 +108,15 @@ extension UIButton {
     @objc
     func unswizzledDidMoveToSuperview() {
         unswizzledDidMoveToSuperview()
-        guard notificationObservation == nil else { return }
+        guard refreshCancellable == nil else { return }
 
-        notificationObservation = NotificationCenter.default.addObserver(
-            forName: .userLinguaObjectDidChange,
-            object: nil,
-            queue: nil
-        ) { [weak self] notification in
-            self?.userLinguaDidChange(notification)
-        }
+        refreshCancellable = UserLingua.shared.viewModel.refreshPublisher
+            .sink { [weak self] in
+                self?.refresh()
+            }
     }
 
-    @objc
-    func userLinguaDidChange(_: Notification) {
+    func refresh() {
         // call the swizzled setTitle to re-evaluate the current title based on UserLingua's state
 
         let unprocessedTitle: String? = switch state {

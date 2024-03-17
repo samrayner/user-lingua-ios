@@ -1,14 +1,15 @@
 // UILabel+Swizzle.swift
 
+import Combine
 import UIKit
 
 extension UILabel {
-    private static let notificationObservationAssociation = ObjectAssociation<NSObjectProtocol>()
+    private static let refreshCancellableAssociation = ObjectAssociation<NSObjectWrapper<AnyCancellable>>()
     private static let unprocessedTextAssociation = ObjectAssociation<NSString>()
 
-    var notificationObservation: NSObjectProtocol? {
-        get { Self.notificationObservationAssociation[self] }
-        set { Self.notificationObservationAssociation[self] = newValue }
+    var refreshCancellable: AnyCancellable? {
+        get { Self.refreshCancellableAssociation[self]?.wrapped }
+        set { Self.refreshCancellableAssociation[self] = newValue.map(NSObjectWrapper.init) }
     }
 
     var unprocessedText: String? {
@@ -52,19 +53,15 @@ extension UILabel {
     @objc
     func unswizzledDidMoveToSuperview() {
         unswizzledDidMoveToSuperview()
-        guard notificationObservation == nil else { return }
+        guard refreshCancellable == nil else { return }
 
-        notificationObservation = NotificationCenter.default.addObserver(
-            forName: .userLinguaObjectDidChange,
-            object: nil,
-            queue: nil
-        ) { [weak self] notification in
-            self?.userLinguaDidChange(notification)
-        }
+        refreshCancellable = UserLingua.shared.viewModel.refreshPublisher
+            .sink { [weak self] in
+                self?.refresh()
+            }
     }
 
-    @objc
-    func userLinguaDidChange(_: Notification) {
+    func refresh() {
         // call the swizzled text setter to re-evaluate the current text based on UserLingua's state
         if unprocessedText != nil {
             text = unprocessedText
