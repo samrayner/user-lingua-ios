@@ -93,16 +93,16 @@ struct SelectionFeatureView: View {
     var body: some View {
         WithPerceptionTracking {
             ZStack {
-                if case let .presentingStrings(recognizedStrings) = store.state.stage {
+                if case let .presentingStrings(recognizedStrings) = store.stage {
                     HighlightsView(
                         recognizedStrings: recognizedStrings,
                         onSelectString: { store.send(.delegate(.didSelectString($0))) }
                     )
                 }
 
-                if store.state.stage.isLoading {
+                if store.stage.isLoading {
                     ZStack {
-                        if let facade = store.state.facade {
+                        if let facade = store.facade {
                             Image(uiImage: facade)
                         }
 

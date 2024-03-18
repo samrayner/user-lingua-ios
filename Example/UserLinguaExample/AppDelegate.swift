@@ -9,8 +9,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
 
-        let configuration = UserLinguaConfiguration()
-        UserLingua.shared.configure(configuration)
+        UserLingua.shared.configure(UserLinguaConfiguration())
         UserLingua.shared.enable()
 
         return true

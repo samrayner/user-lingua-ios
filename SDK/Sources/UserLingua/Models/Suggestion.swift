@@ -3,7 +3,7 @@
 import Foundation
 import UIKit
 
-struct Suggestion {
+struct Suggestion: Equatable {
     var recordedString: RecordedString
     var newValue: String
     var locale: Locale

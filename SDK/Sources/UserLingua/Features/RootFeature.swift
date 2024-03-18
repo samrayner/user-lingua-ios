@@ -48,6 +48,7 @@ struct RootFeature {
                 }
                 .ifCaseLet(\.inspection, action: \.inspection) {
                     InspectionFeature()
+                        ._printChanges()
                 }
         }
 
@@ -101,6 +102,7 @@ struct RootFeatureView: View {
                         VStack {
                             Spacer()
                             InspectionFeatureView(store: store)
+                                .frame(height: 250)
                         }
                     }
                 }

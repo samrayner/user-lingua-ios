@@ -10,6 +10,7 @@ public final class UserLingua {
     public let viewModel = UserLinguaObservable()
 
     let windowManager: WindowManagerProtocol
+    let suggestionsRepository: SuggestionsRepositoryProtocol
     let stringsRepository: StringsRepositoryProtocol
     let stringRecognizer: StringRecognizerProtocol
     let stringExtractor: StringExtractorProtocol
@@ -22,37 +23,39 @@ public final class UserLingua {
 
     lazy var store: StoreOf<RootFeature> = .init(
         initialState: .init(),
-        reducer: { RootFeature()._printChanges() },
+        reducer: { RootFeature() },
         withDependencies: {
             $0[TriggerObserverDependency.self] = TriggerObserver(
                 onShake: { self.onShake() }
             )
 
-            $0[StringRecognizerDependency.self] = self.stringRecognizer
             $0[WindowManagerDependency.self] = self.windowManager
+            $0[StringRecognizerDependency.self] = self.stringRecognizer
+            $0[SuggestionsRepositoryDependency.self] = self.suggestionsRepository
         }
     )
 
     init() {
         self.windowManager = WindowManager()
+        self.suggestionsRepository = SuggestionsRepository()
         self.stringsRepository = StringsRepository()
         self.stringExtractor = StringExtractor()
         self.stringRecognizer = StringRecognizer(stringsRepository: stringsRepository)
         self.stringProcessor = StringProcessor(
             stringExtractor: stringExtractor,
             stringsRepository: stringsRepository,
-            suggestionsRepository: SuggestionsRepository()
+            suggestionsRepository: suggestionsRepository
         )
 
         windowManager.setRootView(RootFeatureView(store: store))
     }
 
     var mode: RootFeature.Mode.State {
-        store.state.mode
+        store.mode
     }
 
     public var configuration: UserLinguaConfiguration {
-        store.state.configuration
+        store.configuration
     }
 
     public func disable() {
@@ -92,7 +95,7 @@ public final class UserLingua {
     ) -> FormattedString {
         stringExtractor.formattedString(
             localizedStringKey: localizedStringKey,
-            locale: store.state.locale,
+            locale: store.locale,
             tableName: tableName,
             bundle: bundle,
             comment: comment

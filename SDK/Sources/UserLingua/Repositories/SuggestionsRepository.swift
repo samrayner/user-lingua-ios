@@ -1,11 +1,13 @@
 // SuggestionsRepository.swift
 
+import Dependencies
 import Foundation
 import Spyable
 
 @Spyable
 protocol SuggestionsRepositoryProtocol {
-    func submitSuggestion(_ suggestion: Suggestion)
+    func saveSuggestion(_ suggestion: Suggestion)
+    func suggestion(recorded: RecordedString, locale: Locale) -> Suggestion?
     func suggestion(formatted: FormattedString, locale: Locale) -> Suggestion?
     func suggestion(localized: LocalizedString, locale: Locale) -> Suggestion?
     func suggestion(string: String, locale: Locale) -> Suggestion?
@@ -18,8 +20,12 @@ final class SuggestionsRepository: SuggestionsRepositoryProtocol {
         self.suggestions = suggestions
     }
 
-    func submitSuggestion(_ suggestion: Suggestion) {
+    func saveSuggestion(_ suggestion: Suggestion) {
         suggestions[suggestion.recordedString.formatted.value, default: [:]][suggestion.locale] = suggestion
+    }
+
+    func suggestion(recorded recordedString: RecordedString, locale: Locale) -> Suggestion? {
+        suggestion(formatted: recordedString.formatted, locale: locale)
     }
 
     func suggestion(formatted formattedString: FormattedString, locale: Locale) -> Suggestion? {
@@ -45,4 +51,10 @@ final class SuggestionsRepository: SuggestionsRepositoryProtocol {
     func suggestion(string: String, locale: Locale) -> Suggestion? {
         suggestions[string, default: [:]][locale]
     }
+}
+
+enum SuggestionsRepositoryDependency: DependencyKey {
+    static let liveValue: any SuggestionsRepositoryProtocol = { fatalError("Suggestions repository not supplied.") }()
+    static let previewValue: any SuggestionsRepositoryProtocol = SuggestionsRepositoryProtocolSpy()
+    static let testValue: any SuggestionsRepositoryProtocol = SuggestionsRepositoryProtocolSpy()
 }

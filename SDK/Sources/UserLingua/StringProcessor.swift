@@ -46,12 +46,12 @@ struct StringProcessor: StringProcessorProtocol {
                 return formattedString.value
             }
             return recordedString.detectable
-        case .inspection:
+        case let .inspection(state) where state.recordedString.value == formattedString.value:
             guard let suggestion = suggestionsRepository.suggestion(formatted: formattedString, locale: state.locale) else {
-                return formattedString.value
+                return formattedString.localizedValue(locale: state.locale)
             }
             return suggestion.newValue
-        case .disabled, .recording, .selection:
+        default:
             return formattedString.value
         }
     }
