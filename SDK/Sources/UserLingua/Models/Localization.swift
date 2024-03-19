@@ -13,7 +13,7 @@ struct Localization: Equatable {
     }
 
     func value(locale: Locale) -> String? {
-        Bundle.main.localized(locale: locale)?
+        Bundle.main.localized(localeIdentifier: locale.identifier)?
             .unswizzledLocalizedString(forKey: key, value: key, table: tableName)
     }
 }

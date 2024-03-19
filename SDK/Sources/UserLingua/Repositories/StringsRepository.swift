@@ -63,6 +63,8 @@ final class StringsRepository: StringsRepositoryProtocol {
         stringRecord[formattedString.value, default: []].append(
             RecordedString(formattedString)
         )
+
+        print("Recorded formatted: \(formattedString.value)")
     }
 
     func record(format: StringFormat) {
@@ -80,12 +82,16 @@ final class StringsRepository: StringsRepositoryProtocol {
         stringRecord[localizedString.value, default: []].append(
             RecordedString(localizedString)
         )
+
+        print("Recorded localized: \(localizedString.value)")
     }
 
     func record(string: String) {
         stringRecord[string, default: []].append(
             RecordedString(string)
         )
+
+        print("Recorded string: \(string)")
     }
 
     func recordedStrings() -> [RecordedString] {

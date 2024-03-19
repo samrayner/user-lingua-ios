@@ -18,12 +18,17 @@ struct InspectionFeature {
     @ObservableState
     struct State: Equatable {
         let recordedString: RecordedString
-        var suggestionString = ""
+        var suggestionString: String
         var localeIdentifier = Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
         var path = StackState<Path.State>()
 
         var locale: Locale {
             Locale(identifier: localeIdentifier)
+        }
+
+        init(recordedString: RecordedString) {
+            self.recordedString = recordedString
+            self.suggestionString = recordedString.value
         }
     }
 
@@ -62,7 +67,7 @@ struct InspectionFeature {
                 state.suggestionString = suggestionsRepository.suggestion(
                     recorded: state.recordedString,
                     locale: state.locale
-                )?.newValue ?? ""
+                )?.newValue ?? state.recordedString.localizedValue(locale: state.locale)
                 appViewModel.refresh()
                 return .none
             case .binding(\.suggestionString):

@@ -6,8 +6,8 @@ import SwiftUI
 @Spyable
 protocol StringProcessorProtocol {
     func processLocalizedStringKey(_ key: LocalizedStringKey, state: RootFeature.State) -> String
-    func processString(_ string: String, state: RootFeature.State) -> String
-    func displayString(for formattedString: FormattedString, state: RootFeature.State) -> String
+    func processString(_ string: String, mode: RootFeature.Mode.State) -> String
+    func displayString(for formattedString: FormattedString, mode: RootFeature.Mode.State) -> String
 }
 
 struct StringProcessor: StringProcessorProtocol {
@@ -28,27 +28,27 @@ struct StringProcessor: StringProcessorProtocol {
             stringsRepository.record(formatted: formattedString)
         }
 
-        return displayString(for: formattedString, state: state)
+        return displayString(for: formattedString, mode: state.mode)
     }
 
-    func processString(_ string: String, state: RootFeature.State) -> String {
-        if state.mode == .recording {
+    func processString(_ string: String, mode: RootFeature.Mode.State) -> String {
+        if mode == .recording {
             stringsRepository.record(string: string)
         }
 
-        return displayString(for: FormattedString(string), state: state)
+        return displayString(for: FormattedString(string), mode: mode)
     }
 
-    func displayString(for formattedString: FormattedString, state: RootFeature.State) -> String {
-        switch state.mode {
-        case let .selection(state) where state.stage == .takingScreenshot:
+    func displayString(for formattedString: FormattedString, mode: RootFeature.Mode.State) -> String {
+        switch mode {
+        case let .selection(modeState) where modeState.stage == .takingScreenshot:
             guard let recordedString = stringsRepository.recordedString(formatted: formattedString) else {
                 return formattedString.value
             }
             return recordedString.detectable
-        case let .inspection(state) where state.recordedString.value == formattedString.value:
-            guard let suggestion = suggestionsRepository.suggestion(formatted: formattedString, locale: state.locale) else {
-                return formattedString.localizedValue(locale: state.locale)
+        case let .inspection(modeState) where modeState.recordedString.value == formattedString.value:
+            guard let suggestion = suggestionsRepository.suggestion(formatted: formattedString, locale: modeState.locale) else {
+                return formattedString.localizedValue(locale: modeState.locale)
             }
             return suggestion.newValue
         default:

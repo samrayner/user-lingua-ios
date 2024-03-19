@@ -80,11 +80,11 @@ public final class UserLingua {
     }
 
     func processString(_ string: String) -> String {
-        stringProcessor.processString(string, state: store.state)
+        stringProcessor.processString(string, mode: store.mode)
     }
 
     func displayString(for formattedString: FormattedString) -> String {
-        stringProcessor.displayString(for: formattedString, state: store.state)
+        stringProcessor.displayString(for: formattedString, mode: store.mode)
     }
 
     func formattedString(

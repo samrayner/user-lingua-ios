@@ -29,14 +29,14 @@ extension Text {
             return
         }
 
-        let localizedString = UserLingua.shared.formattedString(
+        let formattedString = UserLingua.shared.formattedString(
             localizedStringKey: key,
             tableName: tableName,
             bundle: bundle,
             comment: comment.map(\.description)
         )
 
-        self.init(localizedString)
+        self.init(formattedString)
     }
 
     // Takes precedence over the SwiftUI version
