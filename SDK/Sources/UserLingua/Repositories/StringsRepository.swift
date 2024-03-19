@@ -41,6 +41,10 @@ final class StringsRepository: StringsRepositoryProtocol {
                 if let recorded = (cVarArg as? String).flatMap(recordedString(string:)) {
                     formattedString.arguments[index] = .formattedString(recorded.formatted)
                 }
+            case .formattableInput:
+                // used for things like dates so not a localized string we
+                // need to worry about recording
+                break
             }
         }
 

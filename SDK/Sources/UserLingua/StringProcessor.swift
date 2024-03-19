@@ -18,7 +18,6 @@ struct StringProcessor: StringProcessorProtocol {
     func processLocalizedStringKey(_ key: LocalizedStringKey, state: RootFeature.State) -> String {
         let formattedString = stringExtractor.formattedString(
             localizedStringKey: key,
-            locale: state.locale,
             tableName: nil,
             bundle: nil,
             comment: nil

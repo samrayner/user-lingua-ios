@@ -95,7 +95,6 @@ public final class UserLingua {
     ) -> FormattedString {
         stringExtractor.formattedString(
             localizedStringKey: localizedStringKey,
-            locale: store.locale,
             tableName: tableName,
             bundle: bundle,
             comment: comment

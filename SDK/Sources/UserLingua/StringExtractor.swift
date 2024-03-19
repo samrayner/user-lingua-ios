@@ -9,7 +9,6 @@ import SystemAPIAliases
 protocol StringExtractorProtocol {
     func formattedString(
         localizedStringKey: LocalizedStringKey,
-        locale: Locale,
         tableName: String?,
         bundle: Bundle?,
         comment: String?
@@ -19,7 +18,6 @@ protocol StringExtractorProtocol {
 struct StringExtractor: StringExtractorProtocol {
     func formattedString(
         localizedStringKey: LocalizedStringKey,
-        locale: Locale,
         tableName: String?,
         bundle: Bundle?,
         comment: String?
@@ -43,12 +41,11 @@ struct StringExtractor: StringExtractorProtocol {
                     comment: comment
                 )
             ),
-            locale: locale,
-            arguments: formattingArguments(localizedStringKey, locale: locale)
+            arguments: formattingArguments(localizedStringKey)
         )
     }
 
-    private func formattedString(text: Text, locale: Locale) -> FormattedString? {
+    private func formattedString(text: Text) -> FormattedString? {
         if let verbatim = verbatim(text: text) {
             return .init(verbatim)
         }
@@ -59,7 +56,7 @@ struct StringExtractor: StringExtractorProtocol {
 
         return switch "\(type(of: textStorage))" {
         case "LocalizedTextStorage":
-            formattedString(localizedTextStorage: textStorage, locale: locale)
+            formattedString(localizedTextStorage: textStorage)
         case "LocalizedStringResourceStorage":
             localizedString(localizedStringResourceStorage: textStorage).map(FormattedString.init)
         case "AttributedStringTextStorage":
@@ -102,7 +99,7 @@ struct StringExtractor: StringExtractorProtocol {
         )
     }
 
-    private func formattedString(localizedTextStorage storage: Any, locale: Locale) -> FormattedString? {
+    private func formattedString(localizedTextStorage storage: Any) -> FormattedString? {
         guard let localizedStringKey = Reflection.value("key", on: storage) as? LocalizedStringKey
         else { return nil }
 
@@ -112,33 +109,32 @@ struct StringExtractor: StringExtractorProtocol {
 
         return formattedString(
             localizedStringKey: localizedStringKey,
-            locale: locale,
             tableName: tableName,
             bundle: bundle,
             comment: comment
         )
     }
 
-    private func formattingArguments(_ localizedStringKey: LocalizedStringKey, locale: Locale) -> [FormattedStringArgument] {
+    private func formattingArguments(_ localizedStringKey: LocalizedStringKey) -> [FormattedStringArgument] {
         guard let arguments = Reflection.value("arguments", on: localizedStringKey) as? [Any]
         else { return [] }
 
-        return arguments.compactMap { formattingArgument($0, locale: locale) }
+        return arguments.compactMap(formattingArgument)
     }
 
-    private func formattingArgument(_ container: Any, locale: Locale) -> FormattedStringArgument? {
+    private func formattingArgument(_ container: Any) -> FormattedStringArgument? {
         guard let storage = Reflection.value("storage", on: container)
         else { return nil }
 
         if let textContainer = Reflection.value("text", on: storage),
            let text = Reflection.value(".0", on: textContainer) as? Text {
-            return formattedString(text: text, locale: locale).map { .formattedString($0) }
+            return formattedString(text: text).map { .formattedString($0) }
         }
 
         if let formatStyleContainer = Reflection.value("formatStyleValue", on: storage),
            let formatStyle = Reflection.value("format", on: formatStyleContainer) as? any FormatStyle,
            let input = Reflection.value("input", on: formatStyleContainer) {
-            return formatStyle.string(for: input, locale: locale).map { .cVarArg($0) }
+            return .formattableInput(formatStyle, input)
         }
 
         if let valueContainer = Reflection.value("value", on: storage),
@@ -152,13 +148,5 @@ struct StringExtractor: StringExtractorProtocol {
         }
 
         return nil
-    }
-}
-
-extension FormatStyle {
-    fileprivate func string(for input: Any, locale: Locale) -> String? {
-        guard let input = input as? FormatInput else { return nil }
-        let formatter = self.locale(locale)
-        return formatter.format(input) as? String
     }
 }

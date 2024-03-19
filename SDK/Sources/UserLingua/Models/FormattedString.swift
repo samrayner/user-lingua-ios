@@ -21,6 +21,8 @@ struct FormattedString: Equatable {
                 formattedArguments.append(formattedString.localizedValue(locale: locale))
             case let .cVarArg(cVarArg):
                 formattedArguments.append(cVarArg)
+            case let .formattableInput(formatStyle, input):
+                formattedArguments.append(formatStyle.string(for: input, locale: locale) ?? "")
             }
         }
 
@@ -35,7 +37,7 @@ extension FormattedString {
         self.arguments = []
     }
 
-    init(format: StringFormat, locale: Locale, arguments: [FormattedStringArgument]) {
+    init(format: StringFormat, arguments: [FormattedStringArgument], locale: Locale = .current) {
         self.init(
             value: "",
             format: format,
