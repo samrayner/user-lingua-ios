@@ -2,6 +2,7 @@
 
 import ComposableArchitecture
 import Foundation
+import SFSafeSymbols
 import SwiftUI
 
 @Reducer
@@ -133,8 +134,15 @@ struct InspectionFeatureView: View {
                         }
                     }
                 }
-                .navigationTitle("Inspector")
-                .toolbar(.hidden)
+                .navigationTitle("UserLingua")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem {
+                        Button(action: { store.send(.delegate(.didDismiss)) }) {
+                            Image(systemSymbol: .xmarkCircleFill)
+                        }
+                    }
+                }
             } destination: { _ in
                 //                switch store.case {
                 //                case let .other(store):
