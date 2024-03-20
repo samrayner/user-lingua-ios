@@ -40,14 +40,14 @@ struct StringProcessor: StringProcessorProtocol {
 
     func displayString(for formattedString: FormattedString, mode: RootFeature.Mode.State) -> String {
         switch mode {
-        case let .selection(modeState) where modeState.stage == .takingScreenshot:
+        case let .selection(state) where state.stage == .takingScreenshot:
             guard let recordedString = stringsRepository.recordedString(formatted: formattedString) else {
                 return formattedString.value
             }
             return recordedString.detectable
-        case let .inspection(modeState) where modeState.recordedString.value == formattedString.value:
-            guard let suggestion = suggestionsRepository.suggestion(formatted: formattedString, locale: modeState.locale) else {
-                return formattedString.localizedValue(locale: modeState.locale)
+        case let .inspection(state) where state.recordedString.value == formattedString.value:
+            guard let suggestion = suggestionsRepository.suggestion(formatted: formattedString, locale: state.locale) else {
+                return formattedString.localizedValue(locale: state.locale)
             }
             return suggestion.newValue
         default:

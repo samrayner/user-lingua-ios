@@ -3,7 +3,7 @@
 import Foundation
 import SystemAPIAliases
 
-struct FormattedString: Equatable {
+struct FormattedString {
     var value: String
     var format: StringFormat
     var arguments: [FormattedStringArgument]
@@ -56,5 +56,14 @@ extension FormattedString {
 
     var localization: Localization? {
         format.localization
+    }
+}
+
+extension FormattedString: Equatable {
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.format == rhs.format &&
+            lhs.value == rhs.value
+        // argument equality is inherently checked
+        // through their inclusion in the value
     }
 }

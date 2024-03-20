@@ -1,5 +1,6 @@
 // DetectionRedactionView.swift
 
+import ComposableArchitecture
 import SwiftUI
 
 extension RedactionReasons {
@@ -12,8 +13,7 @@ private struct DetectionRedactionView<Content: View>: View {
     let redact: Bool
 
     var body: some View {
-        switch UserLingua.shared.mode {
-        case let .selection(state) where state.stage == .takingScreenshot:
+        if UserLingua.shared.isTakingScreenshot {
             if redact {
                 content.redacted(reason: [.placeholder, .userLingua])
             } else if redactionReasons.contains(.userLingua) {
@@ -21,7 +21,7 @@ private struct DetectionRedactionView<Content: View>: View {
             } else {
                 content
             }
-        default:
+        } else {
             content
         }
     }

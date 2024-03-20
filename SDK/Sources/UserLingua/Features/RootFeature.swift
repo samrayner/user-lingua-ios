@@ -22,14 +22,6 @@ struct RootFeature {
     struct State: Equatable {
         var configuration: UserLinguaConfiguration = .init()
         var mode: Mode.State = .disabled
-
-        var locale: Locale {
-            if case let .inspection(state) = mode {
-                state.locale
-            } else {
-                .current
-            }
-        }
     }
 
     enum Action {

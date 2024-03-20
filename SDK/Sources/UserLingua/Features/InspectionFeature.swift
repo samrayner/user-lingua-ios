@@ -93,52 +93,54 @@ struct InspectionFeatureView: View {
     @Perception.Bindable var store: StoreOf<InspectionFeature>
 
     var body: some View {
-        NavigationStack(
-            path: $store.scope(state: \.path, action: \.path)
-        ) {
-            Form {
-                Picker("Language", selection: $store.localeIdentifier) {
-                    ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
-                        Text(Locale.current.localizedString(forIdentifier: identifier) ?? identifier)
+        WithPerceptionTracking {
+            NavigationStack(
+                path: $store.scope(state: \.path, action: \.path)
+            ) {
+                Form {
+                    Picker("Language", selection: $store.localeIdentifier) {
+                        ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
+                            Text(Locale.current.localizedString(forIdentifier: identifier) ?? identifier)
+                        }
                     }
-                }
-                .pickerStyle(.segmented)
-                .frame(height: 50)
+                    .pickerStyle(.segmented)
+                    .frame(height: 50)
 
-                Section("Suggestion") {
-                    TextField("Suggestion", text: $store.suggestionString)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-                }
+                    Section("Suggestion") {
+                        TextField("Suggestion", text: $store.suggestionString)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                    }
 
-                if let localization = store.recordedString.localization {
-                    Section("Localization") {
-                        VStack(alignment: .leading) {
-                            HStack {
-                                Text("Key:")
-                                Text(localization.key)
-                            }
+                    if let localization = store.recordedString.localization {
+                        Section("Localization") {
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    Text("Key:")
+                                    Text(localization.key)
+                                }
 
-                            HStack {
-                                Text("Table:")
-                                Text(localization.tableName ?? "Localizable")
-                            }
+                                HStack {
+                                    Text("Table:")
+                                    Text(localization.tableName ?? "Localizable")
+                                }
 
-                            HStack {
-                                Text("Comment:")
-                                Text(localization.comment ?? "[None]")
+                                HStack {
+                                    Text("Comment:")
+                                    Text(localization.comment ?? "[None]")
+                                }
                             }
                         }
                     }
                 }
+                .navigationTitle("Inspector")
+                .toolbar(.hidden)
+            } destination: { _ in
+                //                switch store.case {
+                //                case let .other(store):
+                //                    OtherFeatureView(store: store)
+                //                }
             }
-            .navigationTitle("Inspector")
-            .toolbar(.hidden)
-        } destination: { _ in
-//                switch store.case {
-//                case let .other(store):
-//                    OtherFeatureView(store: store)
-//                }
         }
     }
 }

@@ -5,7 +5,7 @@ import SystemAPIAliases
 
 extension Text {
     private init(_ formattedString: FormattedString) {
-        if UserLingua.shared.mode == .recording {
+        if UserLingua.shared.isRecording {
             UserLingua.shared.stringsRepository.record(formatted: formattedString)
         }
         let displayString = UserLingua.shared.displayString(for: formattedString)
@@ -22,9 +22,7 @@ extension Text {
         comment: StaticString? = nil,
         userLingua: Bool = UserLingua.shared.configuration.automaticallyOptInTextViews
     ) {
-        guard userLingua,
-              UserLingua.shared.mode != .disabled
-        else {
+        guard userLingua, UserLingua.shared.isEnabled else {
             self = SystemText.initTableNameBundleComment(key, tableName, bundle, comment)
             return
         }
@@ -148,7 +146,7 @@ extension Text {
         localizedStringResource: LocalizedStringResource,
         userLingua: Bool = UserLingua.shared.configuration.automaticallyOptInTextViews
     ) {
-        guard userLingua, UserLingua.shared.mode != .disabled else {
+        guard userLingua, UserLingua.shared.isEnabled else {
             self = SystemText.initLocalizedStringResource(localizedStringResource)
             return
         }
@@ -179,7 +177,7 @@ extension Text {
         _ content: String,
         userLingua: Bool = UserLingua.shared.configuration.automaticallyOptInTextViews
     ) {
-        guard userLingua, UserLingua.shared.mode != .disabled else {
+        guard userLingua, UserLingua.shared.isEnabled else {
             self = SystemText.initVerbatim(content)
             return
         }

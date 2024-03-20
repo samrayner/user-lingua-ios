@@ -50,12 +50,39 @@ public final class UserLingua {
         windowManager.setRootView(RootFeatureView(store: store))
     }
 
-    var mode: RootFeature.Mode.State {
-        store.mode
+    private var mode: RootFeature.Mode.State {
+        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+            store.mode
+        }
     }
 
     public var configuration: UserLinguaConfiguration {
-        store.configuration
+        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+            store.configuration
+        }
+    }
+
+    var isTakingScreenshot: Bool {
+        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+            switch store.mode {
+            case let .selection(state) where state.stage == .takingScreenshot:
+                true
+            default:
+                false
+            }
+        }
+    }
+
+    var isEnabled: Bool {
+        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+            mode != .disabled
+        }
+    }
+
+    var isRecording: Bool {
+        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+            mode == .recording
+        }
     }
 
     public func disable() {
@@ -76,15 +103,21 @@ public final class UserLingua {
     }
 
     func processLocalizedStringKey(_ key: LocalizedStringKey) -> String {
-        stringProcessor.processLocalizedStringKey(key, state: store.state)
+        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+            stringProcessor.processLocalizedStringKey(key, state: store.state)
+        }
     }
 
     func processString(_ string: String) -> String {
-        stringProcessor.processString(string, mode: store.mode)
+        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+            stringProcessor.processString(string, mode: store.mode)
+        }
     }
 
     func displayString(for formattedString: FormattedString) -> String {
-        stringProcessor.displayString(for: formattedString, mode: store.mode)
+        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+            stringProcessor.displayString(for: formattedString, mode: store.mode)
+        }
     }
 
     func formattedString(
