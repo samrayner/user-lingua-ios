@@ -1,5 +1,5 @@
 {
-  "originHash" : "ef065afcd59eedfb197abb685ee65e4de8d736bbf96806e4458ecd6f3995dd58",
+  "originHash" : "1ef2d4e454055f42eb284f42f00eb18c408fee7f57a88ce889d62d4f03015d5a",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -89,6 +89,15 @@
       "state" : {
         "revision" : "d1e45f3e1eee2c9193f5369fa9d70a6ddad635e8",
         "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "swift-memberwise-init-macro",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/gohanlon/swift-memberwise-init-macro",
+      "state" : {
+        "revision" : "9299b40774ad9145471e47723a7d636d41b79951",
+        "version" : "0.3.0"
       }
     },
     {

@@ -1,6 +1,8 @@
 // UserLingua.swift
 
 import ComposableArchitecture
+import Core
+import RootFeature
 import SwiftUI
 import UIKit
 
@@ -9,12 +11,13 @@ public final class UserLingua {
 
     public let viewModel = UserLinguaObservable()
 
-    let windowManager: WindowManagerProtocol
-    let suggestionsRepository: SuggestionsRepositoryProtocol
-    let stringsRepository: StringsRepositoryProtocol
-    let stringRecognizer: StringRecognizerProtocol
-    let stringExtractor: StringExtractorProtocol
-    private let stringProcessor: StringProcessorProtocol
+    let windowManager: WindowManagerProtocol = WindowManager()
+    let suggestionsRepository: SuggestionsRepositoryProtocol = SuggestionsRepository()
+    let stringsRepository: StringsRepositoryProtocol = StringsRepository()
+    let stringExtractor: StringExtractorProtocol = StringExtractor()
+    let swizzler: SwizzlerProtocol = Swizzler()
+
+    private(set) lazy var triggerObserver: TriggerObserverProtocol = TriggerObserver(onShake: onShake)
 
     private var inPreviewsOrTests: Bool {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
@@ -25,28 +28,13 @@ public final class UserLingua {
         initialState: .init(),
         reducer: { RootFeature() },
         withDependencies: {
-            $0[TriggerObserverDependency.self] = TriggerObserver(
-                onShake: { self.onShake() }
-            )
-
             $0[WindowManagerDependency.self] = self.windowManager
-            $0[StringRecognizerDependency.self] = self.stringRecognizer
             $0[SuggestionsRepositoryDependency.self] = self.suggestionsRepository
+            $0[StringsRepositoryDependency.self] = self.stringsRepository
         }
     )
 
-    init() {
-        self.windowManager = WindowManager()
-        self.suggestionsRepository = SuggestionsRepository()
-        self.stringsRepository = StringsRepository()
-        self.stringExtractor = StringExtractor()
-        self.stringRecognizer = StringRecognizer(stringsRepository: stringsRepository)
-        self.stringProcessor = StringProcessor(
-            stringExtractor: stringExtractor,
-            stringsRepository: stringsRepository,
-            suggestionsRepository: suggestionsRepository
-        )
-
+    private init() {
         windowManager.setRootView(RootFeatureView(store: store))
     }
 
@@ -58,7 +46,7 @@ public final class UserLingua {
 
     public var configuration: UserLinguaConfiguration {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            store.configuration
+            store.configuration.userLinguaConfiguration
         }
     }
 
@@ -85,17 +73,21 @@ public final class UserLingua {
         }
     }
 
+    public func enable() {
+        guard !inPreviewsOrTests else { return }
+        swizzler.swizzle()
+        triggerObserver.startObservingShake()
+        store.send(.enable)
+    }
+
     public func disable() {
         store.send(.disable)
+        swizzler.unswizzle()
+        triggerObserver.stopObservingShake()
     }
 
     public func configure(_ configuration: UserLinguaConfiguration) {
-        store.send(.configure(configuration))
-    }
-
-    public func enable() {
-        guard !inPreviewsOrTests else { return }
-        store.send(.enable)
+        store.send(.configure(Configuration(configuration)))
     }
 
     private func onShake() {
@@ -104,19 +96,47 @@ public final class UserLingua {
 
     func processLocalizedStringKey(_ key: LocalizedStringKey) -> String {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            stringProcessor.processLocalizedStringKey(key, state: store.state)
+            let formattedString = stringExtractor.formattedString(
+                localizedStringKey: key,
+                tableName: nil,
+                bundle: nil,
+                comment: nil
+            )
+
+            if isRecording {
+                stringsRepository.record(formatted: formattedString)
+            }
+
+            return displayString(for: formattedString)
         }
     }
 
     func processString(_ string: String) -> String {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            stringProcessor.processString(string, mode: store.mode)
+            if isRecording {
+                stringsRepository.record(string: string)
+            }
+
+            return displayString(for: FormattedString(string))
         }
     }
 
     func displayString(for formattedString: FormattedString) -> String {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            stringProcessor.displayString(for: formattedString, mode: store.mode)
+            switch mode {
+            case let .selection(state) where state.stage == .takingScreenshot:
+                guard let recordedString = stringsRepository.recordedString(formatted: formattedString) else {
+                    return formattedString.value
+                }
+                return recordedString.detectable
+            case let .inspection(state) where state.recordedString.value == formattedString.value:
+                guard let suggestion = suggestionsRepository.suggestion(formatted: formattedString, locale: state.locale) else {
+                    return formattedString.localizedValue(locale: state.locale)
+                }
+                return suggestion.newValue
+            default:
+                return formattedString.value
+            }
         }
     }
 
