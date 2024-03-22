@@ -31,6 +31,7 @@ public final class UserLingua {
             $0[WindowManagerDependency.self] = self.windowManager
             $0[SuggestionsRepositoryDependency.self] = self.suggestionsRepository
             $0[StringsRepositoryDependency.self] = self.stringsRepository
+            $0[UserLinguaObservableDependency.self] = self.viewModel
         }
     )
 
@@ -52,7 +53,7 @@ public final class UserLingua {
 
     var isTakingScreenshot: Bool {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            switch store.mode {
+            switch mode {
             case let .selection(state) where state.stage == .takingScreenshot:
                 true
             default:

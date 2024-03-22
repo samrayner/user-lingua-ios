@@ -13,7 +13,7 @@ package struct RootFeature {
 
     package init() {}
 
-    // TODO: https://github.com/pointfreeco/swift-composable-architecture/discussions/2936
+    // https://github.com/pointfreeco/swift-composable-architecture/discussions/2936
     @Reducer(state: .equatable)
     public enum Mode {
         case disabled

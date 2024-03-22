@@ -9,15 +9,16 @@ struct HighlightsView: View {
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        EmptyView()
         ZStack {
             (colorScheme == .dark ? Color.white : Color.black)
                 .opacity(0.1)
                 .mask {
-                    highlights(color: .black)
-                        .background(.white)
-                        .compositingGroup()
-                        .luminanceToAlpha()
+                    ZStack {
+                        Color(.white)
+                        highlights(color: .black)
+                    }
+                    .compositingGroup()
+                    .luminanceToAlpha()
                 }
 
             highlights(color: .white.opacity(0.001), onSelectString: onSelectString)

@@ -4,6 +4,7 @@ import ComposableArchitecture
 import Core
 import Foundation
 import MemberwiseInit
+import SFSafeSymbols
 import SwiftUI
 
 @Reducer
@@ -101,25 +102,34 @@ package struct SelectionFeatureView: View {
 
     package var body: some View {
         WithPerceptionTracking {
-            ZStack {
-                if case let .presentingStrings(recognizedStrings) = store.stage {
-                    HighlightsView(
-                        recognizedStrings: recognizedStrings,
-                        onSelectString: { store.send(.delegate(.didSelectString($0))) }
-                    )
-                }
+            ZStack(alignment: .topLeading) {
+                Group {
+                    if case let .presentingStrings(recognizedStrings) = store.stage {
+                        HighlightsView(
+                            recognizedStrings: recognizedStrings,
+                            onSelectString: { store.send(.delegate(.didSelectString($0))) }
+                        )
+                    }
 
-                if store.stage.isLoading {
-                    ZStack {
-                        if let facade = store.facade {
-                            Image(uiImage: facade)
+                    if store.stage.isLoading {
+                        ZStack {
+                            if let facade = store.facade {
+                                Image(uiImage: facade)
+                            }
+
+                            ProgressView()
                         }
+                    }
+                }
+                .ignoresSafeArea()
 
-                        ProgressView()
+                if !store.stage.isLoading {
+                    Button(action: { store.send(.delegate(.didDismiss)) }) {
+                        Image(systemSymbol: .xmarkCircleFill)
+                            .padding()
                     }
                 }
             }
-            .ignoresSafeArea()
             .onAppear { store.send(.onAppear) }
         }
     }

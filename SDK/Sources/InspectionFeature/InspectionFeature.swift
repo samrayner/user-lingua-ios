@@ -17,7 +17,7 @@ package struct InspectionFeature {
 
     package init() {}
 
-    // TODO: https://github.com/pointfreeco/swift-composable-architecture/discussions/2936
+    // https://github.com/pointfreeco/swift-composable-architecture/discussions/2936
     @Reducer(state: .equatable)
     public enum Path {
         // case other(OtherFeature)
