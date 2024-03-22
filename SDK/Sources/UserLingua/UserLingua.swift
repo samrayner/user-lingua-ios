@@ -10,30 +10,29 @@ public final class UserLingua {
     public static let shared = UserLingua()
 
     public let viewModel = UserLinguaObservable()
-
-    let windowManager: WindowManagerProtocol = WindowManager()
-    let suggestionsRepository: SuggestionsRepositoryProtocol = SuggestionsRepository()
+    private let windowManager: WindowManagerProtocol = WindowManager()
+    private let suggestionsRepository: SuggestionsRepositoryProtocol = SuggestionsRepository()
     let stringsRepository: StringsRepositoryProtocol = StringsRepository()
-    let stringExtractor: StringExtractorProtocol = StringExtractor()
-    let swizzler: SwizzlerProtocol = Swizzler()
 
+    private lazy var store: StoreOf<RootFeature> = .init(
+        initialState: .init(),
+        reducer: { RootFeature() },
+        withDependencies: {
+            $0[UserLinguaObservableDependency.self] = self.viewModel
+            $0[WindowManagerDependency.self] = self.windowManager
+            $0[SuggestionsRepositoryDependency.self] = self.suggestionsRepository
+            $0[StringsRepositoryDependency.self] = self.stringsRepository
+        }
+    )
+
+    private let stringExtractor: StringExtractorProtocol = StringExtractor()
+    private let swizzler: SwizzlerProtocol = Swizzler()
     private(set) lazy var triggerObserver: TriggerObserverProtocol = TriggerObserver(onShake: onShake)
 
     private var inPreviewsOrTests: Bool {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
             || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
-
-    lazy var store: StoreOf<RootFeature> = .init(
-        initialState: .init(),
-        reducer: { RootFeature() },
-        withDependencies: {
-            $0[WindowManagerDependency.self] = self.windowManager
-            $0[SuggestionsRepositoryDependency.self] = self.suggestionsRepository
-            $0[StringsRepositoryDependency.self] = self.stringsRepository
-            $0[UserLinguaObservableDependency.self] = self.viewModel
-        }
-    )
 
     private init() {
         windowManager.setRootView(RootFeatureView(store: store))
@@ -126,16 +125,30 @@ public final class UserLingua {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
             switch mode {
             case let .selection(state) where state.stage == .takingScreenshot:
-                guard let recordedString = stringsRepository.recordedString(formatted: formattedString) else {
-                    return formattedString.value
+                // if we've recorded this string, make the most detailed record
+                // uniquely recognizable in the UI by scrambling it
+                if let recordedString = stringsRepository.recordedString(formatted: formattedString) {
+                    return recordedString.detectable
                 }
-                return recordedString.detectable
+                return formattedString.value
             case let .inspection(state) where state.recordedString.value == formattedString.value:
-                guard let suggestion = suggestionsRepository.suggestion(formatted: formattedString, locale: state.locale) else {
-                    return formattedString.localizedValue(locale: state.locale)
+                // we're currently inspected this string so display the
+                // suggestion the user is making if there is one
+                if let suggestion = suggestionsRepository.suggestion(formatted: formattedString, locale: state.locale) {
+                    return suggestion.newValue
                 }
-                return suggestion.newValue
+
+                // if there exists a localized record of this string, use that,
+                // as the formattedString we have passed in might not be localized
+                if let recordedString = stringsRepository.recordedString(formatted: formattedString) {
+                    return recordedString.localizedValue(locale: state.locale)
+                }
+
+                // otherwise just display what we're given but localized
+                // according to the current locale set in the inspector
+                return formattedString.localizedValue(locale: state.locale)
             default:
+                // we're not currently interacting with this string so just display it
                 return formattedString.value
             }
         }

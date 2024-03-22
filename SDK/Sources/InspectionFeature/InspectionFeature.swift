@@ -85,6 +85,9 @@ package struct InspectionFeature {
                 // debounce primarily to avoid SwiftUI bug:
                 // https://github.com/pointfreeco/swift-composable-architecture/discussions/1093
                 .debounce(id: CancelID.suggestionSaveDebounce, for: .seconds(0.1), scheduler: mainQueue)
+            case .delegate(.didDismiss):
+                appViewModel.refresh()
+                return .none
             case .binding:
                 return .none
             case .delegate:
