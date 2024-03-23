@@ -3,17 +3,20 @@
 import Combine
 import Dependencies
 import Spyable
+import UIKit
 
 @Spyable
 package protocol UserLinguaObservableProtocol: ObservableObject {
-    func refresh()
+    @discardableResult
+    func refresh() -> Task<Void, Never>
     var refreshPublisher: AnyPublisher<Void, Never> { get }
 }
 
 public final class UserLinguaObservable: UserLinguaObservableProtocol {
     package init() {}
 
-    package func refresh() {
+    @discardableResult
+    package func refresh() -> Task<Void, Never> {
         Task { @MainActor in
             objectWillChange.send()
         }

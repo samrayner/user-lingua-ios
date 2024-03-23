@@ -46,7 +46,6 @@ package struct RootFeature {
                 }
                 .ifCaseLet(\.inspection, action: \.inspection) {
                     InspectionFeature()
-                        ._printChanges()
                 }
         }
 
@@ -82,9 +81,14 @@ package struct RootFeature {
 
 package struct RootFeatureView: View {
     let store: StoreOf<RootFeature>
+    @ObservedObject private(set) var stringRecognizer: StringRecognizer
 
-    package init(store: StoreOf<RootFeature>) {
+    package init(
+        store: StoreOf<RootFeature>,
+        stringRecognizer: StringRecognizer
+    ) {
         self.store = store
+        self.stringRecognizer = stringRecognizer
     }
 
     package var body: some View {
@@ -93,7 +97,12 @@ package struct RootFeatureView: View {
             case .disabled, .recording:
                 EmptyView()
             case .selection, .inspection:
-                Group {
+                ZStack {
+                    if let appFacade = stringRecognizer.appFacade {
+                        Image(uiImage: appFacade)
+                            .ignoresSafeArea()
+                    }
+
                     if let store = store.scope(state: \.mode.selection, action: \.mode.selection) {
                         SelectionFeatureView(store: store)
                     } else if let store = store.scope(state: \.mode.inspection, action: \.mode.inspection) {

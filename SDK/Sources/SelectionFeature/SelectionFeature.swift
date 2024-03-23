@@ -3,46 +3,28 @@
 import ComposableArchitecture
 import Core
 import Foundation
-import MemberwiseInit
 import SFSafeSymbols
 import SwiftUI
 
 @Reducer
 package struct SelectionFeature {
     @Dependency(StringRecognizerDependency.self) var stringRecognizer
-    @Dependency(WindowManagerDependency.self) var windowManager
-    @Dependency(UserLinguaObservableDependency.self) var appViewModel
 
     package init() {}
 
     @ObservableState
     package struct State: Equatable {
-        @ObservableState
-        package enum Stage: Equatable {
-            case preparingFacade
-            case takingScreenshot
-            case recognizingStrings
-            case presentingStrings([RecognizedString])
+        var recognizedStrings: [RecognizedString]?
 
-            package var isLoading: Bool {
-                switch self {
-                case .preparingFacade, .takingScreenshot, .recognizingStrings:
-                    true
-                case .presentingStrings:
-                    false
-                }
-            }
+        package var isRecognizingStrings: Bool {
+            recognizedStrings == nil
         }
-
-        package var facade: UIImage?
-        package var stage: Stage = .preparingFacade
 
         package init() {}
     }
 
     package enum Action {
         case onAppear
-        case recognizeStrings
         case presentStrings([RecognizedString])
         case delegate(Delegate)
 
@@ -57,34 +39,11 @@ package struct SelectionFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                state.facade = windowManager.screenshotAppWindow()
-                state.stage = .takingScreenshot
-
-                appViewModel.refresh() // refresh app views with scrambled text
-
                 return .run { send in
-                    // screenshot the scrambled strings on the next run loop to
-                    // allow the views to re-render after objectWillChange.send()
-                    await send(.recognizeStrings)
-                }
-            case .recognizeStrings:
-                let recognitionScreenshot = windowManager.screenshotAppWindow()
-
-                state.stage = .recognizingStrings
-
-                appViewModel.refresh() // refresh app views with unscrambled text
-
-                return .run { send in
-                    var recognizedStrings: [RecognizedString] = []
-
-                    if let recognitionScreenshot {
-                        recognizedStrings = try await stringRecognizer.recognizeStrings(in: recognitionScreenshot)
-                    }
-
-                    await send(.presentStrings(recognizedStrings))
+                    try await send(.presentStrings(stringRecognizer.recognizeStrings()))
                 }
             case let .presentStrings(strings):
-                state.stage = .presentingStrings(strings)
+                state.recognizedStrings = strings
                 return .none
             case .delegate:
                 return .none
@@ -104,26 +63,20 @@ package struct SelectionFeatureView: View {
         WithPerceptionTracking {
             ZStack(alignment: .topLeading) {
                 Group {
-                    if case let .presentingStrings(recognizedStrings) = store.stage {
+                    if let recognizedStrings = store.recognizedStrings {
                         HighlightsView(
                             recognizedStrings: recognizedStrings,
                             onSelectString: { store.send(.delegate(.didSelectString($0))) }
                         )
                     }
 
-                    if store.stage.isLoading {
-                        ZStack {
-                            if let facade = store.facade {
-                                Image(uiImage: facade)
-                            }
-
-                            ProgressView()
-                        }
+                    if store.isRecognizingStrings {
+                        ProgressView()
                     }
                 }
                 .ignoresSafeArea()
 
-                if !store.stage.isLoading {
+                if !store.isRecognizingStrings {
                     Button(action: { store.send(.delegate(.didDismiss)) }) {
                         Image(systemSymbol: .xmarkCircleFill)
                             .padding()
