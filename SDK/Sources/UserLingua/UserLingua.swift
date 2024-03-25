@@ -14,12 +14,6 @@ public final class UserLingua {
     private let suggestionsRepository: SuggestionsRepositoryProtocol = SuggestionsRepository()
     let stringsRepository: StringsRepositoryProtocol = StringsRepository()
 
-    private lazy var stringRecognizer = StringRecognizer(
-        stringsRepository: stringsRepository,
-        windowManager: windowManager,
-        appViewModel: viewModel
-    )
-
     private lazy var store: StoreOf<RootFeature> = .init(
         initialState: .init(),
         reducer: { RootFeature() },
@@ -28,7 +22,6 @@ public final class UserLingua {
             $0[WindowManagerDependency.self] = self.windowManager
             $0[SuggestionsRepositoryDependency.self] = self.suggestionsRepository
             $0[StringsRepositoryDependency.self] = self.stringsRepository
-            $0[StringRecognizerDependency.self] = self.stringRecognizer
         }
     )
 
@@ -42,12 +35,7 @@ public final class UserLingua {
     }
 
     private init() {
-        windowManager.setRootView(
-            RootFeatureView(
-                store: store,
-                stringRecognizer: stringRecognizer
-            )
-        )
+        windowManager.setRootView(RootFeatureView(store: store))
     }
 
     private var mode: RootFeature.Mode.State {
@@ -63,7 +51,14 @@ public final class UserLingua {
     }
 
     var isTakingScreenshot: Bool {
-        stringRecognizer.isTakingScreenshot
+        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+            switch mode {
+            case let .selection(state) where state.stage == .takingScreenshot:
+                true
+            default:
+                false
+            }
+        }
     }
 
     var isEnabled: Bool {
@@ -128,8 +123,15 @@ public final class UserLingua {
 
     func displayString(for formattedString: FormattedString) -> String {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            if case let .inspection(state) = mode,
-               state.recordedString.value == formattedString.value {
+            switch mode {
+            case let .selection(state) where state.stage == .takingScreenshot:
+                // if we've recorded this string, make the most detailed record
+                // uniquely recognizable in the UI by scrambling it
+                if let recordedString = stringsRepository.recordedString(formatted: formattedString) {
+                    return recordedString.detectable
+                }
+                return formattedString.value
+            case let .inspection(state) where state.recordedString.value == formattedString.value:
                 // we're currently inspected this string so display the
                 // suggestion the user is making if there is one
                 if let suggestion = suggestionsRepository.suggestion(formatted: formattedString, locale: state.locale) {
@@ -145,20 +147,10 @@ public final class UserLingua {
                 // otherwise just display what we're given but localized
                 // according to the current locale set in the inspector
                 return formattedString.localizedValue(locale: state.locale)
-            }
-
-            if isTakingScreenshot {
-                // if we've recorded this string, make the most detailed record
-                // uniquely recognizable in the UI by scrambling it
-                if let recordedString = stringsRepository.recordedString(formatted: formattedString) {
-                    return recordedString.detectable
-                }
-
+            default:
+                // we're not currently interacting with this string so just display it
                 return formattedString.value
             }
-
-            // we're not currently interacting with this string so just display it
-            return formattedString.value
         }
     }
 

@@ -5,8 +5,8 @@ import SwiftUI
 import UIKit
 
 package protocol WindowManagerProtocol {
-    var appWindow: UIWindow? { get }
     func setRootView(_: some View)
+    func screenshotAppWindow() -> UIImage?
     func showWindow()
     func hideWindow()
 }
@@ -14,7 +14,7 @@ package protocol WindowManagerProtocol {
 package final class WindowManager: WindowManagerProtocol {
     package init() {}
 
-    package var appWindow: UIWindow?
+    var appWindow: UIWindow?
 
     private let userLinguaWindow: UIWindow = {
         let window = UIApplication.shared.windowScene.map(UIWindow.init) ?? UIWindow(frame: UIScreen.main.bounds)
@@ -27,6 +27,25 @@ package final class WindowManager: WindowManagerProtocol {
     package func setRootView(_ rootView: some View) {
         userLinguaWindow.rootViewController = UIHostingController(rootView: rootView)
         userLinguaWindow.rootViewController?.view.backgroundColor = .clear
+    }
+
+    private func screenshot(window: UIWindow) -> UIImage? {
+        UIGraphicsBeginImageContextWithOptions(
+            window.layer.frame.size,
+            false,
+            UIScreen.main.scale
+        )
+
+        guard let context = UIGraphicsGetCurrentContext() else { return nil }
+
+        window.layer.render(in: context)
+        let screenshot = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return screenshot
+    }
+
+    package func screenshotAppWindow() -> UIImage? {
+        appWindow.flatMap(screenshot)
     }
 
     package func showWindow() {
@@ -58,7 +77,6 @@ extension UIApplication {
 
 // Spyable doesn't handle `some View` properly
 class WindowManagerProtocolSpy: WindowManagerProtocol {
-    var appWindow: UIWindow?
     var setRootViewCallsCount = 0
     var setRootViewCalled: Bool {
         setRootViewCallsCount > 0
@@ -72,6 +90,22 @@ class WindowManagerProtocolSpy: WindowManagerProtocol {
         setRootViewReceived = rootView
         setRootViewReceivedInvocations.append(rootView)
         setRootViewClosure?(rootView)
+    }
+
+    var screenshotAppWindowCallsCount = 0
+    var screenshotAppWindowCalled: Bool {
+        screenshotAppWindowCallsCount > 0
+    }
+
+    var screenshotAppWindowReturnValue: UIImage?
+    var screenshotAppWindowClosure: (() -> UIImage?)?
+    func screenshotAppWindow() -> UIImage? {
+        screenshotAppWindowCallsCount += 1
+        if screenshotAppWindowClosure != nil {
+            return screenshotAppWindowClosure!()
+        } else {
+            return screenshotAppWindowReturnValue
+        }
     }
 
     var showWindowCallsCount = 0

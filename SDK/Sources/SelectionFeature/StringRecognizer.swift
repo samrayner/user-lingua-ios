@@ -1,5 +1,6 @@
 // StringRecognizer.swift
 
+import Core
 import Dependencies
 import Foundation
 import Spyable
@@ -7,74 +8,24 @@ import UIKit
 import Vision
 
 @Spyable
-package protocol StringRecognizerProtocol: ObservableObject {
-    var appFacade: UIImage? { get }
-    func recognizeStrings() async throws -> [RecognizedString]
+protocol StringRecognizerProtocol {
+    func recognizeStrings(in image: UIImage) async throws -> [RecognizedString]
 }
 
-package final class StringRecognizer: StringRecognizerProtocol {
+final class StringRecognizer: StringRecognizerProtocol {
     enum Error: Swift.Error {
         case invalidImage
         case recognitionRequestFailed(Swift.Error)
     }
 
     let stringsRepository: StringsRepositoryProtocol
-    let windowManager: WindowManagerProtocol
-    let appViewModel: any UserLinguaObservableProtocol
 
-    @Published package private(set) var appFacade: UIImage?
-    package private(set) var isTakingScreenshot = false
-
-    package init(
-        stringsRepository: StringsRepositoryProtocol,
-        windowManager: WindowManagerProtocol,
-        appViewModel: any UserLinguaObservableProtocol
-    ) {
+    init(stringsRepository: StringsRepositoryProtocol) {
         self.stringsRepository = stringsRepository
-        self.windowManager = windowManager
-        self.appViewModel = appViewModel
     }
 
-    private func screenshot(window: UIWindow) -> UIImage? {
-        UIGraphicsBeginImageContextWithOptions(
-            window.layer.frame.size,
-            false,
-            UIScreen.main.scale
-        )
-
-        guard let context = UIGraphicsGetCurrentContext() else { return nil }
-
-        window.layer.render(in: context)
-        let screenshot = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return screenshot
-    }
-
-    package func recognizeStrings() async throws -> [RecognizedString] {
-        guard let appWindow = windowManager.appWindow else { return [] }
-
-        appFacade = screenshot(window: appWindow)
-
-        // refresh views with detectable strings
-        isTakingScreenshot = true
-        await appViewModel.refresh().value
-
-        // capture screenshot of detectable strings for recognition
-        let screenshot = screenshot(window: appWindow)
-
-        // refresh views with original strings
-        isTakingScreenshot = false
-        appViewModel.refresh()
-
-        let recognizedStrings: [RecognizedString] = if let screenshot {
-            try await identifyRecognizedLines(recognizeLines(in: screenshot))
-        } else {
-            []
-        }
-
-        appFacade = nil
-
-        return recognizedStrings
+    func recognizeStrings(in image: UIImage) async throws -> [RecognizedString] {
+        try await identifyRecognizedLines(recognizeLines(in: image))
     }
 
     private func recognizeLines(in image: UIImage) async throws -> [RecognizedLine] {
@@ -323,18 +274,12 @@ extension RecognizedLine {
     }
 }
 
-package enum StringRecognizerDependency: DependencyKey {
-    package static let liveValue: any StringRecognizerProtocol = {
+enum StringRecognizerDependency: DependencyKey {
+    static let liveValue: any StringRecognizerProtocol = {
         @Dependency(StringsRepositoryDependency.self) var stringsRepository
-        @Dependency(WindowManagerDependency.self) var windowManager
-        @Dependency(UserLinguaObservableDependency.self) var appViewModel
-        return StringRecognizer(
-            stringsRepository: stringsRepository,
-            windowManager: windowManager,
-            appViewModel: appViewModel
-        )
+        return StringRecognizer(stringsRepository: stringsRepository)
     }()
 
-    package static let previewValue: any StringRecognizerProtocol = StringRecognizerProtocolSpy()
-    package static let testValue: any StringRecognizerProtocol = StringRecognizerProtocolSpy()
+    static let previewValue: any StringRecognizerProtocol = StringRecognizerProtocolSpy()
+    static let testValue: any StringRecognizerProtocol = StringRecognizerProtocolSpy()
 }
