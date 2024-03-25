@@ -1,5 +1,6 @@
 // StringRecognizer.swift
 
+import Core
 import Dependencies
 import Foundation
 import Spyable

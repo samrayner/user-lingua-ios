@@ -46,7 +46,14 @@ public final class UserLingua {
 
     var isTakingScreenshot: Bool {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            store.isTakingScreenshot
+            switch store.mode {
+            case let .selection(state):
+                state.recognition.isTakingScreenshot
+            case let .inspection(state):
+                state.recognition.isTakingScreenshot
+            default:
+                false
+            }
         }
     }
 
@@ -112,7 +119,7 @@ public final class UserLingua {
 
     func displayString(for formattedString: FormattedString) -> String {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            if store.isTakingScreenshot {
+            if isTakingScreenshot {
                 // if we've recorded this string, make the most detailed record
                 // uniquely recognizable in the UI by scrambling it
                 if let recordedString = stringsRepository.recordedString(formatted: formattedString) {

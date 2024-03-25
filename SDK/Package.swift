@@ -12,13 +12,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "UserLingua",
-            targets: [
-                "UserLingua",
-                "SystemAPIAliases",
-                "RootFeature",
-                "SelectionFeature",
-                "InspectionFeature"
-            ]
+            targets: ["UserLingua"]
         )
     ],
     dependencies: [
@@ -63,15 +57,23 @@ let package = Package(
             ]
         ),
         .target(
-            name: "SelectionFeature",
+            name: "RecognitionFeature",
             dependencies: [
                 "Core"
             ]
         ),
         .target(
+            name: "SelectionFeature",
+            dependencies: [
+                "Core",
+                "RecognitionFeature"
+            ]
+        ),
+        .target(
             name: "InspectionFeature",
             dependencies: [
-                "Core"
+                "Core",
+                "RecognitionFeature"
             ]
         ),
         .testTarget(

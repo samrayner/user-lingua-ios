@@ -3,7 +3,7 @@
 import ComposableArchitecture
 import Core
 import Foundation
-import MemberwiseInit
+import RecognitionFeature
 import SFSafeSymbols
 import SwiftUI
 
@@ -26,9 +26,10 @@ package struct InspectionFeature {
     @ObservableState
     package struct State: Equatable {
         package let recordedString: RecordedString
-        package var suggestionString: String
-        package var localeIdentifier = Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
-        package var path = StackState<Path.State>()
+        package var recognition = RecognitionFeature.State()
+        var suggestionString: String
+        var localeIdentifier = Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
+        var path = StackState<Path.State>()
 
         package var locale: Locale {
             Locale(identifier: localeIdentifier)
@@ -45,12 +46,11 @@ package struct InspectionFeature {
         case binding(BindingAction<State>)
         case delegate(Delegate)
         case path(StackActionOf<Path>)
+        case recognition(RecognitionFeature.Action)
 
         @CasePathable
         package enum Delegate {
             case didDismiss
-            case willTakeScreenshot
-            case didTakeScreenshot
         }
     }
 
@@ -60,6 +60,10 @@ package struct InspectionFeature {
 
     package var body: some ReducerOf<Self> {
         BindingReducer()
+
+        Scope(state: \.recognition, action: \.recognition) {
+            RecognitionFeature()
+        }
 
         Reduce { state, action in
             switch action {
@@ -90,11 +94,7 @@ package struct InspectionFeature {
             case .delegate(.didDismiss):
                 appViewModel.refresh()
                 return .none
-            case .binding:
-                return .none
-            case .delegate:
-                return .none
-            case .path:
+            case .recognition, .binding, .delegate, .path:
                 return .none
             }
         }
@@ -111,60 +111,64 @@ package struct InspectionFeatureView: View {
 
     package var body: some View {
         WithPerceptionTracking {
-            NavigationStack(
-                path: $store.scope(state: \.path, action: \.path)
-            ) {
-                Form {
-                    Picker("Language", selection: $store.localeIdentifier) {
-                        ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
-                            Text(Locale.current.localizedString(forIdentifier: identifier) ?? identifier)
+            ZStack {
+                RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
+
+                NavigationStack(
+                    path: $store.scope(state: \.path, action: \.path)
+                ) {
+                    Form {
+                        Picker("Language", selection: $store.localeIdentifier) {
+                            ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
+                                Text(Locale.current.localizedString(forIdentifier: identifier) ?? identifier)
+                            }
                         }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(height: 50)
+                        .pickerStyle(.segmented)
+                        .frame(height: 50)
 
-                    Section("Suggestion") {
-                        TextField("Suggestion", text: $store.suggestionString)
-                            .autocorrectionDisabled()
-                            .textInputAutocapitalization(.never)
-                    }
+                        Section("Suggestion") {
+                            TextField("Suggestion", text: $store.suggestionString)
+                                .autocorrectionDisabled()
+                                .textInputAutocapitalization(.never)
+                        }
 
-                    if let localization = store.recordedString.localization {
-                        Section("Localization") {
-                            VStack(alignment: .leading) {
-                                HStack {
-                                    Text("Key:")
-                                    Text(localization.key)
-                                }
+                        if let localization = store.recordedString.localization {
+                            Section("Localization") {
+                                VStack(alignment: .leading) {
+                                    HStack {
+                                        Text("Key:")
+                                        Text(localization.key)
+                                    }
 
-                                HStack {
-                                    Text("Table:")
-                                    Text(localization.tableName ?? "Localizable")
-                                }
+                                    HStack {
+                                        Text("Table:")
+                                        Text(localization.tableName ?? "Localizable")
+                                    }
 
-                                HStack {
-                                    Text("Comment:")
-                                    Text(localization.comment ?? "[None]")
+                                    HStack {
+                                        Text("Comment:")
+                                        Text(localization.comment ?? "[None]")
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                .navigationTitle("UserLingua")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem {
-                        Button(action: { store.send(.delegate(.didDismiss)) }) {
-                            Image(systemSymbol: .xmarkCircleFill)
+                    .navigationTitle("UserLingua")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem {
+                            Button(action: { store.send(.delegate(.didDismiss)) }) {
+                                Image(systemSymbol: .xmarkCircleFill)
+                            }
                         }
                     }
+                } destination: { _ in
+                    EmptyView()
+                    //                switch store.case {
+                    //                case let .other(store):
+                    //                    OtherFeatureView(store: store)
+                    //                }
                 }
-            } destination: { _ in
-                EmptyView()
-//                switch store.case {
-//                case let .other(store):
-//                    OtherFeatureView(store: store)
-//                }
             }
         }
     }

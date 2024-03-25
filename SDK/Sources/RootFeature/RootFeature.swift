@@ -4,6 +4,7 @@ import ComposableArchitecture
 import Core
 import Foundation
 import InspectionFeature
+import RecognitionFeature
 import SelectionFeature
 import SwiftUI
 
@@ -27,8 +28,6 @@ package struct RootFeature {
     package struct State: Equatable {
         package var configuration: Configuration = .init()
         package var mode: Mode.State = .disabled
-        package var appFacade: UIImage?
-        package var isTakingScreenshot = false
 
         package init() {}
     }
@@ -38,7 +37,6 @@ package struct RootFeature {
         case enable
         case configure(Configuration)
         case didShake
-        case hideAppFacade
         case mode(Mode.Action)
     }
 
@@ -68,22 +66,6 @@ package struct RootFeature {
                 windowManager.showWindow()
                 state.mode = .selection(.init())
                 return .none
-            case .hideAppFacade:
-                state.appFacade = nil
-                return .none
-            case .mode(.selection(.delegate(.willTakeScreenshot))),
-                 .mode(.inspection(.delegate(.willTakeScreenshot))):
-                state.appFacade = windowManager.screenshotAppWindow()
-                state.isTakingScreenshot = true
-                appViewModel.refresh() // refresh app views with scrambled text
-                return .none
-            case .mode(.selection(.delegate(.didTakeScreenshot))),
-                 .mode(.inspection(.delegate(.didTakeScreenshot))):
-                state.isTakingScreenshot = false
-                appViewModel.refresh() // refresh app views with unscrambled text
-                return .run { send in
-                    await send(.hideAppFacade)
-                }
             case .mode(.selection(.delegate(.didDismiss))),
                  .mode(.inspection(.delegate(.didDismiss))):
                 state.mode = .recording
@@ -113,11 +95,6 @@ package struct RootFeatureView: View {
                 EmptyView()
             case .selection, .inspection:
                 ZStack {
-                    if let appFacade = store.appFacade {
-                        Image(uiImage: appFacade)
-                            .ignoresSafeArea()
-                    }
-
                     if let store = store.scope(state: \.mode.selection, action: \.mode.selection) {
                         SelectionFeatureView(store: store)
                     } else if let store = store.scope(state: \.mode.inspection, action: \.mode.inspection) {
