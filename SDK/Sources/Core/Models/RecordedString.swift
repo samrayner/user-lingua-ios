@@ -4,12 +4,12 @@ import Foundation
 
 package struct RecordedString: Equatable {
     package var formatted: FormattedString
-    package var detectable: String
+    package var recognizable: String
     package var recordedAt: Date = .now
 
     package init(_ formatted: FormattedString) {
         self.formatted = formatted
-        self.detectable = formatted.value.tokenized()
+        self.recognizable = formatted.value.tokenized()
     }
 
     package var localization: Localization? {

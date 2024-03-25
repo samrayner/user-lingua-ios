@@ -28,7 +28,7 @@ struct HighlightsView: View {
 
     func highlights(color: Color, onSelectString: @escaping (RecordedString) -> Void = { _ in }) -> some View {
         ZStack(alignment: .topLeading) {
-            ForEach(recognizedStrings, id: \.recordedString.detectable) { recognizedString in
+            ForEach(recognizedStrings, id: \.recordedString.recognizable) { recognizedString in
                 ForEach(recognizedString.lines, id: \.string) { line in
                     color
                         .cornerRadius(5)

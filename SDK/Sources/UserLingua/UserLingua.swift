@@ -38,12 +38,6 @@ public final class UserLingua {
         windowManager.setRootView(RootFeatureView(store: store))
     }
 
-    private var mode: RootFeature.Mode.State {
-        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            store.mode
-        }
-    }
-
     public var configuration: UserLinguaConfiguration {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
             store.configuration.userLinguaConfiguration
@@ -52,24 +46,19 @@ public final class UserLingua {
 
     var isTakingScreenshot: Bool {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            switch mode {
-            case let .selection(state) where state.stage == .takingScreenshot:
-                true
-            default:
-                false
-            }
+            store.isTakingScreenshot
         }
     }
 
     var isEnabled: Bool {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            mode != .disabled
+            store.mode != .disabled
         }
     }
 
     var isRecording: Bool {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            mode == .recording
+            store.mode == .recording
         }
     }
 
@@ -123,15 +112,16 @@ public final class UserLingua {
 
     func displayString(for formattedString: FormattedString) -> String {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            switch mode {
-            case let .selection(state) where state.stage == .takingScreenshot:
+            if store.isTakingScreenshot {
                 // if we've recorded this string, make the most detailed record
                 // uniquely recognizable in the UI by scrambling it
                 if let recordedString = stringsRepository.recordedString(formatted: formattedString) {
-                    return recordedString.detectable
+                    return recordedString.recognizable
                 }
                 return formattedString.value
-            case let .inspection(state) where state.recordedString.value == formattedString.value:
+            }
+
+            if case let .inspection(state) = store.mode, state.recordedString.value == formattedString.value {
                 // we're currently inspected this string so display the
                 // suggestion the user is making if there is one
                 if let suggestion = suggestionsRepository.suggestion(formatted: formattedString, locale: state.locale) {
@@ -147,10 +137,10 @@ public final class UserLingua {
                 // otherwise just display what we're given but localized
                 // according to the current locale set in the inspector
                 return formattedString.localizedValue(locale: state.locale)
-            default:
-                // we're not currently interacting with this string so just display it
-                return formattedString.value
             }
+
+            // we're not currently interacting with this string so just display it
+            return formattedString.value
         }
     }
 

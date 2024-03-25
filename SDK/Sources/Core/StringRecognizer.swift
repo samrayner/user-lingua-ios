@@ -1,6 +1,5 @@
 // StringRecognizer.swift
 
-import Core
 import Dependencies
 import Foundation
 import Spyable
@@ -8,7 +7,7 @@ import UIKit
 import Vision
 
 @Spyable
-protocol StringRecognizerProtocol {
+package protocol StringRecognizerProtocol {
     func recognizeStrings(in image: UIImage) async throws -> [RecognizedString]
 }
 
@@ -20,11 +19,11 @@ final class StringRecognizer: StringRecognizerProtocol {
 
     let stringsRepository: StringsRepositoryProtocol
 
-    init(stringsRepository: StringsRepositoryProtocol) {
+    package init(stringsRepository: StringsRepositoryProtocol) {
         self.stringsRepository = stringsRepository
     }
 
-    func recognizeStrings(in image: UIImage) async throws -> [RecognizedString] {
+    package func recognizeStrings(in image: UIImage) async throws -> [RecognizedString] {
         try await identifyRecognizedLines(recognizeLines(in: image))
     }
 
@@ -82,7 +81,7 @@ final class StringRecognizer: StringRecognizerProtocol {
             var recordedStringFoundForLine = false
 
             for recordedString in recordedStrings {
-                var tokenized = recordedString.detectable
+                var tokenized = recordedString.recognizable
                 var recognizedString = RecognizedString(recordedString: recordedString, lines: [])
 
                 defer {
@@ -274,12 +273,12 @@ extension RecognizedLine {
     }
 }
 
-enum StringRecognizerDependency: DependencyKey {
-    static let liveValue: any StringRecognizerProtocol = {
+package enum StringRecognizerDependency: DependencyKey {
+    package static let liveValue: any StringRecognizerProtocol = {
         @Dependency(StringsRepositoryDependency.self) var stringsRepository
         return StringRecognizer(stringsRepository: stringsRepository)
     }()
 
-    static let previewValue: any StringRecognizerProtocol = StringRecognizerProtocolSpy()
-    static let testValue: any StringRecognizerProtocol = StringRecognizerProtocolSpy()
+    package static let previewValue: any StringRecognizerProtocol = StringRecognizerProtocolSpy()
+    package static let testValue: any StringRecognizerProtocol = StringRecognizerProtocolSpy()
 }

@@ -49,6 +49,8 @@ package struct InspectionFeature {
         @CasePathable
         package enum Delegate {
             case didDismiss
+            case willTakeScreenshot
+            case didTakeScreenshot
         }
     }
 
