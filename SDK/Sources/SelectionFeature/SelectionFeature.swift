@@ -9,6 +9,8 @@ import SwiftUI
 
 @Reducer
 package struct SelectionFeature {
+    @Dependency(NotificationManagerDependency.self) var notificationManager
+
     package init() {}
 
     @ObservableState
@@ -21,6 +23,8 @@ package struct SelectionFeature {
 
     package enum Action {
         case onAppear
+        case observeDeviceRotation
+        case deviceOrientationDidChange
         case delegate(Delegate)
         case recognition(RecognitionFeature.Action)
 
@@ -39,6 +43,17 @@ package struct SelectionFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                return .run { send in
+                    await send(.recognition(.start))
+                }
+            case .observeDeviceRotation:
+                return .run { send in
+                    for await _ in await notificationManager.observe(UIDevice.orientationDidChangeNotification) {
+                        await send(.deviceOrientationDidChange)
+                    }
+                }
+            case .deviceOrientationDidChange:
+                state.recognizedStrings = nil
                 return .run { send in
                     await send(.recognition(.start))
                 }
@@ -82,6 +97,7 @@ package struct SelectionFeatureView: View {
                 }
             }
             .onAppear { store.send(.onAppear) }
+            .task { await store.send(.observeDeviceRotation).finish() }
         }
     }
 }
