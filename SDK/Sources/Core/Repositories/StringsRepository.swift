@@ -1,6 +1,7 @@
 // StringsRepository.swift
 
 import Dependencies
+import Foundation
 import Spyable
 
 @Spyable
@@ -56,13 +57,13 @@ package final class StringsRepository: StringsRepositoryProtocol {
         // the formatting of that previously recorded string
         // so we can augment this record with the same localization
         // and delete the unformatted record
-        if let unformattedRecordIndex = stringRecord[formattedString.value]?.lastIndex(where: {
-            $0.value == formattedString.format.value &&
-                $0.value.argumentPlaceholderCount == formattedString.arguments.count
+        if let unformattedRecordIndex = stringRecord[formattedString.format.value]?.lastIndex(where: {
+            $0.value.argumentPlaceholderCount == formattedString.arguments.count
         }) {
-            let unformattedRecord = stringRecord[formattedString.value]?[unformattedRecordIndex]
+            let unformattedRecord = stringRecord[formattedString.format.value]?[unformattedRecordIndex]
             formattedString.format.localization = unformattedRecord?.localization
-            stringRecord[formattedString.value]?.remove(at: unformattedRecordIndex)
+            stringRecord[formattedString.format.value]?.remove(at: unformattedRecordIndex)
+            print("Discarded localized record: \(formattedString.format.value)")
         }
 
         stringRecord[formattedString.value, default: []].append(
@@ -124,7 +125,9 @@ package final class StringsRepository: StringsRepositoryProtocol {
 
 extension String {
     fileprivate var argumentPlaceholderCount: Int {
-        matches(of: #/[^%]%[^%]/#).count
+        StringFormat.placeholderRegex
+            .matches(in: self, range: NSRange(startIndex..., in: self))
+            .count
     }
 }
 

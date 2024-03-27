@@ -2,7 +2,6 @@
 
 import Foundation
 import MemberwiseInit
-import SystemAPIAliases
 
 @MemberwiseInit(.package)
 package struct FormattedString {
@@ -10,25 +9,82 @@ package struct FormattedString {
     package var format: StringFormat
     package var arguments: [FormattedStringArgument]
 
+    private func formattedArguments(locale: Locale) -> [CVarArg] {
+        arguments.map { $0.value(locale: locale) }
+    }
+
     package func localizedValue(locale: Locale) -> String {
         let localizedFormat = format.localizedValue(locale: locale)
 
-        if arguments.isEmpty { return localizedFormat }
+        guard !arguments.isEmpty else { return localizedFormat }
 
-        var formattedArguments: [CVarArg] = []
+        return String(
+            format: localizedFormat,
+            locale: locale,
+            arguments: formattedArguments(locale: locale)
+        )
+    }
 
-        for argument in arguments {
-            switch argument {
-            case let .formattedString(formattedString):
-                formattedArguments.append(formattedString.localizedValue(locale: locale))
-            case let .cVarArg(cVarArg):
-                formattedArguments.append(cVarArg)
-            case let .formattableInput(formatStyle, input):
-                formattedArguments.append(formatStyle.string(for: input, locale: locale) ?? "")
-            }
+    package func localizedValue(
+        locale: Locale,
+        placeholderAttributes: [NSAttributedString.Key: Any],
+        nonPlaceholderAttributes: [NSAttributedString.Key: Any] = [:]
+    ) -> AttributedString {
+        let localizedFormat = format.localizedValue(locale: locale)
+        let placeholderAttributes = AttributeContainer(placeholderAttributes)
+        let nonPlaceholderAttributes = AttributeContainer(nonPlaceholderAttributes)
+
+        guard !arguments.isEmpty else {
+            var attributedString = AttributedString(localizedFormat)
+            attributedString.mergeAttributes(nonPlaceholderAttributes, mergePolicy: .keepNew)
+            return attributedString
         }
 
-        return SystemString.initFormatLocaleArguments(localizedFormat, locale, formattedArguments)
+        let formattedArguments = formattedArguments(locale: locale)
+
+        let placeholderMatches = StringFormat.placeholderRegex
+            .matches(
+                in: localizedFormat,
+                range: NSRange(localizedFormat.startIndex..., in: localizedFormat)
+            )
+
+        var attributedString = AttributedString()
+        var formatIndex = localizedFormat.startIndex
+        var placeholderIndex = 0
+
+        for match in placeholderMatches {
+            // safe to force unwrap as we got the range from the format to begin with
+            let range = Range(match.range, in: localizedFormat)!
+
+            // append the text between the previous placeholder (or string start) and this one
+            var before = AttributedString(localizedFormat[formatIndex ..< range.lowerBound].replacing("%%", with: "%"))
+            before.mergeAttributes(nonPlaceholderAttributes, mergePolicy: .keepNew)
+            attributedString.append(before)
+
+            let placeholder = String(localizedFormat[range])
+            var arguments = formattedArguments
+
+            if placeholder.firstMatch(of: #/%([1-9][0-9]*)\$/#) == nil {
+                // placeholder with no position index so
+                // only pass in the specific argument for the placeholder
+                arguments = [formattedArguments[placeholderIndex]]
+                placeholderIndex += 1
+            }
+
+            var attributedArgument = AttributedString(
+                String(format: placeholder, locale: locale, arguments: arguments)
+            )
+            attributedArgument.mergeAttributes(placeholderAttributes, mergePolicy: .keepNew)
+            attributedString.append(attributedArgument)
+
+            formatIndex = range.upperBound
+        }
+
+        var after = AttributedString(localizedFormat[formatIndex...].replacing("%%", with: "%"))
+        after.setAttributes(nonPlaceholderAttributes)
+        attributedString.append(after)
+
+        return attributedString
     }
 }
 

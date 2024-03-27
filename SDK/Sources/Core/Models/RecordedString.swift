@@ -23,6 +23,18 @@ package struct RecordedString: Equatable {
     package func localizedValue(locale: Locale) -> String {
         formatted.localizedValue(locale: locale)
     }
+
+    package func localizedValue(
+        locale: Locale,
+        placeholderAttributes: [NSAttributedString.Key: Any],
+        nonPlaceholderAttributes: [NSAttributedString.Key: Any] = [:]
+    ) -> AttributedString {
+        formatted.localizedValue(
+            locale: locale,
+            placeholderAttributes: placeholderAttributes,
+            nonPlaceholderAttributes: nonPlaceholderAttributes
+        )
+    }
 }
 
 extension RecordedString {

@@ -15,6 +15,8 @@ struct ContentView: View {
 
     var body: some View {
         VStack {
+            Text(String(format: NSLocalizedString("ul_args_test", comment: ""), "Sam", 33))
+
             Text("ul_label_text")
 
             Text("Unlocalized label".description)

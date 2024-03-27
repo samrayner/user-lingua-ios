@@ -1,6 +1,23 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "ul_args_test" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My name is %@ I am 90%% sure I'm %d years old"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "GB My name is %@ I am 90%% sure I'm %d years old"
+          }
+        }
+      }
+    },
     "ul_button_title_normal" : {
       "extractionState" : "manual",
       "localizations" : {

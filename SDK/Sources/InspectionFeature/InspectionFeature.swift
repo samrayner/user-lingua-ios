@@ -126,6 +126,15 @@ package struct InspectionFeatureView: View {
                         .pickerStyle(.segmented)
                         .frame(height: 50)
 
+                        Section("Original") {
+                            Text(
+                                store.recordedString.localizedValue(
+                                    locale: store.locale,
+                                    placeholderAttributes: [.backgroundColor: UIColor.cyan]
+                                )
+                            )
+                        }
+
                         Section("Suggestion") {
                             TextField("Suggestion", text: $store.suggestionString)
                                 .autocorrectionDisabled()

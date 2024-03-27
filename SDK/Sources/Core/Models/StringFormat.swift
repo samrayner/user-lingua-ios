@@ -5,6 +5,24 @@ import MemberwiseInit
 
 @MemberwiseInit(.package)
 package struct StringFormat: Equatable {
+    static let placeholderRegex: NSRegularExpression = {
+        let int = "(?:h|hh|l|ll|q|z|t|j)?([dioux])"
+        // valid flags for float
+        let float = "[aefg]"
+        // like in "%3$" to make positional specifiers
+        let position = "([1-9]\\d*\\$)?"
+        // precision like in "%1.2f"
+        let precision = "[-+# 0]?\\d?(?:\\.\\d)?"
+
+        let pattern = "(?:^|(?<!%)(?:%%)*)%\(position)\(precision)(@|\(int)|\(float)|[csp])"
+
+        do {
+            return try NSRegularExpression(pattern: pattern, options: [.caseInsensitive])
+        } catch {
+            fatalError("Invalid regex pattern")
+        }
+    }()
+
     package var value: String
     package var localization: Localization?
 
