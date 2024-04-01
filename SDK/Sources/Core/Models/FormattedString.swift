@@ -28,7 +28,8 @@ package struct FormattedString {
     package func localizedValue(
         locale: Locale,
         placeholderAttributes: [NSAttributedString.Key: Any],
-        nonPlaceholderAttributes: [NSAttributedString.Key: Any] = [:]
+        nonPlaceholderAttributes: [NSAttributedString.Key: Any] = [:],
+        placeholderTransform transformPlaceholder: (String) -> String = { $0 }
     ) -> AttributedString {
         let localizedFormat = format.localizedValue(locale: locale)
         let placeholderAttributes = AttributeContainer(placeholderAttributes)
@@ -72,7 +73,7 @@ package struct FormattedString {
             }
 
             var attributedArgument = AttributedString(
-                String(format: placeholder, locale: locale, arguments: arguments)
+                String(format: transformPlaceholder(placeholder), locale: locale, arguments: arguments)
             )
             attributedArgument.mergeAttributes(placeholderAttributes, mergePolicy: .keepNew)
             attributedString.append(attributedArgument)

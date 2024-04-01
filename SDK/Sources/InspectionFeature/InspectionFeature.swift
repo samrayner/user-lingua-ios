@@ -25,8 +25,13 @@ package struct InspectionFeature {
 
     @ObservableState
     package struct State: Equatable {
+        enum Field: String, Hashable {
+            case suggestion
+        }
+
         package let recordedString: RecordedString
         package var recognition = RecognitionFeature.State()
+        var focusedField: Field?
         var suggestionString: String
         var localeIdentifier = Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
         var path = StackState<Path.State>()
@@ -104,6 +109,7 @@ package struct InspectionFeature {
 
 package struct InspectionFeatureView: View {
     @Perception.Bindable package var store: StoreOf<InspectionFeature>
+    @FocusState var focusedField: InspectionFeature.State.Field?
 
     package init(store: StoreOf<InspectionFeature>) {
         self.store = store
@@ -117,7 +123,7 @@ package struct InspectionFeatureView: View {
                 NavigationStack(
                     path: $store.scope(state: \.path, action: \.path)
                 ) {
-                    Form {
+                    VStack {
                         Picker("Language", selection: $store.localeIdentifier) {
                             ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
                                 Text(Locale.current.localizedString(forIdentifier: identifier) ?? identifier)
@@ -126,42 +132,43 @@ package struct InspectionFeatureView: View {
                         .pickerStyle(.segmented)
                         .frame(height: 50)
 
-                        Section("Original") {
+                        if focusedField != .suggestion {
                             Text(
                                 store.recordedString.localizedValue(
                                     locale: store.locale,
-                                    placeholderAttributes: [.backgroundColor: UIColor.cyan]
+                                    placeholderAttributes: [.backgroundColor: UIColor.cyan],
+                                    placeholderTransform: { " \($0) " }
                                 )
                             )
                         }
 
-                        Section("Suggestion") {
-                            TextField("Suggestion", text: $store.suggestionString)
-                                .autocorrectionDisabled()
-                                .textInputAutocapitalization(.never)
-                        }
+                        TextField("Suggestion", text: $store.suggestionString)
+                            .focused($focusedField, equals: .suggestion)
+                            .textFieldStyle(.roundedBorder)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
 
                         if let localization = store.recordedString.localization {
-                            Section("Localization") {
-                                VStack(alignment: .leading) {
-                                    HStack {
-                                        Text("Key:")
-                                        Text(localization.key)
-                                    }
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    Text("Key:")
+                                    Text(localization.key)
+                                }
 
-                                    HStack {
-                                        Text("Table:")
-                                        Text(localization.tableName ?? "Localizable")
-                                    }
+                                HStack {
+                                    Text("Table:")
+                                    Text(localization.tableName ?? "Localizable")
+                                }
 
-                                    HStack {
-                                        Text("Comment:")
-                                        Text(localization.comment ?? "[None]")
-                                    }
+                                HStack {
+                                    Text("Comment:")
+                                    Text(localization.comment ?? "[None]")
                                 }
                             }
+                            .background(Color.gray)
                         }
                     }
+                    .bind($store.focusedField, to: $focusedField)
                     .navigationTitle("UserLingua")
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {

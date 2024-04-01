@@ -27,12 +27,14 @@ package struct RecordedString: Equatable {
     package func localizedValue(
         locale: Locale,
         placeholderAttributes: [NSAttributedString.Key: Any],
-        nonPlaceholderAttributes: [NSAttributedString.Key: Any] = [:]
+        nonPlaceholderAttributes: [NSAttributedString.Key: Any] = [:],
+        placeholderTransform: (String) -> String = { $0 }
     ) -> AttributedString {
         formatted.localizedValue(
             locale: locale,
             placeholderAttributes: placeholderAttributes,
-            nonPlaceholderAttributes: nonPlaceholderAttributes
+            nonPlaceholderAttributes: nonPlaceholderAttributes,
+            placeholderTransform: placeholderTransform
         )
     }
 }
