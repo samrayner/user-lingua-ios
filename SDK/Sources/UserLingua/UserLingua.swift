@@ -12,7 +12,7 @@ public final class UserLingua {
     public let viewModel = UserLinguaObservable()
     private let windowManager: WindowManagerProtocol = WindowManager()
     private let suggestionsRepository: SuggestionsRepositoryProtocol = SuggestionsRepository()
-    let stringsRepository: StringsRepositoryProtocol = StringsRepository()
+    private let stringsRepository: StringsRepositoryProtocol = StringsRepository()
 
     private lazy var store: StoreOf<RootFeature> = .init(
         initialState: .init(),
@@ -88,6 +88,21 @@ public final class UserLingua {
 
     private func onShake() {
         store.send(.didShake)
+    }
+
+    func record(formatted: FormattedString) {
+        guard isRecording else { return }
+        stringsRepository.record(formatted: formatted)
+    }
+
+    func record(localized: LocalizedString) {
+        guard isRecording else { return }
+        stringsRepository.record(localized: localized)
+    }
+
+    func record(string: String) {
+        guard isRecording else { return }
+        stringsRepository.record(string: string)
     }
 
     func processLocalizedStringKey(_ key: LocalizedStringKey) -> String {

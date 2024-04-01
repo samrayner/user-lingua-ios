@@ -6,9 +6,7 @@ import SystemAPIAliases
 
 extension Text {
     private init(_ formattedString: FormattedString) {
-        if UserLingua.shared.isRecording {
-            UserLingua.shared.stringsRepository.record(formatted: formattedString)
-        }
+        UserLingua.shared.record(formatted: formattedString)
         let displayString = UserLingua.shared.displayString(for: formattedString)
         self = SystemText.initVerbatim(displayString)
     }
