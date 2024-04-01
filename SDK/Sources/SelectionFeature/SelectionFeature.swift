@@ -31,7 +31,7 @@ package struct SelectionFeature {
         @CasePathable
         package enum Delegate {
             case didDismiss
-            case didSelectString(RecordedString)
+            case didSelectString(RecognizedString)
         }
     }
 
@@ -69,6 +69,7 @@ package struct SelectionFeature {
 
 package struct SelectionFeatureView: View {
     package let store: StoreOf<SelectionFeature>
+    @Environment(\.colorScheme) var colorScheme
 
     package init(store: StoreOf<SelectionFeature>) {
         self.store = store
@@ -79,25 +80,49 @@ package struct SelectionFeatureView: View {
             ZStack(alignment: .topLeading) {
                 RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
 
-                if let recognizedStrings = store.recognizedStrings {
-                    HighlightsView(
-                        recognizedStrings: recognizedStrings,
+                ZStack {
+                    (colorScheme == .dark ? Color.white : Color.black)
+                        .opacity(0.2)
+                        .mask {
+                            ZStack {
+                                Color(.white)
+                                highlights(color: .black)
+                            }
+                            .compositingGroup()
+                            .luminanceToAlpha()
+                        }
+
+                    highlights(
+                        color: .white.opacity(0.001),
                         onSelectString: { store.send(.delegate(.didSelectString($0))) }
                     )
-                    .ignoresSafeArea()
-
-                    Button(action: { store.send(.delegate(.didDismiss)) }) {
-                        Image(systemSymbol: .xmarkCircleFill)
-                            .padding()
-                    }
                 }
+                .ignoresSafeArea()
 
-                if store.recognition.isRecognizingStrings {
-                    ProgressView()
+                Button(action: { store.send(.delegate(.didDismiss)) }) {
+                    Image(systemSymbol: .xmarkCircleFill)
+                        .padding()
                 }
             }
             .onAppear { store.send(.onAppear) }
             .task { await store.send(.observeDeviceRotation).finish() }
         }
+    }
+
+    func highlights(color: Color, onSelectString: @escaping (RecognizedString) -> Void = { _ in }) -> some View {
+        ZStack(alignment: .topLeading) {
+            ForEach(store.recognizedStrings ?? []) { recognizedString in
+                ForEach(recognizedString.lines) { line in
+                    color
+                        .cornerRadius(5)
+                        .frame(width: line.boundingBox.width + 20, height: line.boundingBox.height + 20)
+                        .position(x: line.boundingBox.midX, y: UIScreen.main.bounds.height - line.boundingBox.midY)
+                        .onTapGesture {
+                            onSelectString(recognizedString)
+                        }
+                }
+            }
+        }
+        .ignoresSafeArea()
     }
 }

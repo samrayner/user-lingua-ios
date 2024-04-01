@@ -29,7 +29,7 @@ package struct InspectionFeature {
             case suggestion
         }
 
-        package let recordedString: RecordedString
+        package let recognizedString: RecognizedString
         package var recognition = RecognitionFeature.State()
         var focusedField: Field?
         var suggestionString: String
@@ -40,9 +40,9 @@ package struct InspectionFeature {
             Locale(identifier: localeIdentifier)
         }
 
-        package init(recordedString: RecordedString) {
-            self.recordedString = recordedString
-            self.suggestionString = recordedString.value
+        package init(recognizedString: RecognizedString) {
+            self.recognizedString = recognizedString
+            self.suggestionString = recognizedString.value
         }
     }
 
@@ -75,7 +75,7 @@ package struct InspectionFeature {
             case .saveSuggestion:
                 suggestionsRepository.saveSuggestion(
                     .init(
-                        recordedString: state.recordedString,
+                        recordedString: state.recognizedString.recordedString,
                         newValue: state.suggestionString,
                         locale: state.locale
                     )
@@ -84,9 +84,9 @@ package struct InspectionFeature {
                 return .none
             case .binding(\.localeIdentifier):
                 state.suggestionString = suggestionsRepository.suggestion(
-                    recorded: state.recordedString,
+                    recorded: state.recognizedString.recordedString,
                     locale: state.locale
-                )?.newValue ?? state.recordedString.localizedValue(locale: state.locale)
+                )?.newValue ?? state.recognizedString.localizedValue(locale: state.locale)
                 appViewModel.refresh()
                 return .none
             case .binding(\.suggestionString):
@@ -132,23 +132,25 @@ package struct InspectionFeatureView: View {
                         .pickerStyle(.segmented)
                         .frame(height: 50)
 
-                        if focusedField != .suggestion {
-                            Text(
-                                store.recordedString.localizedValue(
-                                    locale: store.locale,
-                                    placeholderAttributes: [.backgroundColor: UIColor.cyan],
-                                    placeholderTransform: { " \($0) " }
+                        ZStack {
+                            if focusedField != .suggestion {
+                                Text(
+                                    store.recognizedString.localizedValue(
+                                        locale: store.locale,
+                                        placeholderAttributes: [.backgroundColor: UIColor.cyan],
+                                        placeholderTransform: { " \($0) " }
+                                    )
                                 )
-                            )
+                            }
+
+                            TextField("Suggestion", text: $store.suggestionString, axis: .vertical)
+                                .focused($focusedField, equals: .suggestion)
+                                .textFieldStyle(.roundedBorder)
+                                .autocorrectionDisabled()
+                                .textInputAutocapitalization(.never)
                         }
 
-                        TextField("Suggestion", text: $store.suggestionString)
-                            .focused($focusedField, equals: .suggestion)
-                            .textFieldStyle(.roundedBorder)
-                            .autocorrectionDisabled()
-                            .textInputAutocapitalization(.never)
-
-                        if let localization = store.recordedString.localization {
+                        if let localization = store.recognizedString.localization {
                             VStack(alignment: .leading) {
                                 HStack {
                                     Text("Key:")
@@ -189,17 +191,3 @@ package struct InspectionFeatureView: View {
         }
     }
 }
-
-// #Preview {
-//    InspectionFeatureView(
-//        store: Store(
-//            initialState: InspectionFeature.State(
-//                recordedString: .init("Preview")
-//            ),
-//            reducer: {
-//                InspectionFeature()
-//                    ._printChanges()
-//            }
-//        )
-//    )
-// }

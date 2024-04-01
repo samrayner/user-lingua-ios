@@ -143,7 +143,7 @@ public final class UserLingua {
                 return formattedString.value
             }
 
-            if case let .inspection(state) = store.mode, state.recordedString.value == formattedString.value {
+            if case let .inspection(state) = store.mode, state.recognizedString.value == formattedString.value {
                 // we're currently inspected this string so display the
                 // suggestion the user is making if there is one
                 if let suggestion = suggestionsRepository.suggestion(formatted: formattedString, locale: state.locale) {

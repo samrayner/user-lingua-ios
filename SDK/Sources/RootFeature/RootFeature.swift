@@ -71,8 +71,8 @@ package struct RootFeature {
                 state.mode = .recording
                 windowManager.hideWindow()
                 return .none
-            case let .mode(.selection(.delegate(.didSelectString(recordedString)))):
-                state.mode = .inspection(.init(recordedString: recordedString))
+            case let .mode(.selection(.delegate(.didSelectString(recognizedString)))):
+                state.mode = .inspection(.init(recognizedString: recognizedString))
                 return .none
             case .mode:
                 return .none
