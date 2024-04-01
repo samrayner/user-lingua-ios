@@ -18,6 +18,23 @@
         }
       }
     },
+    "ul_button_title_disabled" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Button disabled"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GB Button disabled"
+          }
+        }
+      }
+    },
     "ul_button_title_normal" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -31,23 +48,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "GB Button normal"
-          }
-        }
-      }
-    },
-    "ul_button_title_selected" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Button selected"
-          }
-        },
-        "en-GB" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GB Button selected"
           }
         }
       }

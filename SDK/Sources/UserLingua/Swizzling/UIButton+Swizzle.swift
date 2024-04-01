@@ -82,6 +82,11 @@ extension UIButton {
     // and the original method name will call the below implementation.
     @objc
     func unswizzledSetTitle(_ title: String?, for state: State) {
+        guard !UserLingua.isDisabled(for: self) else {
+            unswizzledSetTitle(title, for: state)
+            return
+        }
+
         switch state {
         case .normal:
             unprocessedNormalTitle = title

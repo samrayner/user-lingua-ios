@@ -5,8 +5,6 @@ import SwiftUI
 extension View {
     /// Allows suggestions for the given string using UserLingua.
     ///
-    /// For Text views, consider `import UserLinguaTextOptIn` instead.
-    ///
     /// Use this method to look for the `key` parameter in a localization
     /// table and display the associated string value in the
     /// view. If the method can't find the key in the table, or if no table
@@ -50,14 +48,14 @@ extension View {
 
     /// Allows suggestions for the given string using UserLingua without localization.
     ///
-    ///     Text(someString) // Displays the contents of `someString` without localization.
+    ///     UL(someString) // Displays the contents of `someString` without localization.
     ///
-    /// SwiftUI doesn't call this method when you pass
+    /// This method isn't called when you pass
     /// a string literal as the input. Instead, a string literal
     /// triggers the `UL(LocalizedStringKey)` method which attempts to
     /// perform localization.
     ///
-    /// By default, SwiftUI assumes that you don't want to localize stored
+    /// By default, it is assumed that you don't want to localize stored
     /// strings, but if you do, you can first create a localized string key from
     /// the value, and pass that in. Using a key as input
     /// triggers `UL(LocalizedStringKey)` instead.

@@ -46,6 +46,11 @@ extension UILabel {
     // and the original method name will call the below implementation.
     @objc
     func unswizzledSetText(_ text: String?) {
+        guard !UserLingua.isDisabled(for: self) else {
+            unswizzledSetText(text)
+            return
+        }
+
         unprocessedText = text
         let processedString = text.map { UserLingua.shared.processString($0) }
         unswizzledSetText(processedString)
