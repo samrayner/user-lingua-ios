@@ -38,10 +38,16 @@ let package = Package(
         .target(
             name: "Core",
             dependencies: [
+                "Theme",
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
                 .product(name: "Spyable", package: "swift-spyable"),
-                .product(name: "SFSafeSymbols", package: "SFSafeSymbols"),
                 .product(name: "MemberwiseInit", package: "swift-memberwise-init-macro")
+            ]
+        ),
+        .target(
+            name: "Theme",
+            dependencies: [
+                .product(name: "SFSafeSymbols", package: "SFSafeSymbols")
             ]
         ),
         .target(

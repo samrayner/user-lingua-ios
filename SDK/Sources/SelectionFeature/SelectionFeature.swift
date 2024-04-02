@@ -4,8 +4,8 @@ import ComposableArchitecture
 import Core
 import Foundation
 import RecognitionFeature
-import SFSafeSymbols
 import SwiftUI
+import Theme
 
 @Reducer
 package struct SelectionFeature {
