@@ -40,6 +40,18 @@ package struct InspectionFeature {
             Locale(identifier: localeIdentifier)
         }
 
+        var localizedValue: String {
+            recognizedString.localizedValue(locale: locale)
+        }
+
+        func makeSuggestion() -> Suggestion {
+            .init(
+                recordedString: recognizedString.recordedString,
+                newValue: suggestionString,
+                locale: locale
+            )
+        }
+
         package init(recognizedString: RecognizedString) {
             self.recognizedString = recognizedString
             self.suggestionString = recognizedString.value
@@ -48,6 +60,7 @@ package struct InspectionFeature {
 
     package enum Action: BindableAction {
         case saveSuggestion
+        case didTapSuggestionPreview
         case binding(BindingAction<State>)
         case delegate(Delegate)
         case path(StackActionOf<Path>)
@@ -73,20 +86,17 @@ package struct InspectionFeature {
         Reduce { state, action in
             switch action {
             case .saveSuggestion:
-                suggestionsRepository.saveSuggestion(
-                    .init(
-                        recordedString: state.recognizedString.recordedString,
-                        newValue: state.suggestionString,
-                        locale: state.locale
-                    )
-                )
+                suggestionsRepository.saveSuggestion(state.makeSuggestion())
                 appViewModel.refresh()
+                return .none
+            case .didTapSuggestionPreview:
+                state.focusedField = .suggestion
                 return .none
             case .binding(\.localeIdentifier):
                 state.suggestionString = suggestionsRepository.suggestion(
-                    recorded: state.recognizedString.recordedString,
+                    for: state.recognizedString.value,
                     locale: state.locale
-                )?.newValue ?? state.recognizedString.localizedValue(locale: state.locale)
+                )?.newValue ?? state.localizedValue
                 appViewModel.refresh()
                 return .none
             case .binding(\.suggestionString):
@@ -132,8 +142,15 @@ package struct InspectionFeatureView: View {
                         .pickerStyle(.segmented)
                         .frame(height: 50)
 
-                        ZStack {
-                            if focusedField != .suggestion {
+                        ZStack(alignment: .topLeading) {
+                            TextField("Suggestion", text: $store.suggestionString, axis: .vertical)
+                                .focused($focusedField, equals: .suggestion)
+                                .textFieldStyle(.plain)
+                                .autocorrectionDisabled()
+                                .textInputAutocapitalization(.never)
+                                .background(Color.white)
+
+                            if focusedField != .suggestion && store.suggestionString == store.localizedValue {
                                 Text(
                                     store.recognizedString.localizedValue(
                                         locale: store.locale,
@@ -141,14 +158,12 @@ package struct InspectionFeatureView: View {
                                         placeholderTransform: { " \($0) " }
                                     )
                                 )
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                                .background(Color.white)
+                                .onTapGesture { store.send(.didTapSuggestionPreview) }
                             }
-
-                            TextField("Suggestion", text: $store.suggestionString, axis: .vertical)
-                                .focused($focusedField, equals: .suggestion)
-                                .textFieldStyle(.roundedBorder)
-                                .autocorrectionDisabled()
-                                .textInputAutocapitalization(.never)
                         }
+                        .border(Color.gray, cornerRadius: 3)
 
                         if let localization = store.recognizedString.localization {
                             VStack(alignment: .leading) {
@@ -170,6 +185,7 @@ package struct InspectionFeatureView: View {
                             .background(Color.gray)
                         }
                     }
+                    .padding()
                     .bind($store.focusedField, to: $focusedField)
                     .navigationTitle("UserLingua")
                     .navigationBarTitleDisplayMode(.inline)

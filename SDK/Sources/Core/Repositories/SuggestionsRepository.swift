@@ -7,10 +7,7 @@ import Spyable
 @Spyable
 package protocol SuggestionsRepositoryProtocol {
     func saveSuggestion(_ suggestion: Suggestion)
-    func suggestion(recorded: RecordedString, locale: Locale) -> Suggestion?
-    func suggestion(formatted: FormattedString, locale: Locale) -> Suggestion?
-    func suggestion(localized: LocalizedString, locale: Locale) -> Suggestion?
-    func suggestion(string: String, locale: Locale) -> Suggestion?
+    func suggestion(for original: String, locale: Locale) -> Suggestion?
 }
 
 package final class SuggestionsRepository: SuggestionsRepositoryProtocol {
@@ -21,27 +18,11 @@ package final class SuggestionsRepository: SuggestionsRepositoryProtocol {
     }
 
     package func saveSuggestion(_ suggestion: Suggestion) {
-        suggestions[suggestion.recordedString.formatted.value, default: [:]][suggestion.locale] = suggestion
+        suggestions[suggestion.recordedString.value, default: [:]][suggestion.locale] = suggestion
     }
 
-    package func suggestion(recorded recordedString: RecordedString, locale: Locale) -> Suggestion? {
-        suggestion(formatted: recordedString.formatted, locale: locale)
-    }
-
-    package func suggestion(formatted formattedString: FormattedString, locale: Locale) -> Suggestion? {
-        if let localizedString = formattedString.format.localized {
-            suggestion(localized: localizedString, locale: locale)
-        } else {
-            suggestion(string: formattedString.value, locale: locale)
-        }
-    }
-
-    package func suggestion(localized localizedString: LocalizedString, locale: Locale) -> Suggestion? {
-        suggestion(string: localizedString.value, locale: locale)
-    }
-
-    package func suggestion(string: String, locale: Locale) -> Suggestion? {
-        suggestions[string, default: [:]][locale]
+    package func suggestion(for original: String, locale: Locale) -> Suggestion? {
+        suggestions[original, default: [:]][locale]
     }
 }
 
