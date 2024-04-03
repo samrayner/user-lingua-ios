@@ -7,7 +7,8 @@ struct StandardTheme: ThemeProtocol {
     }
 
     let colors = ThemeColors(
-        foreground: .init(Palette.black)
+        foreground: .init(light: Palette.black, dark: Palette.white),
+        background: .init(light: Palette.white, dark: Palette.black)
     )
 
     let fonts = ThemeFonts(

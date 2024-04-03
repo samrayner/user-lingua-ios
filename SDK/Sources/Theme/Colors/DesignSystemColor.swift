@@ -4,23 +4,42 @@ import Foundation
 import SwiftUI
 import UIKit
 
+typealias Hexadecimal = String
+
 package struct DesignSystemColor {
-    fileprivate let rgba: RGBA
+    fileprivate let light: RGBA
+    fileprivate let dark: RGBA
 
     func withAlphaComponent(_ alpha: Double) -> DesignSystemColor {
-        Self(rgba: RGBA(red: rgba.red, green: rgba.green, blue: rgba.blue, alpha: alpha))
+        Self(
+            light: RGBA(red: light.red, green: light.green, blue: light.blue, alpha: alpha),
+            dark: RGBA(red: dark.red, green: dark.green, blue: dark.blue, alpha: alpha)
+        )
     }
 }
 
 extension DesignSystemColor {
-    init(_ hexadecimal: String) {
-        self.rgba = .init(hexadecimal: hexadecimal)
+    init(
+        light: Hexadecimal,
+        dark: Hexadecimal
+    ) {
+        self.light = .init(hexadecimal: light)
+        self.dark = .init(hexadecimal: dark)
     }
 }
 
 extension UIColor {
     package static func theme(_ themeColor: ThemeColor) -> UIColor {
-        themeColor.designSystemColor.rgba.uiColor
+        .init { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                themeColor.designSystemColor.dark.uiColor
+            case .light, .unspecified:
+                themeColor.designSystemColor.light.uiColor
+            @unknown default:
+                themeColor.designSystemColor.light.uiColor
+            }
+        }
     }
 
     package func adjust(
@@ -54,7 +73,7 @@ extension UIColor {
 
 extension Color {
     package static func theme(_ themeColor: ThemeColor) -> Color {
-        themeColor.designSystemColor.rgba.color
+        .init(uiColor: .theme(themeColor))
     }
 
     package func adjust(
@@ -91,7 +110,7 @@ private struct RGBA {
 }
 
 extension RGBA {
-    init(hexadecimal: String) {
+    init(hexadecimal: Hexadecimal) {
         var hexFormatted = hexadecimal.trimmingCharacters(in: .whitespacesAndNewlines)
 
         // swiftlint:disable identifier_name
