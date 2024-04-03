@@ -4,6 +4,7 @@ import ComposableArchitecture
 import Core
 import Foundation
 import RecognitionFeature
+import Strings
 import SwiftUI
 import Theme
 
@@ -132,7 +133,7 @@ package struct InspectionFeatureView: View {
                     path: $store.scope(state: \.path, action: \.path)
                 ) {
                     VStack {
-                        Picker("Language", selection: $store.localeIdentifier) {
+                        Picker(Strings.Inspection.LanguagePicker.title, selection: $store.localeIdentifier) {
                             ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
                                 Text(Locale.current.localizedString(forIdentifier: identifier) ?? identifier)
                             }
@@ -141,7 +142,7 @@ package struct InspectionFeatureView: View {
                         .frame(height: 50)
 
                         ZStack(alignment: .topLeading) {
-                            TextField("Suggestion", text: $store.suggestionString, axis: .vertical)
+                            TextField(Strings.Inspection.SuggestionField.placeholder, text: $store.suggestionString, axis: .vertical)
                                 .focused($focusedField, equals: .suggestion)
                                 .textFieldStyle(.plain)
                                 .autocorrectionDisabled()
@@ -166,25 +167,25 @@ package struct InspectionFeatureView: View {
                         if let localization = store.recognizedString.localization {
                             VStack(alignment: .leading) {
                                 HStack {
-                                    Text("Key:")
+                                    Text("\(Strings.Inspection.Localization.Key.title):")
                                     Text(localization.key)
                                 }
 
                                 HStack {
-                                    Text("Table:")
+                                    Text("\(Strings.Inspection.Localization.Table.title):")
                                     Text(localization.tableName ?? "Localizable")
                                 }
 
                                 HStack {
-                                    Text("Comment:")
-                                    Text(localization.comment ?? "[None]")
+                                    Text("\(Strings.Inspection.Localization.Comment.title):")
+                                    Text(localization.comment ?? Strings.Inspection.Localization.Comment.none)
                                 }
                             }
                         }
                     }
                     .padding()
                     .bind($store.focusedField, to: $focusedField)
-                    .navigationTitle("UserLingua")
+                    .navigationTitle(Strings.sdkName)
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem {
@@ -200,6 +201,7 @@ package struct InspectionFeatureView: View {
                     //                    OtherFeatureView(store: store)
                     //                }
                 }
+                .background(Color.theme(.background))
             }
         }
     }

@@ -1,0 +1,1 @@
+~/.mint/bin/mint run swiftgen config run --config SDK/Sources/Strings/swiftgen.yml

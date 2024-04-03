@@ -1,3 +1,6 @@
+excluded: # Paths to ignore during linting. Takes precedence over `included`.
+  - SDK/Sources/Strings/Strings.generated.swift
+
 disabled_rules:
   # Don't warn about things we don't mind
   - function_parameter_count

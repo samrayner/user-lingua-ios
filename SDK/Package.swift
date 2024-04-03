@@ -13,7 +13,6 @@ let package = Package(
         .library(name: "UserLingua", targets: ["UserLingua"]),
         .library(name: "Core", targets: ["Core"]),
         .library(name: "SystemAPIAliases", targets: ["SystemAPIAliases"]),
-        .library(name: "Macros", targets: ["Macros"]),
         .library(name: "Theme", targets: ["Theme"]),
         .library(name: "RootFeature", targets: ["RootFeature"]),
         .library(name: "SelectionFeature", targets: ["SelectionFeature"]),
@@ -43,7 +42,6 @@ let package = Package(
         .target(
             name: "Core",
             dependencies: [
-                "Theme",
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
                 .product(name: "Spyable", package: "swift-spyable"),
                 .product(name: "MemberwiseInit", package: "swift-memberwise-init-macro")
@@ -59,6 +57,10 @@ let package = Package(
             ]
         ),
         .target(
+            name: "Strings",
+            dependencies: []
+        ),
+        .target(
             name: "SystemAPIAliases",
             dependencies: []
         ),
@@ -66,6 +68,7 @@ let package = Package(
             name: "RootFeature",
             dependencies: [
                 "Core",
+                "Theme",
                 "SelectionFeature",
                 "InspectionFeature"
             ]
@@ -80,6 +83,8 @@ let package = Package(
             name: "SelectionFeature",
             dependencies: [
                 "Core",
+                "Strings",
+                "Theme",
                 "RecognitionFeature"
             ]
         ),
@@ -87,6 +92,8 @@ let package = Package(
             name: "InspectionFeature",
             dependencies: [
                 "Core",
+                "Strings",
+                "Theme",
                 "RecognitionFeature"
             ]
         ),

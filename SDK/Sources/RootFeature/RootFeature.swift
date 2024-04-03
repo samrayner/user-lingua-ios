@@ -109,6 +109,7 @@ package struct RootFeatureView: View {
                 }
             }
             .foregroundColor(.theme(.text))
+            .tint(.theme(.tint))
         }
     }
 }
