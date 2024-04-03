@@ -48,6 +48,9 @@ let package = Package(
             name: "Theme",
             dependencies: [
                 .product(name: "SFSafeSymbols", package: "SFSafeSymbols")
+            ],
+            resources: [
+                .process("Resources/Assets.xcassets")
             ]
         ),
         .target(

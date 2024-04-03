@@ -3,5 +3,5 @@
 import Foundation
 
 package struct ThemeImages {
-    package let close: DesignSystemImage
+    package let close: ThemeImage
 }

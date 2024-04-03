@@ -3,5 +3,5 @@
 import Foundation
 
 package struct ThemeFonts {
-    package let bodyMedium: DesignSystemFont
+    package let bodyMedium: ThemeFont
 }

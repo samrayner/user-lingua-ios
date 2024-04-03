@@ -100,7 +100,7 @@ package struct SelectionFeatureView: View {
                 .ignoresSafeArea()
 
                 Button(action: { store.send(.delegate(.didDismiss)) }) {
-                    Image(systemSymbol: .xmarkCircleFill)
+                    Image.theme(.close)
                         .padding()
                 }
             }

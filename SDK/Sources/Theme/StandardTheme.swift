@@ -1,5 +1,7 @@
 // StandardTheme.swift
 
+import SFSafeSymbols
+
 struct StandardTheme: ThemeProtocol {
     enum Palette {
         static let black = "#000000"

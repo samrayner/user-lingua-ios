@@ -5,6 +5,7 @@
 
 extension ThemeColor {
     package static let text = ThemeColor(\.foreground)
+    package static let background = ThemeColor(\.background)
 }
 
 extension ThemeFont {

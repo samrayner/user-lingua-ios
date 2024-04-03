@@ -192,7 +192,7 @@ package struct InspectionFeatureView: View {
                     .toolbar {
                         ToolbarItem {
                             Button(action: { store.send(.delegate(.didDismiss)) }) {
-                                Image(systemSymbol: .xmarkCircleFill)
+                                Image.theme(.close)
                             }
                         }
                     }
