@@ -201,7 +201,6 @@ package struct InspectionFeatureView: View {
                     //                    OtherFeatureView(store: store)
                     //                }
                 }
-                .background(Color.theme(.background))
             }
         }
     }

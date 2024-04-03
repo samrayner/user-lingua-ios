@@ -14,26 +14,28 @@ struct ContentView: View {
     @State private var textFieldText = ""
 
     var body: some View {
-        VStack {
-            Text(String(format: NSLocalizedString("ul_args_test", comment: ""), "Sam", 33))
-
-            Text("ul_label_text")
-
-            Text("Unlocalized label".description)
-
+        ScrollView {
             VStack {
-                Text("ul_disabled_label_text")
+                Text(String(format: NSLocalizedString("ul_args_test", comment: ""), "Sam", 33))
+
+                Text("ul_label_text")
+
+                Text("Unlocalized label".description)
+
+                VStack {
+                    Text("ul_disabled_label_text")
+                }
+                .userLinguaDisabled()
+
+                Button(UL("ul_button_title_normal")) {}
+
+                Picker("ul_label_text", selection: $selectedPickerItem) {
+                    Text(LocalizedStringKey(selectedPickerItem.rawValue))
+                }
+                .pickerStyle(.segmented)
+
+                TextField("ul_text_field_placeholder", text: $textFieldText)
             }
-            .userLinguaDisabled()
-
-            Button(UL("ul_button_title_normal")) {}
-
-            Picker("ul_label_text", selection: $selectedPickerItem) {
-                Text(LocalizedStringKey(selectedPickerItem.rawValue))
-            }
-            .pickerStyle(.segmented)
-
-            TextField("ul_text_field_placeholder", text: $textFieldText)
         }
     }
 }
