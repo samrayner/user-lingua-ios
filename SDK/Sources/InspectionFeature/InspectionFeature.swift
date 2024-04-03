@@ -7,8 +7,6 @@ import RecognitionFeature
 import SwiftUI
 import Theme
 
-public typealias StackActionOf<R: Reducer> = StackAction<R.State, R.Action>
-
 @Reducer
 package struct InspectionFeature {
     @Dependency(\.mainQueue) var mainQueue
@@ -63,7 +61,7 @@ package struct InspectionFeature {
         case didTapSuggestionPreview
         case binding(BindingAction<State>)
         case delegate(Delegate)
-        case path(StackActionOf<Path>)
+        case path(StackAction<Path.State, Path.Action>) // TODO: StackActionOf<Path>
         case recognition(RecognitionFeature.Action)
 
         @CasePathable
@@ -148,22 +146,22 @@ package struct InspectionFeatureView: View {
                                 .textFieldStyle(.plain)
                                 .autocorrectionDisabled()
                                 .textInputAutocapitalization(.never)
-                                .background(Color.white)
+                                .background(Color.theme(.suggestionFieldBackground))
 
                             if focusedField != .suggestion && store.suggestionString == store.localizedValue {
                                 Text(
                                     store.recognizedString.localizedValue(
                                         locale: store.locale,
-                                        placeholderAttributes: [.backgroundColor: UIColor.cyan],
+                                        placeholderAttributes: [.backgroundColor: UIColor.theme(.placeholderHighlight)],
                                         placeholderTransform: { " \($0) " }
                                     )
                                 )
                                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                                .background(Color.white)
+                                .background(Color.theme(.suggestionFieldBackground))
                                 .onTapGesture { store.send(.didTapSuggestionPreview) }
                             }
                         }
-                        .border(Color.gray, cornerRadius: 3)
+                        .border(Color.theme(.suggestionFieldBorder), cornerRadius: 3)
 
                         if let localization = store.recognizedString.localization {
                             VStack(alignment: .leading) {
@@ -182,7 +180,6 @@ package struct InspectionFeatureView: View {
                                     Text(localization.comment ?? "[None]")
                                 }
                             }
-                            .background(Color.gray)
                         }
                     }
                     .padding()
@@ -206,4 +203,20 @@ package struct InspectionFeatureView: View {
             }
         }
     }
+}
+
+#Preview {
+    InspectionFeatureView(
+        store: Store(
+            initialState: InspectionFeature.State(
+                recognizedString: .init(
+                    recordedString: .init("Hello"),
+                    lines: []
+                )
+            ),
+            reducer: {
+                InspectionFeature()
+            }
+        )
+    )
 }

@@ -10,10 +10,15 @@ let package = Package(
     platforms: [.iOS(.v16), .macOS(.v10_15)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
-        .library(
-            name: "UserLingua",
-            targets: ["UserLingua"]
-        )
+        .library(name: "UserLingua", targets: ["UserLingua"]),
+        .library(name: "Core", targets: ["Core"]),
+        .library(name: "SystemAPIAliases", targets: ["SystemAPIAliases"]),
+        .library(name: "Macros", targets: ["Macros"]),
+        .library(name: "Theme", targets: ["Theme"]),
+        .library(name: "RootFeature", targets: ["RootFeature"]),
+        .library(name: "SelectionFeature", targets: ["SelectionFeature"]),
+        .library(name: "InspectionFeature", targets: ["InspectionFeature"]),
+        .library(name: "RecognitionFeature", targets: ["RecognitionFeature"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.

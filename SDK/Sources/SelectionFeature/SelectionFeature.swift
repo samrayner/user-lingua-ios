@@ -69,7 +69,6 @@ package struct SelectionFeature {
 
 package struct SelectionFeatureView: View {
     package let store: StoreOf<SelectionFeature>
-    @Environment(\.colorScheme) var colorScheme
 
     package init(store: StoreOf<SelectionFeature>) {
         self.store = store
@@ -81,7 +80,7 @@ package struct SelectionFeatureView: View {
                 RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
 
                 ZStack {
-                    (colorScheme == .dark ? Color.white : Color.black)
+                    Color.theme(.overlay)
                         .opacity(0.2)
                         .mask {
                             ZStack {
@@ -93,7 +92,7 @@ package struct SelectionFeatureView: View {
                         }
 
                     highlights(
-                        color: .white.opacity(0.001),
+                        color: .interactableClear,
                         onSelectString: { store.send(.delegate(.didSelectString($0))) }
                     )
                 }

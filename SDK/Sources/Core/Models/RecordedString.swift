@@ -40,11 +40,11 @@ package struct RecordedString: Equatable {
 }
 
 extension RecordedString {
-    init(_ localizedString: LocalizedString) {
+    package init(_ localizedString: LocalizedString) {
         self.init(FormattedString(localizedString))
     }
 
-    init(_ string: String) {
+    package init(_ string: String) {
         self.init(FormattedString(string))
     }
 }

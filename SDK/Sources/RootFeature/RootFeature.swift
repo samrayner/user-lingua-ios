@@ -90,22 +90,25 @@ package struct RootFeatureView: View {
 
     package var body: some View {
         WithPerceptionTracking {
-            switch store.mode {
-            case .disabled, .recording:
-                EmptyView()
-            case .selection, .inspection:
-                ZStack {
-                    if let store = store.scope(state: \.mode.selection, action: \.mode.selection) {
-                        SelectionFeatureView(store: store)
-                    } else if let store = store.scope(state: \.mode.inspection, action: \.mode.inspection) {
-                        VStack {
-                            Spacer()
-                            InspectionFeatureView(store: store)
-                                .frame(height: 250)
+            Group {
+                switch store.mode {
+                case .disabled, .recording:
+                    EmptyView()
+                case .selection, .inspection:
+                    ZStack {
+                        if let store = store.scope(state: \.mode.selection, action: \.mode.selection) {
+                            SelectionFeatureView(store: store)
+                        } else if let store = store.scope(state: \.mode.inspection, action: \.mode.inspection) {
+                            VStack {
+                                Spacer()
+                                InspectionFeatureView(store: store)
+                                    .frame(height: 250)
+                            }
                         }
                     }
                 }
             }
+            .foregroundColor(.theme(.text))
         }
     }
 }

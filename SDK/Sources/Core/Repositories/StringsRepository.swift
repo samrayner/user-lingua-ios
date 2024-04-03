@@ -74,7 +74,8 @@ package final class StringsRepository: StringsRepositoryProtocol {
     }
 
     package func record(localized localizedString: LocalizedString) {
-        guard localizedString.localization.bundle?.bundleURL.lastPathComponent != "UIKitCore.framework"
+        guard !["framework", "axbundle"]
+            .contains(localizedString.localization.bundle?.bundleURL.pathExtension)
         else { return }
 
         stringRecord[localizedString.value, default: []].append(
