@@ -12,6 +12,7 @@ import SwiftUI
 package struct RootFeature {
     @Dependency(WindowManagerDependency.self) var windowManager
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
+    @Dependency(NotificationManagerDependency.self) var notificationManager
 
     package init() {}
 
@@ -28,6 +29,7 @@ package struct RootFeature {
     package struct State: Equatable {
         package var configuration: Configuration = .init()
         package var mode: Mode.State = .disabled
+        package var keyboardPadding: CGFloat = 0
 
         package init() {}
     }
@@ -37,7 +39,13 @@ package struct RootFeature {
         case enable
         case configure(Configuration)
         case didShake
+        case keyboardWillChangeFrame(CGRect, CGRect)
+        case observeKeyboardWillChangeFrame
         case mode(Mode.Action)
+    }
+
+    enum CancelID {
+        case deviceShakeObservation
     }
 
     package var body: some ReducerOf<Self> {
@@ -55,10 +63,15 @@ package struct RootFeature {
             switch action {
             case .enable:
                 state.mode = .recording
-                return .none
+                return .run { send in
+                    for await _ in await notificationManager.observe(name: .deviceDidShake) {
+                        await send(.didShake)
+                    }
+                }
+                .cancellable(id: CancelID.deviceShakeObservation)
             case .disable:
                 state.mode = .disabled
-                return .none
+                return .cancel(id: CancelID.deviceShakeObservation)
             case let .configure(configuration):
                 state.configuration = configuration
                 return .none
@@ -66,6 +79,24 @@ package struct RootFeature {
                 windowManager.showWindow()
                 state.mode = .selection(.init())
                 return .none
+            case let .keyboardWillChangeFrame(begin, end):
+                state.keyboardPadding = end.height
+                return .none
+            case .observeKeyboardWillChangeFrame:
+                let keyboardNotificationNames: [Notification.Name] = [
+                    .swizzled(UIResponder.keyboardWillChangeFrameNotification),
+                    .swizzled(UIResponder.keyboardWillHideNotification),
+                    .swizzled(UIResponder.keyboardWillShowNotification)
+                ]
+
+                return .run { send in
+                    for await notification in await notificationManager.observe(names: keyboardNotificationNames) {
+                        if let begin = await notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? CGRect,
+                           let end = await notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                            await send(.keyboardWillChangeFrame(begin, end))
+                        }
+                    }
+                }
             case .mode(.selection(.delegate(.didDismiss))),
                  .mode(.inspection(.delegate(.didDismiss))):
                 state.mode = .recording
@@ -108,8 +139,11 @@ package struct RootFeatureView: View {
                     }
                 }
             }
+            .padding(.bottom, store.keyboardPadding)
+            .animation(.easeOut, value: store.keyboardPadding)
             .foregroundColor(.theme(.text))
             .tint(.theme(.tint))
+            .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
         }
     }
 }

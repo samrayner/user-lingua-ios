@@ -48,7 +48,7 @@ package struct SelectionFeature {
                 }
             case .observeDeviceRotation:
                 return .run { send in
-                    for await _ in await notificationManager.observe(UIDevice.orientationDidChangeNotification) {
+                    for await _ in await notificationManager.observe(name: UIDevice.orientationDidChangeNotification) {
                         await send(.deviceOrientationDidChange)
                     }
                 }

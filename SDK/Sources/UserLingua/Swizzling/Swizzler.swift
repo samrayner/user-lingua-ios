@@ -15,11 +15,13 @@ struct Swizzler: SwizzlerProtocol {
         Bundle.swizzle()
         UILabel.swizzle()
         UIButton.swizzle()
+        NotificationCenter.swizzle()
     }
 
     func unswizzle() {
         Bundle.unswizzle()
         UILabel.unswizzle()
         UIButton.unswizzle()
+        NotificationCenter.unswizzle()
     }
 }

@@ -27,7 +27,6 @@ public final class UserLingua {
 
     private let stringExtractor: StringExtractorProtocol = StringExtractor()
     private let swizzler: SwizzlerProtocol = Swizzler()
-    private(set) lazy var triggerObserver: TriggerObserverProtocol = TriggerObserver(onShake: onShake)
 
     private var inPreviewsOrTests: Bool {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
@@ -69,17 +68,25 @@ public final class UserLingua {
         }
     }
 
+    var isInspecting: Bool {
+        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+            if case .inspection = store.mode {
+                true
+            } else {
+                false
+            }
+        }
+    }
+
     public func enable() {
         guard !inPreviewsOrTests else { return }
         swizzler.swizzle()
-        triggerObserver.startObservingShake()
         store.send(.enable)
     }
 
     public func disable() {
         store.send(.disable)
         swizzler.unswizzle()
-        triggerObserver.stopObservingShake()
     }
 
     public func configure(_ configuration: UserLinguaConfiguration) {

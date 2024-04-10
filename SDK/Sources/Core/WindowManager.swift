@@ -53,6 +53,7 @@ package final class WindowManager: WindowManagerProtocol {
             let windows = UIApplication.shared.windowScene?.windows
             appWindow = windows?.first(where: \.isKeyWindow) ?? windows?.first(where: \.isOpaque)
         }
+        UIApplication.shared.endEditing()
         userLinguaWindow.windowScene = UIApplication.shared.windowScene
         userLinguaWindow.makeKeyAndVisible()
     }
