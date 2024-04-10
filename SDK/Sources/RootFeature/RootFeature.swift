@@ -39,7 +39,7 @@ package struct RootFeature {
         case enable
         case configure(Configuration)
         case didShake
-        case keyboardWillChangeFrame(CGRect, CGRect)
+        case keyboardWillChangeFrame(CGRect)
         case observeKeyboardWillChangeFrame
         case mode(Mode.Action)
     }
@@ -79,8 +79,10 @@ package struct RootFeature {
                 windowManager.showWindow()
                 state.mode = .selection(.init())
                 return .none
-            case let .keyboardWillChangeFrame(begin, end):
-                state.keyboardPadding = end.height
+            case let .keyboardWillChangeFrame(frame):
+                // For some reason the keyboard height is always
+                // reported as 75pts when it should be 0.
+                state.keyboardPadding = frame.height <= 100 ? 0 : frame.height
                 return .none
             case .observeKeyboardWillChangeFrame:
                 let keyboardNotificationNames: [Notification.Name] = [
@@ -91,9 +93,8 @@ package struct RootFeature {
 
                 return .run { send in
                     for await notification in await notificationManager.observe(names: keyboardNotificationNames) {
-                        if let begin = await notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? CGRect,
-                           let end = await notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-                            await send(.keyboardWillChangeFrame(begin, end))
+                        if let frame = await notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                            await send(.keyboardWillChangeFrame(frame))
                         }
                     }
                 }
@@ -141,6 +142,7 @@ package struct RootFeatureView: View {
             }
             .padding(.bottom, store.keyboardPadding)
             .animation(.easeOut, value: store.keyboardPadding)
+            .ignoresSafeArea(.all, edges: .bottom)
             .foregroundColor(.theme(.text))
             .tint(.theme(.tint))
             .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
