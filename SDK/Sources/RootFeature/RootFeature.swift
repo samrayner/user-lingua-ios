@@ -85,7 +85,9 @@ package struct RootFeature {
                 state.configuration = configuration
                 return .none
             case .didShake:
+                guard state.mode == .recording else { return .none }
                 windowManager.showWindow()
+                state.keyboardPadding = 0
                 state.mode = .selection(.init())
                 onForeground()
                 return .none
