@@ -14,7 +14,16 @@ package struct RootFeature {
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
     @Dependency(NotificationManagerDependency.self) var notificationManager
 
-    package init() {}
+    let onForeground: () -> Void
+    let onBackground: () -> Void
+
+    package init(
+        onForeground: @escaping () -> Void = {},
+        onBackground: @escaping () -> Void = {}
+    ) {
+        self.onForeground = onForeground
+        self.onBackground = onBackground
+    }
 
     // https://github.com/pointfreeco/swift-composable-architecture/discussions/2936
     @Reducer(state: .equatable)
@@ -78,6 +87,13 @@ package struct RootFeature {
             case .didShake:
                 windowManager.showWindow()
                 state.mode = .selection(.init())
+                onForeground()
+                return .none
+            case .mode(.selection(.delegate(.didDismiss))),
+                 .mode(.inspection(.delegate(.didDismiss))):
+                state.mode = .recording
+                windowManager.hideWindow()
+                onBackground()
                 return .none
             case let .keyboardWillChangeFrame(frame):
                 // For some reason the keyboard height is always
@@ -98,11 +114,6 @@ package struct RootFeature {
                         }
                     }
                 }
-            case .mode(.selection(.delegate(.didDismiss))),
-                 .mode(.inspection(.delegate(.didDismiss))):
-                state.mode = .recording
-                windowManager.hideWindow()
-                return .none
             case let .mode(.selection(.delegate(.didSelectString(recognizedString)))):
                 state.mode = .inspection(.init(recognizedString: recognizedString))
                 return .none

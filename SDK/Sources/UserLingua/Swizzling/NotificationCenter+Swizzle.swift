@@ -31,7 +31,7 @@ extension NotificationCenter {
             UIResponder.keyboardDidShowNotification
         ]
 
-        if keyboardNotificationNames.contains(name) && UserLingua.shared.isInspecting {
+        if keyboardNotificationNames.contains(name) {
             unswizzledPost(name: .swizzled(name), object: object, userInfo: userInfo)
             return
         }

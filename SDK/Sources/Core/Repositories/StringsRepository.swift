@@ -74,9 +74,11 @@ package final class StringsRepository: StringsRepositoryProtocol {
     }
 
     package func record(localized localizedString: LocalizedString) {
-        guard !["framework", "axbundle"]
-            .contains(localizedString.localization.bundle?.bundleURL.pathExtension)
-        else { return }
+        if let bundle = localizedString.localization.bundle,
+           !bundle.bundleURL.absoluteString.contains("Containers/Bundle/Application") {
+            // don't record strings localized inside frameworks
+            return
+        }
 
         stringRecord[localizedString.value, default: []].append(
             RecordedString(localizedString)

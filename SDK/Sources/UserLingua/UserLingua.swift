@@ -16,7 +16,12 @@ public final class UserLingua {
 
     private lazy var store: StoreOf<RootFeature> = .init(
         initialState: .init(),
-        reducer: { RootFeature() },
+        reducer: {
+            RootFeature(
+                onForeground: onForeground,
+                onBackground: onBackground
+            )
+        },
         withDependencies: {
             $0[UserLinguaObservableDependency.self] = self.viewModel
             $0[WindowManagerDependency.self] = self.windowManager
@@ -68,33 +73,27 @@ public final class UserLingua {
         }
     }
 
-    var isInspecting: Bool {
-        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            if case .inspection = store.mode {
-                true
-            } else {
-                false
-            }
-        }
-    }
-
     public func enable() {
         guard !inPreviewsOrTests else { return }
-        swizzler.swizzle()
+        swizzler.swizzleForBackground()
         store.send(.enable)
     }
 
     public func disable() {
         store.send(.disable)
-        swizzler.unswizzle()
+        swizzler.unswizzleForBackground()
     }
 
     public func configure(_ configuration: UserLinguaConfiguration) {
         store.send(.configure(Configuration(configuration)))
     }
 
-    private func onShake() {
-        store.send(.didShake)
+    private func onForeground() {
+        swizzler.swizzleForForeground()
+    }
+
+    private func onBackground() {
+        swizzler.unswizzleForForeground()
     }
 
     func record(formatted: FormattedString) {
