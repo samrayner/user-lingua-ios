@@ -57,22 +57,6 @@ package struct RootFeature {
         case deviceShakeObservation
     }
 
-    private func keyboardAnimation(from notification: Notification) -> Animation? {
-        guard let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
-              let curveValue = notification.userInfo?[UIResponder.keyboardAnimationCurveUserInfoKey] as? Int,
-              let uiKitCurve = UIView.AnimationCurve(rawValue: curveValue)
-        else { return nil }
-
-        let timing = UICubicTimingParameters(animationCurve: uiKitCurve)
-        return .timingCurve(
-            Double(timing.controlPoint1.x),
-            Double(timing.controlPoint1.y),
-            Double(timing.controlPoint2.x),
-            Double(timing.controlPoint2.y),
-            duration: duration
-        )
-    }
-
     package var body: some ReducerOf<Self> {
         Scope(state: \.mode, action: \.mode) {
             EmptyReducer()
@@ -127,10 +111,10 @@ package struct RootFeature {
 
                 return .run { send in
                     for await notification in await notificationManager.observe(names: keyboardNotificationNames) {
-                        if let frame = await notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                        if let keyboardNotification = KeyboardNotification(userInfo: notification.userInfo) {
                             await send(
-                                .keyboardWillChangeFrame(frame),
-                                animation: keyboardAnimation(from: notification) ?? .linear
+                                .keyboardWillChangeFrame(keyboardNotification.endFrame),
+                                animation: keyboardNotification.animation
                             )
                         }
                     }
