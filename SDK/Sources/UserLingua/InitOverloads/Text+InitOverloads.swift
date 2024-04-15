@@ -87,8 +87,7 @@ extension Text {
     }
 
     // Takes precedence over the SwiftUI version
-    // due to fewer parameters. Avoids ambiguity
-    // by making bundle and comment non-optional.
+    // due to the non-optional bundle and comment types.
     public init(
         _ key: LocalizedStringKey,
         bundle: Bundle,
