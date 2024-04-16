@@ -13,6 +13,7 @@ package struct InspectionFeature {
     @Dependency(\.mainQueue) var mainQueue
     @Dependency(SuggestionsRepositoryDependency.self) var suggestionsRepository
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
+    @Dependency(ContentSizeCategoryObserverDependency.self) var contentSizeCategoryObserver
 
     package init() {}
 
@@ -29,6 +30,8 @@ package struct InspectionFeature {
         }
 
         package let recognizedString: RecognizedString
+        package var inspectorContentSizeCategory: UIContentSizeCategory
+        package var appContentSizeCategory: UIContentSizeCategory
         package var recognition = RecognitionFeature.State()
         var focusedField: Field?
         var suggestionString: String
@@ -51,8 +54,13 @@ package struct InspectionFeature {
             )
         }
 
-        package init(recognizedString: RecognizedString) {
+        package init(
+            recognizedString: RecognizedString,
+            appContentSizeCategory: UIContentSizeCategory
+        ) {
             self.recognizedString = recognizedString
+            self.appContentSizeCategory = appContentSizeCategory
+            self.inspectorContentSizeCategory = appContentSizeCategory
             self.suggestionString = recognizedString.value
         }
     }
@@ -60,6 +68,9 @@ package struct InspectionFeature {
     package enum Action: BindableAction {
         case saveSuggestion
         case didTapSuggestionPreview
+        case didTapIncreaseTextSize
+        case didTapDecreaseTextSize
+        case didTapClose
         case binding(BindingAction<State>)
         case delegate(Delegate)
         case path(StackAction<Path.State, Path.Action>) // TODO: StackActionOf<Path>
@@ -91,6 +102,20 @@ package struct InspectionFeature {
             case .didTapSuggestionPreview:
                 state.focusedField = .suggestion
                 return .none
+            case .didTapIncreaseTextSize:
+                state.appContentSizeCategory = .accessibilityExtraExtraExtraLarge
+                postContentSizeCategoryDidChangeNotifications(newValue: state.appContentSizeCategory)
+                return .none
+            case .didTapDecreaseTextSize:
+                state.appContentSizeCategory = .extraSmall
+                postContentSizeCategoryDidChangeNotifications(newValue: state.appContentSizeCategory)
+                return .none
+            case .didTapClose:
+                postContentSizeCategoryDidChangeNotifications(newValue: contentSizeCategoryObserver.systemPreferredContentSizeCategory)
+                appViewModel.refresh()
+                return .run { send in
+                    await send(.delegate(.didDismiss))
+                }
             case .binding(\.localeIdentifier):
                 state.suggestionString = suggestionsRepository.suggestion(
                     for: state.recognizedString.value,
@@ -105,14 +130,22 @@ package struct InspectionFeature {
                 // debounce primarily to avoid SwiftUI bug:
                 // https://github.com/pointfreeco/swift-composable-architecture/discussions/1093
                 .debounce(id: CancelID.suggestionSaveDebounce, for: .seconds(0.1), scheduler: mainQueue)
-            case .delegate(.didDismiss):
-                appViewModel.refresh()
-                return .none
             case .recognition, .binding, .delegate, .path:
                 return .none
             }
         }
         .forEach(\.path, action: \.path)
+    }
+
+    private func postContentSizeCategoryDidChangeNotifications(newValue: UIContentSizeCategory) {
+        NotificationCenter.default.post(
+            name: UIContentSizeCategory.didChangeNotification,
+            object: nil,
+            userInfo: [
+                UIContentSizeCategory.newValueUserInfoKey: newValue,
+                UIContentSizeCategory.isUserLinguaNotificationUserInfoKey: true
+            ]
+        )
     }
 }
 
@@ -133,6 +166,16 @@ package struct InspectionFeatureView: View {
                     path: $store.scope(state: \.path, action: \.path)
                 ) {
                     VStack {
+                        HStack {
+                            Button(action: { store.send(.didTapIncreaseTextSize) }) {
+                                Image.theme(.increaseTextSize)
+                            }
+
+                            Button(action: { store.send(.didTapDecreaseTextSize) }) {
+                                Image.theme(.decreaseTextSize)
+                            }
+                        }
+
                         Picker(Strings.Inspection.LanguagePicker.title, selection: $store.localeIdentifier) {
                             ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
                                 Text(Locale.current.localizedString(forIdentifier: identifier) ?? identifier)
@@ -189,7 +232,7 @@ package struct InspectionFeatureView: View {
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem {
-                            Button(action: { store.send(.delegate(.didDismiss)) }) {
+                            Button(action: { store.send(.didTapClose) }) {
                                 Image.theme(.close)
                             }
                         }
@@ -202,22 +245,23 @@ package struct InspectionFeatureView: View {
                     //                }
                 }
             }
+            .dynamicTypeSize(.init(store.inspectorContentSizeCategory) ?? .medium)
         }
     }
 }
 
-#Preview {
-    InspectionFeatureView(
-        store: Store(
-            initialState: InspectionFeature.State(
-                recognizedString: .init(
-                    recordedString: .init("Hello"),
-                    lines: []
-                )
-            ),
-            reducer: {
-                InspectionFeature()
-            }
-        )
-    )
-}
+// #Preview {
+//    InspectionFeatureView(
+//        store: Store(
+//            initialState: InspectionFeature.State(
+//                recognizedString: .init(
+//                    recordedString: .init("Hello"),
+//                    lines: []
+//                )
+//            ),
+//            reducer: {
+//                InspectionFeature()
+//            }
+//        )
+//    )
+// }

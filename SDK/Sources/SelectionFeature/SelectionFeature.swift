@@ -25,6 +25,7 @@ package struct SelectionFeature {
         case onAppear
         case observeDeviceRotation
         case deviceOrientationDidChange
+        case didTapClose
         case delegate(Delegate)
         case recognition(RecognitionFeature.Action)
 
@@ -56,6 +57,10 @@ package struct SelectionFeature {
                 state.recognizedStrings = nil
                 return .run { send in
                     await send(.recognition(.start))
+                }
+            case .didTapClose:
+                return .run { send in
+                    await send(.delegate(.didDismiss))
                 }
             case let .recognition(.delegate(.didRecognizeStrings(recognizedStrings))):
                 state.recognizedStrings = recognizedStrings
@@ -98,7 +103,7 @@ package struct SelectionFeatureView: View {
                 }
                 .ignoresSafeArea()
 
-                Button(action: { store.send(.delegate(.didDismiss)) }) {
+                Button(action: { store.send(.didTapClose) }) {
                     Image.theme(.close)
                         .padding()
                 }

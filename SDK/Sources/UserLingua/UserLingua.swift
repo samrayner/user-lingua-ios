@@ -11,6 +11,7 @@ public final class UserLingua {
 
     public let viewModel = UserLinguaObservable()
     private let windowManager: WindowManagerProtocol = WindowManager()
+    private let contentSizeCategoryObserver: ContentSizeCategoryObserverProtocol = ContentSizeCategoryObserver()
     private let suggestionsRepository: SuggestionsRepositoryProtocol = SuggestionsRepository()
     private let stringsRepository: StringsRepositoryProtocol = StringsRepository()
 
@@ -25,6 +26,7 @@ public final class UserLingua {
         withDependencies: {
             $0[UserLinguaObservableDependency.self] = self.viewModel
             $0[WindowManagerDependency.self] = self.windowManager
+            $0[ContentSizeCategoryObserverDependency.self] = self.contentSizeCategoryObserver
             $0[SuggestionsRepositoryDependency.self] = self.suggestionsRepository
             $0[StringsRepositoryDependency.self] = self.stringsRepository
         }
@@ -57,6 +59,17 @@ public final class UserLingua {
                 state.recognition.isTakingScreenshot
             default:
                 false
+            }
+        }
+    }
+
+    var appContentSizeCategory: UIContentSizeCategory {
+        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+            switch store.mode {
+            case let .inspection(state):
+                state.appContentSizeCategory
+            default:
+                contentSizeCategoryObserver.systemPreferredContentSizeCategory
             }
         }
     }

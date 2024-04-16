@@ -7,3 +7,8 @@ extension ThemeColor {
     static let suggestionFieldBorder = ThemeColor(\.foreground)
     static let placeholderHighlight = ThemeColor(\.accent)
 }
+
+extension ThemeImage {
+    package static let increaseTextSize = ThemeImage(\.increaseTextSize)
+    package static let decreaseTextSize = ThemeImage(\.decreaseTextSize)
+}

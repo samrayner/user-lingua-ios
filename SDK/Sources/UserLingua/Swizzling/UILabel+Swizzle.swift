@@ -59,12 +59,14 @@ extension UILabel {
     @objc
     func unswizzledDidMoveToSuperview() {
         unswizzledDidMoveToSuperview()
-        guard refreshCancellable == nil else { return }
 
-        refreshCancellable = UserLingua.shared.viewModel.refreshPublisher
-            .sink { [weak self] in
-                self?.refresh()
-            }
+        if refreshCancellable == nil {
+            refreshCancellable = UserLingua.shared.viewModel
+                .refreshPublisher
+                .sink { [weak self] in
+                    self?.refresh()
+                }
+        }
     }
 
     func refresh() {

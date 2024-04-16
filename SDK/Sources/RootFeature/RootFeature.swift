@@ -13,6 +13,7 @@ package struct RootFeature {
     @Dependency(WindowManagerDependency.self) var windowManager
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
     @Dependency(NotificationManagerDependency.self) var notificationManager
+    @Dependency(ContentSizeCategoryObserverDependency.self) var contentSizeCategoryObserver
 
     let onForeground: () -> Void
     let onBackground: () -> Void
@@ -120,7 +121,12 @@ package struct RootFeature {
                     }
                 }
             case let .mode(.selection(.delegate(.didSelectString(recognizedString)))):
-                state.mode = .inspection(.init(recognizedString: recognizedString))
+                state.mode = .inspection(
+                    .init(
+                        recognizedString: recognizedString,
+                        appContentSizeCategory: contentSizeCategoryObserver.systemPreferredContentSizeCategory
+                    )
+                )
                 return .none
             case .mode:
                 return .none
@@ -150,7 +156,7 @@ package struct RootFeatureView: View {
                             VStack {
                                 Spacer()
                                 InspectionFeatureView(store: store)
-                                    .frame(height: 250)
+                                    .frame(height: 400)
                             }
                         }
                     }
