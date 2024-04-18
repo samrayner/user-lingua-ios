@@ -2,12 +2,18 @@
 
 import Foundation
 
-package struct Configuration: Equatable {
-    package var automaticallyOptInTextViews: Bool
+public struct Configuration: Equatable {
+    public var automaticallyOptInTextViews: Bool
+    public var appSupportsDynamicType: Bool
+    public var appSupportsDarkMode: Bool
 
-    package init(
-        automaticallyOptInTextViews: Bool = true
+    public init(
+        automaticallyOptInTextViews: Bool = true,
+        appSupportsDynamicType: Bool = true,
+        appSupportsDarkMode: Bool = true
     ) {
         self.automaticallyOptInTextViews = automaticallyOptInTextViews
+        self.appSupportsDynamicType = appSupportsDynamicType
+        self.appSupportsDarkMode = appSupportsDarkMode
     }
 }

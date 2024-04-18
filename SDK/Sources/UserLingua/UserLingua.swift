@@ -6,6 +6,8 @@ import RootFeature
 import SwiftUI
 import UIKit
 
+public typealias UserLinguaConfiguration = Core.Configuration
+
 public final class UserLingua {
     public static let shared = UserLingua()
 
@@ -44,9 +46,9 @@ public final class UserLingua {
         windowManager.setRootView(RootFeatureView(store: store))
     }
 
-    public var configuration: UserLinguaConfiguration {
+    public var configuration: Configuration {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            store.configuration.userLinguaConfiguration
+            store.configuration
         }
     }
 
@@ -101,8 +103,8 @@ public final class UserLingua {
         swizzler.unswizzleForBackground()
     }
 
-    public func configure(_ configuration: UserLinguaConfiguration) {
-        store.send(.configure(Configuration(configuration)))
+    public func configure(_ configuration: Configuration) {
+        store.send(.configure(configuration))
     }
 
     private func onForeground() {
