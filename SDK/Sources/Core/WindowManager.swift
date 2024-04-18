@@ -10,12 +10,14 @@ package protocol WindowManagerProtocol {
     func screenshotAppWindow() -> UIImage?
     func showWindow()
     func hideWindow()
+    func toggleDarkMode()
 }
 
 package final class WindowManager: WindowManagerProtocol {
     package init() {}
 
     var appWindow: UIWindow?
+    var originalAppWindowUIStyleOverride: UIUserInterfaceStyle = .unspecified
 
     package let userLinguaWindow: UIWindow = {
         let window = UIApplication.shared.windowScene.map(UIWindow.init) ?? UIWindow(frame: UIScreen.main.bounds)
@@ -55,14 +57,24 @@ package final class WindowManager: WindowManagerProtocol {
             appWindow = windows?.first(where: \.isKeyWindow) ?? windows?.first(where: \.isOpaque)
         }
         UIApplication.shared.endEditing()
+
+        originalAppWindowUIStyleOverride = appWindow?.overrideUserInterfaceStyle ?? .unspecified
+        userLinguaWindow.overrideUserInterfaceStyle = originalAppWindowUIStyleOverride
+
         userLinguaWindow.windowScene = UIApplication.shared.windowScene
         userLinguaWindow.makeKeyAndVisible()
     }
 
     package func hideWindow() {
+        appWindow?.overrideUserInterfaceStyle = originalAppWindowUIStyleOverride
         appWindow?.makeKeyAndVisible()
         appWindow = nil
+        originalAppWindowUIStyleOverride = .unspecified
         userLinguaWindow.isHidden = true
+    }
+
+    package func toggleDarkMode() {
+        appWindow?.toggleDarkMode()
     }
 }
 
@@ -79,8 +91,16 @@ extension UIApplication {
 
 // Spyable doesn't handle `some View` properly
 class WindowManagerProtocolSpy: WindowManagerProtocol {
-    let userLinguaWindow = UIWindow()
+    var userLinguaWindow: UIWindow {
+        get {
+            underlyingUserLinguaWindow
+        }
+        set {
+            underlyingUserLinguaWindow = newValue
+        }
+    }
 
+    var underlyingUserLinguaWindow: UIWindow!
     var setRootViewCallsCount = 0
     var setRootViewCalled: Bool {
         setRootViewCallsCount > 0
@@ -132,6 +152,17 @@ class WindowManagerProtocolSpy: WindowManagerProtocol {
     func hideWindow() {
         hideWindowCallsCount += 1
         hideWindowClosure?()
+    }
+
+    var toggleDarkModeCallsCount = 0
+    var toggleDarkModeCalled: Bool {
+        toggleDarkModeCallsCount > 0
+    }
+
+    var toggleDarkModeClosure: (() -> Void)?
+    func toggleDarkMode() {
+        toggleDarkModeCallsCount += 1
+        toggleDarkModeClosure?()
     }
 }
 

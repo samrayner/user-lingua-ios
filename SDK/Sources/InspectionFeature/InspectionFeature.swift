@@ -14,6 +14,7 @@ package struct InspectionFeature {
     @Dependency(SuggestionsRepositoryDependency.self) var suggestionsRepository
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
     @Dependency(ContentSizeCategoryManagerDependency.self) var contentSizeCategoryManager
+    @Dependency(WindowManagerDependency.self) var windowManager
 
     package init() {}
 
@@ -64,6 +65,7 @@ package struct InspectionFeature {
         case didTapIncreaseTextSize
         case didTapDecreaseTextSize
         case didTapClose
+        case didTapToggleDarkMode
         case binding(BindingAction<State>)
         case delegate(Delegate)
         case recognition(RecognitionFeature.Action)
@@ -106,6 +108,9 @@ package struct InspectionFeature {
                 return .run { send in
                     await send(.delegate(.didDismiss))
                 }
+            case .didTapToggleDarkMode:
+                windowManager.toggleDarkMode()
+                return .none
             case .binding(\.localeIdentifier):
                 state.suggestionString = suggestionsRepository.suggestion(
                     for: state.recognizedString.value,
@@ -130,6 +135,7 @@ package struct InspectionFeature {
 package struct InspectionFeatureView: View {
     @Perception.Bindable package var store: StoreOf<InspectionFeature>
     @FocusState var focusedField: InspectionFeature.State.Field?
+    @State private var darkModeIsToggled = false
 
     package init(store: StoreOf<InspectionFeature>) {
         self.store = store
@@ -144,6 +150,15 @@ package struct InspectionFeatureView: View {
                     HStack {
                         Button(action: { store.send(.didTapClose) }) {
                             Image.theme(.close)
+                        }
+
+                        Spacer()
+
+                        Button(action: {
+                            darkModeIsToggled.toggle()
+                            store.send(.didTapToggleDarkMode)
+                        }) {
+                            Image.theme(darkModeIsToggled ? .untoggleDarkMode : .toggleDarkMode)
                         }
 
                         Button(action: { store.send(.didTapIncreaseTextSize) }) {

@@ -11,4 +11,6 @@ extension ThemeColor {
 extension ThemeImage {
     package static let increaseTextSize = ThemeImage(\.increaseTextSize)
     package static let decreaseTextSize = ThemeImage(\.decreaseTextSize)
+    package static let toggleDarkMode = ThemeImage(\.toggleDarkMode)
+    package static let untoggleDarkMode = ThemeImage(\.untoggleDarkMode)
 }

@@ -36,8 +36,15 @@ extension UIView {
                 .filter { $0.userInfo?[UIContentSizeCategory.isUserLinguaNotificationUserInfoKey] as? Bool == true }
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] _ in
-                    if self?.window != UserLingua.shared.window {
-                        self?.traitCollectionDidChange(nil)
+                    guard let self else { return }
+                    if window != UserLingua.shared.window {
+                        traitCollectionDidChange(nil)
+
+                        // hack to force UIButtons to resize text
+                        if let window = self as? UIWindow {
+                            window.toggleDarkMode()
+                            window.toggleDarkMode()
+                        }
                     }
                 }
         }

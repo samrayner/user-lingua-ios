@@ -27,6 +27,8 @@ struct StandardTheme: ThemeProtocol {
     let images = ThemeImages(
         close: .symbol(.xmarkCircleFill),
         increaseTextSize: .symbol(.textformatSizeLarger),
-        decreaseTextSize: .symbol(.textformatSizeSmaller)
+        decreaseTextSize: .symbol(.textformatSizeSmaller),
+        toggleDarkMode: .symbol(.circleLefthalfFilled),
+        untoggleDarkMode: .symbol(.circleRighthalfFilled)
     )
 }
