@@ -13,7 +13,7 @@ package struct RootFeature {
     @Dependency(WindowManagerDependency.self) var windowManager
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
     @Dependency(NotificationManagerDependency.self) var notificationManager
-    @Dependency(ContentSizeCategoryObserverDependency.self) var contentSizeCategoryObserver
+    @Dependency(ContentSizeCategoryManagerDependency.self) var contentSizeCategoryManager
 
     let onForeground: () -> Void
     let onBackground: () -> Void
@@ -95,6 +95,8 @@ package struct RootFeature {
             case .mode(.selection(.delegate(.didDismiss))),
                  .mode(.inspection(.delegate(.didDismiss))):
                 state.mode = .recording
+                contentSizeCategoryManager.notifyDidChange(newValue: contentSizeCategoryManager.systemPreferredContentSizeCategory)
+                appViewModel.refresh()
                 windowManager.hideWindow()
                 onBackground()
                 return .none
@@ -124,7 +126,7 @@ package struct RootFeature {
                 state.mode = .inspection(
                     .init(
                         recognizedString: recognizedString,
-                        appContentSizeCategory: contentSizeCategoryObserver.systemPreferredContentSizeCategory
+                        appContentSizeCategory: contentSizeCategoryManager.systemPreferredContentSizeCategory
                     )
                 )
                 return .none

@@ -36,7 +36,7 @@ extension UIView {
                 .filter { $0.userInfo?[UIContentSizeCategory.isUserLinguaNotificationUserInfoKey] as? Bool == true }
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] _ in
-                    if self?.window?.isKeyWindow == false {
+                    if self?.window != UserLingua.shared.window {
                         self?.traitCollectionDidChange(nil)
                     }
                 }

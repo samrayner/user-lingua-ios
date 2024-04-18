@@ -5,6 +5,7 @@ import SwiftUI
 import UIKit
 
 package protocol WindowManagerProtocol {
+    var userLinguaWindow: UIWindow { get }
     func setRootView(_: some View)
     func screenshotAppWindow() -> UIImage?
     func showWindow()
@@ -16,7 +17,7 @@ package final class WindowManager: WindowManagerProtocol {
 
     var appWindow: UIWindow?
 
-    private let userLinguaWindow: UIWindow = {
+    package let userLinguaWindow: UIWindow = {
         let window = UIApplication.shared.windowScene.map(UIWindow.init) ?? UIWindow(frame: UIScreen.main.bounds)
         window.isHidden = true
         window.backgroundColor = .clear
@@ -78,6 +79,8 @@ extension UIApplication {
 
 // Spyable doesn't handle `some View` properly
 class WindowManagerProtocolSpy: WindowManagerProtocol {
+    let userLinguaWindow = UIWindow()
+
     var setRootViewCallsCount = 0
     var setRootViewCalled: Bool {
         setRootViewCallsCount > 0

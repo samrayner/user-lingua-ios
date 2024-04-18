@@ -13,7 +13,7 @@ package struct InspectionFeature {
     @Dependency(\.mainQueue) var mainQueue
     @Dependency(SuggestionsRepositoryDependency.self) var suggestionsRepository
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
-    @Dependency(ContentSizeCategoryObserverDependency.self) var contentSizeCategoryObserver
+    @Dependency(ContentSizeCategoryManagerDependency.self) var contentSizeCategoryManager
 
     package init() {}
 
@@ -95,16 +95,14 @@ package struct InspectionFeature {
                 state.focusedField = .suggestion
                 return .none
             case .didTapIncreaseTextSize:
-                state.appContentSizeCategory = .accessibilityExtraExtraExtraLarge
-                postContentSizeCategoryDidChangeNotifications(newValue: state.appContentSizeCategory)
+                state.appContentSizeCategory = state.appContentSizeCategory.incremented()
+                contentSizeCategoryManager.notifyDidChange(newValue: state.appContentSizeCategory)
                 return .none
             case .didTapDecreaseTextSize:
-                state.appContentSizeCategory = .extraSmall
-                postContentSizeCategoryDidChangeNotifications(newValue: state.appContentSizeCategory)
+                state.appContentSizeCategory = state.appContentSizeCategory.decremented()
+                contentSizeCategoryManager.notifyDidChange(newValue: state.appContentSizeCategory)
                 return .none
             case .didTapClose:
-                postContentSizeCategoryDidChangeNotifications(newValue: contentSizeCategoryObserver.systemPreferredContentSizeCategory)
-                appViewModel.refresh()
                 return .run { send in
                     await send(.delegate(.didDismiss))
                 }
@@ -126,17 +124,6 @@ package struct InspectionFeature {
                 return .none
             }
         }
-    }
-
-    private func postContentSizeCategoryDidChangeNotifications(newValue: UIContentSizeCategory) {
-        NotificationCenter.default.post(
-            name: UIContentSizeCategory.didChangeNotification,
-            object: nil,
-            userInfo: [
-                UIContentSizeCategory.newValueUserInfoKey: newValue,
-                UIContentSizeCategory.isUserLinguaNotificationUserInfoKey: true
-            ]
-        )
     }
 }
 
@@ -234,27 +221,6 @@ package struct InspectionFeatureView: View {
             // affecting the panel.
             .font(.system(size: store.inspectorContentSizeCategory.fixedFontSize))
             .bind($store.focusedField, to: $focusedField)
-        }
-    }
-}
-
-extension UIContentSizeCategory {
-    fileprivate var fixedFontSize: CGFloat {
-        switch self {
-        case .extraSmall: 10
-        case .small: 12
-        case .medium: 14
-        case .large: 16
-        case .extraLarge: 18
-        case .extraExtraLarge: 20
-        case .extraExtraExtraLarge: 22
-        case .accessibilityMedium: 24
-        case .accessibilityLarge: 26
-        case .accessibilityExtraLarge: 28
-        case .accessibilityExtraExtraLarge: 30
-        case .accessibilityExtraExtraExtraLarge: 32
-        case .unspecified: UIContentSizeCategory.medium.fixedFontSize
-        default: UIContentSizeCategory.medium.fixedFontSize
         }
     }
 }

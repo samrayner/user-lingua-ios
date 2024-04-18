@@ -14,24 +14,24 @@ protocol SwizzlerProtocol {
 
 struct Swizzler: SwizzlerProtocol {
     func swizzleForForeground() {
-        UIView.swizzleAll()
         UITraitCollection.swizzle()
         NotificationCenter.swizzle()
     }
 
     func unswizzleForForeground() {
-        UIView.unswizzleAll()
         UITraitCollection.unswizzle()
         NotificationCenter.unswizzle()
     }
 
     func swizzleForBackground() {
+        UIView.swizzleAll()
         Bundle.swizzle()
         UILabel.swizzle()
         UIButton.swizzle()
     }
 
     func unswizzleForBackground() {
+        UIView.unswizzleAll()
         Bundle.unswizzle()
         UILabel.unswizzle()
         UIButton.unswizzle()
