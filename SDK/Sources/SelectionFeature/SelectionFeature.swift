@@ -105,6 +105,7 @@ package struct SelectionFeatureView: View {
 
                 Button(action: { store.send(.didTapClose) }) {
                     Image.theme(.close)
+                        .background(Color.theme(.background).cornerRadius(.infinity))
                         .padding()
                 }
             }

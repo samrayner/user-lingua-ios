@@ -3,5 +3,5 @@
 import Theme
 
 extension ThemeColor {
-    static let overlay = ThemeColor(\.foreground)
+    static let overlay = ThemeColor(\.background)
 }

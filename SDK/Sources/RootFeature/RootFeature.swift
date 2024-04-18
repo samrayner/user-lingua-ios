@@ -153,11 +153,7 @@ package struct RootFeatureView: View {
                         if let store = store.scope(state: \.mode.selection, action: \.mode.selection) {
                             SelectionFeatureView(store: store)
                         } else if let store = store.scope(state: \.mode.inspection, action: \.mode.inspection) {
-                            VStack {
-                                Spacer()
-                                InspectionFeatureView(store: store)
-                                    .frame(height: 400)
-                            }
+                            InspectionFeatureView(store: store)
                         }
                     }
                 }

@@ -17,12 +17,6 @@ package struct InspectionFeature {
 
     package init() {}
 
-    // https://github.com/pointfreeco/swift-composable-architecture/discussions/2936
-    @Reducer(state: .equatable)
-    public enum Path {
-        // case other(OtherFeature)
-    }
-
     @ObservableState
     package struct State: Equatable {
         enum Field: String, Hashable {
@@ -36,7 +30,6 @@ package struct InspectionFeature {
         var focusedField: Field?
         var suggestionString: String
         var localeIdentifier = Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
-        var path = StackState<Path.State>()
 
         package var locale: Locale {
             Locale(identifier: localeIdentifier)
@@ -73,7 +66,6 @@ package struct InspectionFeature {
         case didTapClose
         case binding(BindingAction<State>)
         case delegate(Delegate)
-        case path(StackAction<Path.State, Path.Action>) // TODO: StackActionOf<Path>
         case recognition(RecognitionFeature.Action)
 
         @CasePathable
@@ -130,11 +122,10 @@ package struct InspectionFeature {
                 // debounce primarily to avoid SwiftUI bug:
                 // https://github.com/pointfreeco/swift-composable-architecture/discussions/1093
                 .debounce(id: CancelID.suggestionSaveDebounce, for: .seconds(0.1), scheduler: mainQueue)
-            case .recognition, .binding, .delegate, .path:
+            case .recognition, .binding, .delegate:
                 return .none
             }
         }
-        .forEach(\.path, action: \.path)
     }
 
     private func postContentSizeCategoryDidChangeNotifications(newValue: UIContentSizeCategory) {
@@ -162,19 +153,50 @@ package struct InspectionFeatureView: View {
             ZStack {
                 RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
 
-                NavigationStack(
-                    path: $store.scope(state: \.path, action: \.path)
-                ) {
-                    VStack {
-                        HStack {
-                            Button(action: { store.send(.didTapIncreaseTextSize) }) {
-                                Image.theme(.increaseTextSize)
-                            }
-
-                            Button(action: { store.send(.didTapDecreaseTextSize) }) {
-                                Image.theme(.decreaseTextSize)
-                            }
+                VStack {
+                    HStack {
+                        Button(action: { store.send(.didTapClose) }) {
+                            Image.theme(.close)
                         }
+
+                        Button(action: { store.send(.didTapIncreaseTextSize) }) {
+                            Image.theme(.increaseTextSize)
+                        }
+
+                        Button(action: { store.send(.didTapDecreaseTextSize) }) {
+                            Image.theme(.decreaseTextSize)
+                        }
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.theme(.background))
+
+                    Spacer()
+                        .frame(maxHeight: .infinity)
+
+                    VStack {
+                        ZStack(alignment: .topLeading) {
+                            TextField(Strings.Inspection.SuggestionField.placeholder, text: $store.suggestionString, axis: .vertical)
+                                .focused($focusedField, equals: .suggestion)
+                                .textFieldStyle(.plain)
+                                .autocorrectionDisabled()
+                                .textInputAutocapitalization(.never)
+                                .background(Color.theme(.suggestionFieldBackground))
+                                .overlay(alignment: .leading) {
+                                    if focusedField != .suggestion && store.suggestionString == store.localizedValue {
+                                        Text(
+                                            store.recognizedString.localizedValue(
+                                                locale: store.locale,
+                                                placeholderAttributes: [.backgroundColor: UIColor.theme(.placeholderHighlight)],
+                                                placeholderTransform: { " \($0) " }
+                                            )
+                                        )
+                                        .background(Color.theme(.suggestionFieldBackground))
+                                        .onTapGesture { store.send(.didTapSuggestionPreview) }
+                                    }
+                                }
+                        }
+                        .border(Color.theme(.suggestionFieldBorder), cornerRadius: 3)
 
                         Picker(Strings.Inspection.LanguagePicker.title, selection: $store.localeIdentifier) {
                             ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
@@ -183,29 +205,6 @@ package struct InspectionFeatureView: View {
                         }
                         .pickerStyle(.segmented)
                         .frame(height: 50)
-
-                        ZStack(alignment: .topLeading) {
-                            TextField(Strings.Inspection.SuggestionField.placeholder, text: $store.suggestionString, axis: .vertical)
-                                .focused($focusedField, equals: .suggestion)
-                                .textFieldStyle(.plain)
-                                .autocorrectionDisabled()
-                                .textInputAutocapitalization(.never)
-                                .background(Color.theme(.suggestionFieldBackground))
-
-                            if focusedField != .suggestion && store.suggestionString == store.localizedValue {
-                                Text(
-                                    store.recognizedString.localizedValue(
-                                        locale: store.locale,
-                                        placeholderAttributes: [.backgroundColor: UIColor.theme(.placeholderHighlight)],
-                                        placeholderTransform: { " \($0) " }
-                                    )
-                                )
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                                .background(Color.theme(.suggestionFieldBackground))
-                                .onTapGesture { store.send(.didTapSuggestionPreview) }
-                            }
-                        }
-                        .border(Color.theme(.suggestionFieldBorder), cornerRadius: 3)
 
                         if let localization = store.recognizedString.localization {
                             VStack(alignment: .leading) {
@@ -227,25 +226,35 @@ package struct InspectionFeatureView: View {
                         }
                     }
                     .padding()
-                    .bind($store.focusedField, to: $focusedField)
-                    .navigationTitle(Strings.sdkName)
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem {
-                            Button(action: { store.send(.didTapClose) }) {
-                                Image.theme(.close)
-                            }
-                        }
-                    }
-                } destination: { _ in
-                    EmptyView()
-                    //                switch store.case {
-                    //                case let .other(store):
-                    //                    OtherFeatureView(store: store)
-                    //                }
+                    .background(Color.theme(.background))
                 }
             }
-            .dynamicTypeSize(.init(store.inspectorContentSizeCategory) ?? .medium)
+            // we fix the font size for the inspection panel so that we can
+            // adjust the DynamicType size for the app preview without
+            // affecting the panel.
+            .font(.system(size: store.inspectorContentSizeCategory.fixedFontSize))
+            .bind($store.focusedField, to: $focusedField)
+        }
+    }
+}
+
+extension UIContentSizeCategory {
+    fileprivate var fixedFontSize: CGFloat {
+        switch self {
+        case .extraSmall: 10
+        case .small: 12
+        case .medium: 14
+        case .large: 16
+        case .extraLarge: 18
+        case .extraExtraLarge: 20
+        case .extraExtraExtraLarge: 22
+        case .accessibilityMedium: 24
+        case .accessibilityLarge: 26
+        case .accessibilityExtraLarge: 28
+        case .accessibilityExtraExtraLarge: 30
+        case .accessibilityExtraExtraExtraLarge: 32
+        case .unspecified: UIContentSizeCategory.medium.fixedFontSize
+        default: UIContentSizeCategory.medium.fixedFontSize
         }
     }
 }

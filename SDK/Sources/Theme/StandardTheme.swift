@@ -11,9 +11,9 @@ struct StandardTheme: ThemeProtocol {
     }
 
     let colors = ThemeColors(
-        foreground: .init(light: Palette.black, dark: Palette.white),
-        background: .init(light: Palette.white, dark: Palette.black),
-        accent: .init(light: Palette.cyanLight, dark: Palette.cyanDark)
+        foreground: .init(light: Palette.white, dark: Palette.black),
+        background: .init(light: Palette.black, dark: Palette.white),
+        accent: .init(light: Palette.cyanDark, dark: Palette.cyanLight)
     )
 
     let fonts = ThemeFonts(
