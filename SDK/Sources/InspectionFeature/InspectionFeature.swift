@@ -146,7 +146,7 @@ package struct InspectionFeatureView: View {
             ZStack {
                 RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
 
-                VStack {
+                VStack(spacing: 0) {
                     HStack {
                         Button(action: { store.send(.didTapClose) }) {
                             Image.theme(.close)
@@ -173,8 +173,16 @@ package struct InspectionFeatureView: View {
                     .frame(maxWidth: .infinity)
                     .background(Color.theme(.background))
 
-                    Spacer()
-                        .frame(maxHeight: .infinity)
+                    Color.theme(.background)
+                        .mask {
+                            ZStack {
+                                Color.white
+                                RoundedRectangle(cornerRadius: .Radius.s)
+                                    .fill(Color.black)
+                            }
+                            .compositingGroup()
+                            .luminanceToAlpha()
+                        }
 
                     VStack {
                         ZStack(alignment: .topLeading) {
