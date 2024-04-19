@@ -4,15 +4,15 @@ import SFSafeSymbols
 
 struct StandardTheme: ThemeProtocol {
     enum Palette {
-        static let black = "#000000"
-        static let white = "#FFFFFF"
+        static let slate = "#1D1B20"
+        static let cloud = "#FEF7FF"
         static let cyanLight = "#00ffff"
         static let cyanDark = "#00b3b3"
     }
 
     let colors = ThemeColors(
-        foreground: .init(light: Palette.white, dark: Palette.black),
-        background: .init(light: Palette.black, dark: Palette.white),
+        foreground: .init(light: Palette.cloud, dark: Palette.slate),
+        background: .init(light: Palette.slate, dark: Palette.cloud),
         accent: .init(light: Palette.cyanDark, dark: Palette.cyanLight)
     )
 

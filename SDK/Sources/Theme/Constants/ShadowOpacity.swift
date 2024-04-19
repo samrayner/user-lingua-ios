@@ -2,7 +2,7 @@
 
 import Foundation
 
-extension CGFloat {
+extension Double {
     package enum ShadowOpacity {
         /// 8% opacity
         package static let low: CGFloat = 0.08

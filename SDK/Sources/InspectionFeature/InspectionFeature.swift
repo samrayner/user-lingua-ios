@@ -171,17 +171,11 @@ package struct InspectionFeatureView: View {
                     .frame(maxWidth: .infinity)
                     .background(Color.theme(.background))
 
-                    // viewport through to app in window behind
-                    Color.theme(.background)
-                        .mask {
-                            ZStack {
-                                Color.white
-                                RoundedRectangle(cornerRadius: .Radius.s)
-                                    .fill(Color.black)
-                            }
-                            .compositingGroup()
-                            .luminanceToAlpha()
-                        }
+                    // viewport through to app in UIWindow behind
+                    RoundedRectangle(cornerRadius: .Radius.l)
+                        .inset(by: -.BorderWidth.xl)
+                        .strokeBorder(Color.theme(.background), lineWidth: .BorderWidth.xl)
+                        .padding(.horizontal, 3)
 
                     VStack {
                         ZStack(alignment: .topLeading) {
