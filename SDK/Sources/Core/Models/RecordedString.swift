@@ -16,6 +16,10 @@ package struct RecordedString: Equatable {
         formatted.localization
     }
 
+    package var isLocalized: Bool {
+        localization != nil
+    }
+
     package var value: String {
         formatted.value
     }

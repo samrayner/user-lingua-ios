@@ -11,6 +11,7 @@ package protocol WindowManagerProtocol {
     func showWindow()
     func hideWindow()
     func toggleDarkMode()
+    func translateApp(focusing: CGPoint, in: CGRect, animationDuration: TimeInterval)
 }
 
 package final class WindowManager: WindowManagerProtocol {
@@ -66,6 +67,7 @@ package final class WindowManager: WindowManagerProtocol {
     }
 
     package func hideWindow() {
+        appWindow?.layer.transform = CATransform3DTranslate(CATransform3DIdentity, 0, 0, 0)
         appWindow?.overrideUserInterfaceStyle = originalAppWindowUIStyleOverride
         appWindow?.makeKeyAndVisible()
         appWindow = nil
@@ -75,6 +77,50 @@ package final class WindowManager: WindowManagerProtocol {
 
     package func toggleDarkMode() {
         appWindow?.toggleDarkMode()
+    }
+
+    package func translateApp(focusing focalPoint: CGPoint, in viewportFrame: CGRect, animationDuration: TimeInterval = 0) {
+        guard let appWindow else { return }
+
+        let maxTranslateUp = viewportFrame.maxY - appWindow.bounds.maxY
+        let maxTranslateDown = viewportFrame.minY
+        let yOffset = viewportFrame.midY - focalPoint.y
+        let boundedYOffset = min(maxTranslateDown, max(maxTranslateUp, yOffset))
+
+        func applyTransform() {
+            appWindow.layer.transform = CATransform3DTranslate(CATransform3DIdentity, 0, boundedYOffset, 0)
+        }
+
+        if animationDuration > 0 {
+            let animation = CABasicAnimation(keyPath: "transform.translation.y")
+            animation.delegate = AnimationDelegate(onStop: { _, _ in applyTransform() })
+            animation.toValue = boundedYOffset
+            animation.duration = animationDuration
+            appWindow.layer.add(animation, forKey: nil)
+        } else {
+            applyTransform()
+        }
+    }
+}
+
+private final class AnimationDelegate: NSObject, CAAnimationDelegate {
+    let onStart: ((CAAnimation) -> Void)?
+    let onStop: ((CAAnimation, Bool) -> Void)?
+
+    init(
+        onStart: ((CAAnimation) -> Void)? = nil,
+        onStop: ((CAAnimation, Bool) -> Void)? = nil
+    ) {
+        self.onStart = onStart
+        self.onStop = onStop
+    }
+
+    func animationDidStart(_ animation: CAAnimation) {
+        onStart?(animation)
+    }
+
+    func animationDidStop(_ animation: CAAnimation, finished: Bool) {
+        onStop?(animation, finished)
     }
 }
 
@@ -163,6 +209,21 @@ class WindowManagerProtocolSpy: WindowManagerProtocol {
     func toggleDarkMode() {
         toggleDarkModeCallsCount += 1
         toggleDarkModeClosure?()
+    }
+
+    var translateAppFocusingInCallsCount = 0
+    var translateAppFocusingInCalled: Bool {
+        translateAppFocusingInCallsCount > 0
+    }
+
+    var translateAppFocusingInReceivedArguments: (focusing: CGPoint, in: CGRect, animationDuration: TimeInterval)?
+    var translateAppFocusingInReceivedInvocations: [(focusing: CGPoint, in: CGRect, animationDuration: TimeInterval)] = []
+    var translateAppFocusingInClosure: ((CGPoint, CGRect, TimeInterval) -> Void)?
+    func translateApp(focusing: CGPoint, in rect: CGRect, animationDuration: TimeInterval) {
+        translateAppFocusingInCallsCount += 1
+        translateAppFocusingInReceivedArguments = (focusing, rect, animationDuration)
+        translateAppFocusingInReceivedInvocations.append((focusing, rect, animationDuration))
+        translateAppFocusingInClosure?(focusing, rect, animationDuration)
     }
 }
 

@@ -13,8 +13,29 @@ package struct RecognizedString: Equatable {
         recordedString.localization
     }
 
+    package var isLocalized: Bool {
+        localization != nil
+    }
+
     package var value: String {
         recordedString.value
+    }
+
+    package var boundingBox: CGRect {
+        guard let firstLineFrame = lines.first?.boundingBox else { return .zero }
+
+        return lines.dropFirst().reduce(into: firstLineFrame) { boundingBox, line in
+            boundingBox = boundingBox.union(line.boundingBox)
+        }
+    }
+
+    package var boundingBoxCenter: CGPoint {
+        let boundingBox = boundingBox
+
+        return CGPoint(
+            x: boundingBox.midX,
+            y: boundingBox.midY
+        )
     }
 
     package func localizedValue(locale: Locale) -> String {

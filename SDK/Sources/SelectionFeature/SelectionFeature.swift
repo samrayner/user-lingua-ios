@@ -121,7 +121,7 @@ package struct SelectionFeatureView: View {
                     color
                         .cornerRadius(5)
                         .frame(width: line.boundingBox.width + 20, height: line.boundingBox.height + 20)
-                        .position(x: line.boundingBox.midX, y: UIScreen.main.bounds.height - line.boundingBox.midY)
+                        .position(x: line.boundingBox.midX, y: line.boundingBox.midY)
                         .onTapGesture {
                             onSelectString(recognizedString)
                         }

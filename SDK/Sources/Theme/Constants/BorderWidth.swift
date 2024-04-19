@@ -4,6 +4,7 @@ import Foundation
 
 extension CGFloat {
     package enum BorderWidth {
+        // swiftlint:disable identifier_name
         /// 1pt
         package static let xs: CGFloat = 1
 
@@ -12,5 +13,6 @@ extension CGFloat {
 
         /// 10pt
         package static let xl: CGFloat = 10
+        // swiftlint:enable identifier_name
     }
 }

@@ -263,7 +263,12 @@ extension RecognizedLine {
         let stringRange = recognizedText.string.startIndex ..< recognizedText.string.endIndex
         let box = try? recognizedText.boundingBox(for: stringRange)
         let boundingBox = box?.boundingBox ?? .zero
-        return VNImageRectForNormalizedRect(boundingBox, Int(UIScreen.main.bounds.width), Int(UIScreen.main.bounds.height))
+        var rect = VNImageRectForNormalizedRect(boundingBox, Int(UIScreen.main.bounds.width), Int(UIScreen.main.bounds.height))
+
+        // VNImageRectForNormalizedRect returns y from bottom, we want it from the top
+        rect.origin.y = UIScreen.main.bounds.height - rect.origin.y - rect.height
+
+        return rect
     }
 
     init(_ vnRecognizedText: VNRecognizedText) {

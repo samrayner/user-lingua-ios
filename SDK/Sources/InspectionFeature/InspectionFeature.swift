@@ -64,6 +64,7 @@ package struct InspectionFeature {
         case didTapDecreaseTextSize
         case didTapClose
         case didTapToggleDarkMode
+        case viewportFrameDidChange(CGRect, animationDuration: TimeInterval = 0)
         case binding(BindingAction<State>)
         case delegate(Delegate)
         case recognition(RecognitionFeature.Action)
@@ -108,6 +109,13 @@ package struct InspectionFeature {
                 }
             case .didTapToggleDarkMode:
                 windowManager.toggleDarkMode()
+                return .none
+            case let .viewportFrameDidChange(frame, animationDuration):
+                windowManager.translateApp(
+                    focusing: state.recognizedString.boundingBoxCenter,
+                    in: frame,
+                    animationDuration: animationDuration
+                )
                 return .none
             case .binding(\.localeIdentifier):
                 state.suggestionString = suggestionsRepository.suggestion(
@@ -176,6 +184,17 @@ package struct InspectionFeatureView: View {
                         .inset(by: -.BorderWidth.xl)
                         .strokeBorder(Color.theme(.background), lineWidth: .BorderWidth.xl)
                         .padding(.horizontal, 3)
+                        .background {
+                            GeometryReader { proxy in
+                                Color.clear
+                                    .onAppear {
+                                        store.send(.viewportFrameDidChange(proxy.frame(in: .global)))
+                                    }
+                                    .onChange(of: proxy.frame(in: .global)) {
+                                        store.send(.viewportFrameDidChange($0, animationDuration: 0.3))
+                                    }
+                            }
+                        }
 
                     VStack {
                         ZStack(alignment: .topLeading) {
@@ -201,13 +220,15 @@ package struct InspectionFeatureView: View {
                         }
                         .border(Color.theme(.suggestionFieldBorder), cornerRadius: 3)
 
-                        Picker(Strings.Inspection.LanguagePicker.title, selection: $store.localeIdentifier) {
-                            ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
-                                Text(Locale.current.localizedString(forIdentifier: identifier) ?? identifier)
+                        if store.recognizedString.isLocalized {
+                            Picker(Strings.Inspection.LanguagePicker.title, selection: $store.localeIdentifier) {
+                                ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
+                                    Text(Locale.current.localizedString(forIdentifier: identifier) ?? identifier)
+                                }
                             }
+                            .pickerStyle(.segmented)
+                            .frame(height: 50)
                         }
-                        .pickerStyle(.segmented)
-                        .frame(height: 50)
 
                         if let localization = store.recognizedString.localization {
                             VStack(alignment: .leading) {

@@ -9,6 +9,14 @@ package struct FormattedString {
     package var format: StringFormat
     package var arguments: [FormattedStringArgument]
 
+    package var localization: Localization? {
+        format.localization
+    }
+
+    package var isLocalized: Bool {
+        localization != nil
+    }
+
     private func formattedArguments(locale: Locale) -> [CVarArg] {
         arguments.map { $0.value(locale: locale) }
     }
@@ -111,10 +119,6 @@ extension FormattedString {
 
     package init(_ localizedString: LocalizedString) {
         self.init(StringFormat(localizedString))
-    }
-
-    package var localization: Localization? {
-        format.localization
     }
 }
 
