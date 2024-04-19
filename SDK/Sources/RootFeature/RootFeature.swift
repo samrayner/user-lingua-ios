@@ -7,6 +7,7 @@ import InspectionFeature
 import RecognitionFeature
 import SelectionFeature
 import SwiftUI
+import Theme
 
 @Reducer
 package struct RootFeature {
@@ -123,6 +124,7 @@ package struct RootFeature {
                     }
                 }
             case let .mode(.selection(.delegate(.didSelectString(recognizedString)))):
+                ThemeFont.scaleFactor = contentSizeCategoryManager.systemPreferredContentSizeCategory.fontScaleFactor
                 state.mode = .inspection(
                     .init(
                         recognizedString: recognizedString,

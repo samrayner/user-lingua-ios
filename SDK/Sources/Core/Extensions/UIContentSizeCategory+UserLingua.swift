@@ -22,22 +22,22 @@ extension UIContentSizeCategory {
         ]
     }
 
-    package var fixedFontSize: CGFloat {
+    package var fontScaleFactor: CGFloat {
         switch self {
-        case .extraSmall: 10
-        case .small: 12
-        case .medium: 14
-        case .large: 16
-        case .extraLarge: 18
-        case .extraExtraLarge: 20
-        case .extraExtraExtraLarge: 22
-        case .accessibilityMedium: 24
-        case .accessibilityLarge: 26
-        case .accessibilityExtraLarge: 28
-        case .accessibilityExtraExtraLarge: 30
-        case .accessibilityExtraExtraExtraLarge: 32
-        case .unspecified: UIContentSizeCategory.medium.fixedFontSize
-        default: UIContentSizeCategory.medium.fixedFontSize
+        case .extraSmall: 0.6
+        case .small: 0.8
+        case .medium: 1
+        case .large: 1.2
+        case .extraLarge: 1.4
+        case .extraExtraLarge: 1.6
+        case .extraExtraExtraLarge: 1.8
+        case .accessibilityMedium: 2
+        case .accessibilityLarge: 2.2
+        case .accessibilityExtraLarge: 2.3
+        case .accessibilityExtraExtraLarge: 2.4
+        case .accessibilityExtraExtraExtraLarge: 2.6
+        case .unspecified: UIContentSizeCategory.medium.fontScaleFactor
+        default: UIContentSizeCategory.medium.fontScaleFactor
         }
     }
 

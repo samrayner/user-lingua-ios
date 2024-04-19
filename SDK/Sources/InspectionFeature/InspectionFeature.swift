@@ -25,7 +25,6 @@ package struct InspectionFeature {
         }
 
         package let recognizedString: RecognizedString
-        package var inspectorContentSizeCategory: UIContentSizeCategory
         package var appContentSizeCategory: UIContentSizeCategory
         package var recognition = RecognitionFeature.State()
         var focusedField: Field?
@@ -54,7 +53,6 @@ package struct InspectionFeature {
         ) {
             self.recognizedString = recognizedString
             self.appContentSizeCategory = appContentSizeCategory
-            self.inspectorContentSizeCategory = appContentSizeCategory
             self.suggestionString = recognizedString.value
         }
     }
@@ -173,6 +171,7 @@ package struct InspectionFeatureView: View {
                     .frame(maxWidth: .infinity)
                     .background(Color.theme(.background))
 
+                    // viewport through to app in window behind
                     Color.theme(.background)
                         .mask {
                             ZStack {
@@ -239,10 +238,7 @@ package struct InspectionFeatureView: View {
                     .background(Color.theme(.background))
                 }
             }
-            // we fix the font size for the inspection panel so that we can
-            // adjust the DynamicType size for the app preview without
-            // affecting the panel.
-            .font(.system(size: store.inspectorContentSizeCategory.fixedFontSize))
+            .font(.theme(.body))
             .bind($store.focusedField, to: $focusedField)
         }
     }

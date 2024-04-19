@@ -4,6 +4,8 @@ import SwiftUI
 import UIKit
 
 package struct ThemeFont {
+    package static var scaleFactor: CGFloat = 1.0
+
     enum Source {
         case system(weight: UIFont.Weight)
         case preinstalled(name: String)
@@ -11,17 +13,21 @@ package struct ThemeFont {
 
     private let source: Source
     private let size: CGFloat
-    private let textStyle: UIFont.TextStyle
+    private let textStyle: UIFont.TextStyle?
     private let design: UIFontDescriptor.SystemDesign
 
-    private var metrics: UIFontMetrics {
-        .init(forTextStyle: textStyle)
+    private var metrics: UIFontMetrics? {
+        textStyle.map(UIFontMetrics.init)
+    }
+
+    private var scaledSize: CGFloat {
+        metrics?.scaledValue(for: size) ?? size * Self.scaleFactor
     }
 
     static func system(
         weight: UIFont.Weight,
         size: CGFloat,
-        relativeTo textStyle: UIFont.TextStyle,
+        relativeTo textStyle: UIFont.TextStyle? = nil,
         design: UIFontDescriptor.SystemDesign = .default
     ) -> Self {
         self.init(
@@ -35,7 +41,7 @@ package struct ThemeFont {
     static func preinstalled(
         _ name: String,
         size: CGFloat,
-        relativeTo textStyle: UIFont.TextStyle
+        relativeTo textStyle: UIFont.TextStyle? = nil
     ) -> Self {
         self.init(
             source: .preinstalled(name: name),
@@ -48,22 +54,22 @@ package struct ThemeFont {
     fileprivate var font: Font {
         switch source {
         case let .system(weight: weight):
-            .system(size: metrics.scaledValue(for: size), weight: .init(weight), design: .init(design))
+            .system(size: scaledSize, weight: .init(weight), design: .init(design))
         case let .preinstalled(name):
-            .custom(name, size: metrics.scaledValue(for: size))
+            .custom(name, size: scaledSize)
         }
     }
 
     fileprivate var uiFont: UIFont {
         switch source {
         case let .system(weight: weight):
-            .systemFont(ofSize: metrics.scaledValue(for: size), weight: weight, design: design)
+            .systemFont(ofSize: scaledSize, weight: weight, design: design)
         case let .preinstalled(name):
             // if the preinstalled font can't be instantiated, fall back to system font.
-            if let font = UIFont(name: name, size: metrics.scaledValue(for: size)) {
-                metrics.scaledFont(for: font)
+            if let font = UIFont(name: name, size: scaledSize) {
+                metrics?.scaledFont(for: font) ?? font.withSize(scaledSize)
             } else {
-                .systemFont(ofSize: metrics.scaledValue(for: size))
+                .systemFont(ofSize: scaledSize)
             }
         }
     }

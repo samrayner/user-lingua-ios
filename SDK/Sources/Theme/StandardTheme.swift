@@ -19,8 +19,7 @@ struct StandardTheme: ThemeProtocol {
     let fonts = ThemeFonts(
         bodyMedium: .system(
             weight: .regular,
-            size: 16,
-            relativeTo: .body
+            size: 16
         )
     )
 
