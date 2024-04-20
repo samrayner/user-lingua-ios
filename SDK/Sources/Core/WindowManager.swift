@@ -93,34 +93,15 @@ package final class WindowManager: WindowManagerProtocol {
 
         if animationDuration > 0 {
             let animation = CABasicAnimation(keyPath: "transform.translation.y")
-            animation.delegate = AnimationDelegate(onStop: { _, _ in applyTransform() })
+            // translation matrix is [1 0 0 0; 0 1 0 0; 0 0 1 0; tx TY tz 1]
+            animation.fromValue = appWindow.layer.transform.m42
             animation.toValue = boundedYOffset
             animation.duration = animationDuration
+            applyTransform()
             appWindow.layer.add(animation, forKey: nil)
         } else {
             applyTransform()
         }
-    }
-}
-
-private final class AnimationDelegate: NSObject, CAAnimationDelegate {
-    let onStart: ((CAAnimation) -> Void)?
-    let onStop: ((CAAnimation, Bool) -> Void)?
-
-    init(
-        onStart: ((CAAnimation) -> Void)? = nil,
-        onStop: ((CAAnimation, Bool) -> Void)? = nil
-    ) {
-        self.onStart = onStart
-        self.onStop = onStop
-    }
-
-    func animationDidStart(_ animation: CAAnimation) {
-        onStart?(animation)
-    }
-
-    func animationDidStop(_ animation: CAAnimation, finished: Bool) {
-        onStop?(animation, finished)
     }
 }
 
