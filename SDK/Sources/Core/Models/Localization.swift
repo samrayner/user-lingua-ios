@@ -10,6 +10,10 @@ package struct Localization: Equatable {
     package var tableName: String?
     package var comment: String?
 
+    package var isInApp: Bool? {
+        bundle?.bundleURL.absoluteString.lowercased().contains("/containers/bundle/application/")
+    }
+
     package func value() -> String {
         Bundle.main.localizedString(forKey: key, value: key, table: tableName)
     }

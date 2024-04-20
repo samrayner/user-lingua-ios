@@ -23,6 +23,8 @@ package final class StringsRepository: StringsRepositoryProtocol {
     }
 
     package func record(formatted formattedString: FormattedString) {
+        guard formattedString.localization?.isInApp != false else { return }
+
         var formattedString = formattedString
 
         for index in 0 ..< formattedString.arguments.count {
@@ -74,11 +76,7 @@ package final class StringsRepository: StringsRepositoryProtocol {
     }
 
     package func record(localized localizedString: LocalizedString) {
-        if let bundle = localizedString.localization.bundle,
-           !bundle.bundleURL.absoluteString.contains("Containers/Bundle/Application") {
-            // don't record strings localized inside frameworks
-            return
-        }
+        guard localizedString.localization.isInApp != false else { return }
 
         stringRecord[localizedString.value, default: []].append(
             RecordedString(localizedString)
