@@ -28,6 +28,8 @@ struct StandardTheme: ThemeProtocol {
         increaseTextSize: .symbol(.textformatSizeLarger),
         decreaseTextSize: .symbol(.textformatSizeSmaller),
         toggleDarkMode: .symbol(.circleLefthalfFilled),
-        untoggleDarkMode: .symbol(.circleRighthalfFilled)
+        untoggleDarkMode: .symbol(.circleRighthalfFilled),
+        enterFullScreen: .symbol(.arrowUpLeftAndArrowDownRight),
+        exitFullScreen: .symbol(.arrowDownRightAndArrowUpLeft)
     )
 }

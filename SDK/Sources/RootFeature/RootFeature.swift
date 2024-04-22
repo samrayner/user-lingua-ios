@@ -40,7 +40,6 @@ package struct RootFeature {
     package struct State: Equatable {
         package var configuration: Configuration = .init()
         package var mode: Mode.State = .disabled
-        package var keyboardPadding: CGFloat = 0
 
         package init() {}
     }
@@ -50,8 +49,6 @@ package struct RootFeature {
         case enable
         case configure(Configuration)
         case didShake
-        case keyboardWillChangeFrame(CGRect)
-        case observeKeyboardWillChangeFrame
         case mode(Mode.Action)
     }
 
@@ -89,7 +86,6 @@ package struct RootFeature {
             case .didShake:
                 guard state.mode == .recording else { return .none }
                 windowManager.showWindow()
-                state.keyboardPadding = 0
                 state.mode = .selection(.init())
                 onForeground()
                 return .none
@@ -101,28 +97,6 @@ package struct RootFeature {
                 windowManager.hideWindow()
                 onBackground()
                 return .none
-            case let .keyboardWillChangeFrame(frame):
-                // For some reason the keyboard height is always
-                // reported as 75pts when it should be 0.
-                state.keyboardPadding = frame.height <= 100 ? 0 : frame.height
-                return .none
-            case .observeKeyboardWillChangeFrame:
-                let keyboardNotificationNames: [Notification.Name] = [
-                    .swizzled(UIResponder.keyboardWillChangeFrameNotification),
-                    .swizzled(UIResponder.keyboardWillHideNotification),
-                    .swizzled(UIResponder.keyboardWillShowNotification)
-                ]
-
-                return .run { send in
-                    for await notification in await notificationManager.observe(names: keyboardNotificationNames) {
-                        if let keyboardNotification = KeyboardNotification(userInfo: notification.userInfo) {
-                            await send(
-                                .keyboardWillChangeFrame(keyboardNotification.endFrame),
-                                animation: keyboardNotification.animation
-                            )
-                        }
-                    }
-                }
             case let .mode(.selection(.delegate(.didSelectString(recognizedString)))):
                 ThemeFont.scaleFactor = contentSizeCategoryManager.systemPreferredContentSizeCategory.fontScaleFactor
                 state.mode = .inspection(
@@ -162,11 +136,8 @@ package struct RootFeatureView: View {
                     }
                 }
             }
-            .padding(.bottom, store.keyboardPadding)
-            .ignoresSafeArea(.all, edges: .bottom)
             .foregroundColor(.theme(.text))
             .tint(.theme(.tint))
-            .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
         }
     }
 }

@@ -15,6 +15,7 @@ package struct InspectionFeature {
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
     @Dependency(ContentSizeCategoryManagerDependency.self) var contentSizeCategoryManager
     @Dependency(WindowManagerDependency.self) var windowManager
+    @Dependency(NotificationManagerDependency.self) var notificationManager
 
     package init() {}
 
@@ -30,6 +31,10 @@ package struct InspectionFeature {
         var focusedField: Field?
         var suggestionString: String
         var localeIdentifier = Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
+        var darkModeIsToggled = false
+        var isFullScreen = false
+        var headerFrame: CGRect = .zero
+        var keyboardPadding: CGFloat = 0
 
         package var locale: Locale {
             Locale(identifier: localeIdentifier)
@@ -64,7 +69,11 @@ package struct InspectionFeature {
         case didTapDecreaseTextSize
         case didTapClose
         case didTapToggleDarkMode
+        case didTapToggleFullScreen
         case viewportFrameDidChange(CGRect, animationDuration: TimeInterval = 0)
+        case headerFrameDidChange(CGRect)
+        case keyboardWillChangeFrame(CGRect)
+        case observeKeyboardWillChangeFrame
         case binding(BindingAction<State>)
         case delegate(Delegate)
         case recognition(RecognitionFeature.Action)
@@ -104,11 +113,20 @@ package struct InspectionFeature {
                 contentSizeCategoryManager.notifyDidChange(newValue: state.appContentSizeCategory)
                 return .none
             case .didTapClose:
+                state.keyboardPadding = 0
                 return .run { send in
                     await send(.delegate(.didDismiss))
                 }
             case .didTapToggleDarkMode:
+                state.darkModeIsToggled.toggle()
                 windowManager.toggleDarkMode()
+                return .none
+            case .didTapToggleFullScreen:
+                state.focusedField = nil
+                // the above should be enough but the keyboard notification fires with
+                // a full keyboard endFrame height instead of a height of 0 for some reason
+                state.keyboardPadding = 0
+                state.isFullScreen.toggle()
                 return .none
             case let .viewportFrameDidChange(frame, animationDuration):
                 windowManager.translateApp(
@@ -117,6 +135,31 @@ package struct InspectionFeature {
                     animationDuration: animationDuration
                 )
                 return .none
+            case let .headerFrameDidChange(frame):
+                state.headerFrame = frame
+                return .none
+            case let .keyboardWillChangeFrame(frame):
+                // For some reason the keyboard height is always
+                // reported as 75pts when it should be 0.
+                state.keyboardPadding = frame.height <= 100 ? 0 : frame.height
+                return .none
+            case .observeKeyboardWillChangeFrame:
+                let keyboardNotificationNames: [Notification.Name] = [
+                    .swizzled(UIResponder.keyboardWillChangeFrameNotification),
+                    .swizzled(UIResponder.keyboardWillHideNotification),
+                    .swizzled(UIResponder.keyboardWillShowNotification)
+                ]
+
+                return .run { send in
+                    for await notification in await notificationManager.observe(names: keyboardNotificationNames) {
+                        if let keyboardNotification = KeyboardNotification(userInfo: notification.userInfo) {
+                            await send(
+                                .keyboardWillChangeFrame(keyboardNotification.endFrame),
+                                animation: keyboardNotification.animation
+                            )
+                        }
+                    }
+                }
             case .binding(\.localeIdentifier):
                 state.suggestionString = suggestionsRepository.suggestion(
                     for: state.recognizedString.value,
@@ -141,7 +184,6 @@ package struct InspectionFeature {
 package struct InspectionFeatureView: View {
     @Perception.Bindable package var store: StoreOf<InspectionFeature>
     @FocusState var focusedField: InspectionFeature.State.Field?
-    @State private var darkModeIsToggled = false
 
     package init(store: StoreOf<InspectionFeature>) {
         self.store = store
@@ -149,48 +191,31 @@ package struct InspectionFeatureView: View {
 
     package var body: some View {
         WithPerceptionTracking {
-            ZStack {
+            ZStack(alignment: .top) {
                 RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
 
                 VStack(spacing: 0) {
-                    HStack {
-                        Button(action: { store.send(.didTapClose) }) {
-                            Image.theme(.close)
+                    // header background colour
+                    Color.clear
+                        .frame(height: store.isFullScreen ? 0 : store.headerFrame.height)
+                        .background {
+                            Color.theme(.background)
+                                .ignoresSafeArea(edges: .top)
                         }
-
-                        Spacer()
-
-                        Button(action: {
-                            darkModeIsToggled.toggle()
-                            store.send(.didTapToggleDarkMode)
-                        }) {
-                            Image.theme(darkModeIsToggled ? .untoggleDarkMode : .toggleDarkMode)
-                        }
-
-                        Button(action: { store.send(.didTapIncreaseTextSize) }) {
-                            Image.theme(.increaseTextSize)
-                        }
-
-                        Button(action: { store.send(.didTapDecreaseTextSize) }) {
-                            Image.theme(.decreaseTextSize)
-                        }
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.theme(.background))
 
                     // viewport through to app in UIWindow behind
                     RoundedRectangle(cornerRadius: .Radius.l)
                         .inset(by: -.BorderWidth.xl)
                         .strokeBorder(Color.theme(.background), lineWidth: .BorderWidth.xl)
-                        .padding(.horizontal, 3)
+                        .padding(.horizontal, store.isFullScreen ? 0 : 3)
+                        .ignoresSafeArea(.all)
                         .background {
-                            GeometryReader { proxy in
+                            GeometryReader { geometry in
                                 Color.clear
                                     .onAppear {
-                                        store.send(.viewportFrameDidChange(proxy.frame(in: .global)))
+                                        store.send(.viewportFrameDidChange(geometry.frame(in: .global)))
                                     }
-                                    .onChange(of: proxy.frame(in: .global)) {
+                                    .onChange(of: geometry.frame(in: .global)) {
                                         store.send(.viewportFrameDidChange($0, animationDuration: 0.3))
                                     }
                             }
@@ -250,11 +275,72 @@ package struct InspectionFeatureView: View {
                         }
                     }
                     .padding()
+                    .padding(.bottom, store.keyboardPadding)
+                    .frame(height: store.isFullScreen ? 0 : nil)
                     .background(Color.theme(.background))
+                }
+                .ignoresSafeArea(.all, edges: store.isFullScreen ? .all : [])
+
+                HStack {
+                    Button(action: { store.send(.didTapClose) }) {
+                        Image.theme(.close)
+                            .padding(.Space.s)
+                    }
+                    .background {
+                        Color.theme(.background)
+                            .opacity(.Opacity.heavy)
+                            .cornerRadius(.infinity)
+                    }
+
+                    Spacer()
+
+                    HStack(spacing: 0) {
+                        Button(action: { store.send(.didTapDecreaseTextSize) }) {
+                            Image.theme(.decreaseTextSize)
+                                .padding(.Space.s)
+                                .padding(.leading, .Space.s)
+                        }
+
+                        Button(action: { store.send(.didTapIncreaseTextSize) }) {
+                            Image.theme(.increaseTextSize)
+                                .padding(.Space.s)
+                        }
+
+                        Button(action: {
+                            store.send(.didTapToggleDarkMode)
+                        }) {
+                            Image.theme(store.darkModeIsToggled ? .untoggleDarkMode : .toggleDarkMode)
+                                .padding(.Space.s)
+                        }
+
+                        Button(action: { store.send(.didTapToggleFullScreen, animation: .easeOut) }) {
+                            Image.theme(store.isFullScreen ? .exitFullScreen : .enterFullScreen)
+                                .padding(.Space.s)
+                                .padding(.trailing, .Space.s)
+                        }
+                    }
+                    .background {
+                        Color.theme(.background)
+                            .opacity(.Opacity.heavy)
+                            .cornerRadius(.infinity)
+                    }
+                }
+                .padding(.Space.s)
+                .background {
+                    GeometryReader { geometry in
+                        Color.clear
+                            .onAppear {
+                                store.send(.headerFrameDidChange(geometry.frame(in: .local)))
+                            }
+                            .onChange(of: geometry.frame(in: .local)) {
+                                store.send(.headerFrameDidChange($0), animation: .linear(duration: 0.3))
+                            }
+                    }
                 }
             }
             .font(.theme(.body))
             .bind($store.focusedField, to: $focusedField)
+            .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
         }
     }
 }
