@@ -207,7 +207,7 @@ package struct InspectionFeatureView: View {
                     RoundedRectangle(cornerRadius: .Radius.l)
                         .inset(by: -.BorderWidth.xl)
                         .strokeBorder(Color.theme(.background), lineWidth: .BorderWidth.xl)
-                        .padding(.horizontal, store.isFullScreen ? 0 : 3)
+                        .padding(.horizontal, store.isFullScreen ? 0 : .Space.xs)
                         .ignoresSafeArea(.all)
                         .background {
                             GeometryReader { geometry in
@@ -216,7 +216,7 @@ package struct InspectionFeatureView: View {
                                         store.send(.viewportFrameDidChange(geometry.frame(in: .global)))
                                     }
                                     .onChange(of: geometry.frame(in: .global)) {
-                                        store.send(.viewportFrameDidChange($0, animationDuration: 0.3))
+                                        store.send(.viewportFrameDidChange($0, animationDuration: .AnimationDuration.quick))
                                     }
                             }
                         }
@@ -224,11 +224,11 @@ package struct InspectionFeatureView: View {
                     VStack {
                         ZStack(alignment: .topLeading) {
                             TextField(Strings.Inspection.SuggestionField.placeholder, text: $store.suggestionString, axis: .vertical)
+                                .frame(minHeight: 30)
                                 .focused($focusedField, equals: .suggestion)
                                 .textFieldStyle(.plain)
                                 .autocorrectionDisabled()
                                 .textInputAutocapitalization(.never)
-                                .background(Color.theme(.suggestionFieldBackground))
                                 .overlay(alignment: .leading) {
                                     if focusedField != .suggestion && store.suggestionString == store.localizedValue {
                                         Text(
@@ -243,7 +243,10 @@ package struct InspectionFeatureView: View {
                                     }
                                 }
                         }
-                        .border(Color.theme(.suggestionFieldBorder), cornerRadius: 3)
+                        .padding(.vertical, .Space.s)
+                        .padding(.horizontal, .Space.m)
+                        .background(Color.theme(.suggestionFieldBackground))
+                        .cornerRadius(.Radius.m)
 
                         if store.recognizedString.isLocalized {
                             Picker(Strings.Inspection.LanguagePicker.title, selection: $store.localeIdentifier) {
@@ -274,7 +277,7 @@ package struct InspectionFeatureView: View {
                             }
                         }
                     }
-                    .padding()
+                    .padding(.Space.m)
                     .padding(.bottom, store.keyboardPadding)
                     .frame(height: store.isFullScreen ? 0 : nil)
                     .background(Color.theme(.background))
@@ -333,7 +336,7 @@ package struct InspectionFeatureView: View {
                                 store.send(.headerFrameDidChange(geometry.frame(in: .local)))
                             }
                             .onChange(of: geometry.frame(in: .local)) {
-                                store.send(.headerFrameDidChange($0), animation: .linear(duration: 0.3))
+                                store.send(.headerFrameDidChange($0), animation: .linear(duration: .AnimationDuration.quick))
                             }
                     }
                 }
