@@ -3,7 +3,7 @@
 import Theme
 
 extension ThemeColor {
-    static let suggestionFieldBackground = ThemeColor(\.surface)
+    static let suggestionFieldBackground = ThemeColor(\.well)
     static let placeholderHighlight = ThemeColor(\.accent)
 }
 

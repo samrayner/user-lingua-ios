@@ -34,7 +34,7 @@ package struct InspectionFeature {
         var darkModeIsToggled = false
         var isFullScreen = false
         var headerFrame: CGRect = .zero
-        var keyboardPadding: CGFloat = 0
+        var keyboardHeight: CGFloat = 0
 
         package var locale: Locale {
             Locale(identifier: localeIdentifier)
@@ -113,7 +113,7 @@ package struct InspectionFeature {
                 contentSizeCategoryManager.notifyDidChange(newValue: state.appContentSizeCategory)
                 return .none
             case .didTapClose:
-                state.keyboardPadding = 0
+                state.keyboardHeight = 0
                 return .run { send in
                     await send(.delegate(.didDismiss))
                 }
@@ -125,7 +125,7 @@ package struct InspectionFeature {
                 state.focusedField = nil
                 // the above should be enough but the keyboard notification fires with
                 // a full keyboard endFrame height instead of a height of 0 for some reason
-                state.keyboardPadding = 0
+                state.keyboardHeight = 0
                 state.isFullScreen.toggle()
                 return .none
             case let .viewportFrameDidChange(frame, animationDuration):
@@ -141,7 +141,7 @@ package struct InspectionFeature {
             case let .keyboardWillChangeFrame(frame):
                 // For some reason the keyboard height is always
                 // reported as 75pts when it should be 0.
-                state.keyboardPadding = frame.height <= 100 ? 0 : frame.height
+                state.keyboardHeight = frame.height <= 100 ? 0 : frame.height
                 return .none
             case .observeKeyboardWillChangeFrame:
                 let keyboardNotificationNames: [Notification.Name] = [
@@ -243,46 +243,49 @@ package struct InspectionFeatureView: View {
                                     }
                                 }
                         }
-                        .padding(.vertical, .Space.s)
-                        .padding(.horizontal, .Space.m)
+                        .padding(.Space.s)
                         .background(Color.theme(.suggestionFieldBackground))
                         .cornerRadius(.Radius.m)
 
-                        if store.recognizedString.isLocalized {
-                            Picker(Strings.Inspection.LanguagePicker.title, selection: $store.localeIdentifier) {
-                                ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
-                                    Text(Locale.current.localizedString(forIdentifier: identifier) ?? identifier)
+                        VStack {
+                            if store.recognizedString.isLocalized {
+                                Picker(Strings.Inspection.LanguagePicker.title, selection: $store.localeIdentifier) {
+                                    ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
+                                        Text(Locale.current.localizedString(forIdentifier: identifier) ?? identifier)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
+                                .frame(height: 50)
+                            }
+
+                            if let localization = store.recognizedString.localization {
+                                VStack(alignment: .leading) {
+                                    HStack {
+                                        Text("\(Strings.Inspection.Localization.Key.title):")
+                                        Text(localization.key)
+                                    }
+
+                                    HStack {
+                                        Text("\(Strings.Inspection.Localization.Table.title):")
+                                        Text(localization.tableName ?? "Localizable")
+                                    }
+
+                                    HStack {
+                                        Text("\(Strings.Inspection.Localization.Comment.title):")
+                                        Text(localization.comment ?? Strings.Inspection.Localization.Comment.none)
+                                    }
                                 }
                             }
-                            .pickerStyle(.segmented)
-                            .frame(height: 50)
                         }
-
-                        if let localization = store.recognizedString.localization {
-                            VStack(alignment: .leading) {
-                                HStack {
-                                    Text("\(Strings.Inspection.Localization.Key.title):")
-                                    Text(localization.key)
-                                }
-
-                                HStack {
-                                    Text("\(Strings.Inspection.Localization.Table.title):")
-                                    Text(localization.tableName ?? "Localizable")
-                                }
-
-                                HStack {
-                                    Text("\(Strings.Inspection.Localization.Comment.title):")
-                                    Text(localization.comment ?? Strings.Inspection.Localization.Comment.none)
-                                }
-                            }
-                        }
+                        .frame(minHeight: store.keyboardHeight)
                     }
-                    .padding(.Space.m)
-                    .padding(.bottom, store.keyboardPadding)
+                    .padding(.top, .Space.m)
+                    .padding(.bottom, .Space.s)
+                    .padding(.horizontal, .Space.s)
                     .frame(height: store.isFullScreen ? 0 : nil)
                     .background(Color.theme(.background))
                 }
-                .ignoresSafeArea(.all, edges: store.isFullScreen ? .all : [])
+                .ignoresSafeArea(.all, edges: store.isFullScreen ? .all : .bottom)
 
                 HStack {
                     Button(action: { store.send(.didTapClose) }) {
