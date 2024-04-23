@@ -189,6 +189,16 @@ package struct InspectionFeatureView: View {
         self.store = store
     }
 
+    private var ignoredSafeAreaEdges: Edge.Set {
+        if store.isFullScreen {
+            .all
+        } else if store.keyboardHeight > 0 {
+            .bottom
+        } else {
+            []
+        }
+    }
+
     package var body: some View {
         WithPerceptionTracking {
             ZStack(alignment: .top) {
@@ -221,71 +231,73 @@ package struct InspectionFeatureView: View {
                             }
                         }
 
-                    VStack {
-                        ZStack(alignment: .topLeading) {
-                            TextField(Strings.Inspection.SuggestionField.placeholder, text: $store.suggestionString, axis: .vertical)
-                                .frame(minHeight: 30)
-                                .focused($focusedField, equals: .suggestion)
-                                .textFieldStyle(.plain)
-                                .autocorrectionDisabled()
-                                .textInputAutocapitalization(.never)
-                                .overlay(alignment: .leading) {
-                                    if focusedField != .suggestion && store.suggestionString == store.localizedValue {
-                                        Text(
-                                            store.recognizedString.localizedValue(
-                                                locale: store.locale,
-                                                placeholderAttributes: [.backgroundColor: UIColor.theme(.placeholderHighlight)],
-                                                placeholderTransform: { " \($0) " }
-                                            )
-                                        )
-                                        .background(Color.theme(.suggestionFieldBackground))
-                                        .onTapGesture { store.send(.didTapSuggestionPreview) }
-                                    }
-                                }
-                        }
-                        .padding(.Space.s)
-                        .background(Color.theme(.suggestionFieldBackground))
-                        .cornerRadius(.Radius.m)
-
+                    if !store.isFullScreen {
                         VStack {
-                            if store.recognizedString.isLocalized {
-                                Picker(Strings.Inspection.LanguagePicker.title, selection: $store.localeIdentifier) {
-                                    ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
-                                        Text(Locale.current.localizedString(forIdentifier: identifier) ?? identifier)
+                            ZStack(alignment: .topLeading) {
+                                TextField(Strings.Inspection.SuggestionField.placeholder, text: $store.suggestionString, axis: .vertical)
+                                    .frame(minHeight: 30)
+                                    .focused($focusedField, equals: .suggestion)
+                                    .textFieldStyle(.plain)
+                                    .autocorrectionDisabled()
+                                    .textInputAutocapitalization(.never)
+                                    .overlay(alignment: .leading) {
+                                        if focusedField != .suggestion && store.suggestionString == store.localizedValue {
+                                            Text(
+                                                store.recognizedString.localizedValue(
+                                                    locale: store.locale,
+                                                    placeholderAttributes: [.backgroundColor: UIColor.theme(.placeholderHighlight)],
+                                                    placeholderTransform: { " \($0) " }
+                                                )
+                                            )
+                                            .background(Color.theme(.suggestionFieldBackground))
+                                            .onTapGesture { store.send(.didTapSuggestionPreview) }
+                                        }
+                                    }
+                            }
+                            .padding(.Space.s)
+                            .background(Color.theme(.suggestionFieldBackground))
+                            .cornerRadius(.Radius.m)
+
+                            VStack {
+                                if store.recognizedString.isLocalized {
+                                    Picker(Strings.Inspection.LanguagePicker.title, selection: $store.localeIdentifier) {
+                                        ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
+                                            Text(Locale.current.localizedString(forIdentifier: identifier) ?? identifier)
+                                        }
+                                    }
+                                    .pickerStyle(.segmented)
+                                    .frame(height: 50)
+                                }
+
+                                if let localization = store.recognizedString.localization {
+                                    VStack(alignment: .leading) {
+                                        HStack {
+                                            Text("\(Strings.Inspection.Localization.Key.title):")
+                                            Text(localization.key)
+                                        }
+
+                                        HStack {
+                                            Text("\(Strings.Inspection.Localization.Table.title):")
+                                            Text(localization.tableName ?? "Localizable")
+                                        }
+
+                                        HStack {
+                                            Text("\(Strings.Inspection.Localization.Comment.title):")
+                                            Text(localization.comment ?? Strings.Inspection.Localization.Comment.none)
+                                        }
                                     }
                                 }
-                                .pickerStyle(.segmented)
-                                .frame(height: 50)
                             }
-
-                            if let localization = store.recognizedString.localization {
-                                VStack(alignment: .leading) {
-                                    HStack {
-                                        Text("\(Strings.Inspection.Localization.Key.title):")
-                                        Text(localization.key)
-                                    }
-
-                                    HStack {
-                                        Text("\(Strings.Inspection.Localization.Table.title):")
-                                        Text(localization.tableName ?? "Localizable")
-                                    }
-
-                                    HStack {
-                                        Text("\(Strings.Inspection.Localization.Comment.title):")
-                                        Text(localization.comment ?? Strings.Inspection.Localization.Comment.none)
-                                    }
-                                }
-                            }
+                            .frame(minHeight: store.keyboardHeight)
                         }
-                        .frame(minHeight: store.keyboardHeight)
+                        .padding(.top, .Space.m)
+                        .padding(.bottom, .Space.s)
+                        .padding(.horizontal, .Space.s)
+                        .background(Color.theme(.background))
+                        .transition(.move(edge: .bottom))
                     }
-                    .padding(.top, .Space.m)
-                    .padding(.bottom, .Space.s)
-                    .padding(.horizontal, .Space.s)
-                    .frame(height: store.isFullScreen ? 0 : nil)
-                    .background(Color.theme(.background))
                 }
-                .ignoresSafeArea(.all, edges: store.isFullScreen ? .all : .bottom)
+                .ignoresSafeArea(.all, edges: ignoredSafeAreaEdges)
 
                 HStack {
                     Button(action: { store.send(.didTapClose) }) {
