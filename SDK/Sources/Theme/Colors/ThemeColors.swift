@@ -7,6 +7,7 @@ package struct ThemeColors {
     package let background: ThemeColor
     package let well: ThemeColor
     package let surface: ThemeColor
+    package let surfaceDim: ThemeColor
     package let primary: ThemeColor
     package let onPrimary: ThemeColor
 }

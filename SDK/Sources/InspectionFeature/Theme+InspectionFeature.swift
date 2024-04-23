@@ -9,6 +9,7 @@ extension ThemeColor {
     static let localePickerButtonBackgroundSelected = ThemeColor(\.primary)
     static let localePickerButtonText = ThemeColor(\.foreground)
     static let localePickerButtonTextSelected = ThemeColor(\.onPrimary)
+    static let localizationDetailsBackground = ThemeColor(\.surfaceDim)
 }
 
 extension ThemeImage {

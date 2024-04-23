@@ -315,10 +315,9 @@ package struct InspectionFeatureView: View {
 
     @ViewBuilder
     func inspectionPanel() -> some View {
-        VStack(spacing: .Space.m) {
+        VStack(alignment: .leading, spacing: .Space.m) {
             ZStack(alignment: .topLeading) {
                 TextField(Strings.Inspection.SuggestionField.placeholder, text: $store.suggestionString, axis: .vertical)
-                    .frame(minHeight: 30)
                     .focused($focusedField, equals: .suggestion)
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled()
@@ -347,31 +346,42 @@ package struct InspectionFeatureView: View {
                 }
 
                 if let localization = store.recognizedString.localization {
-                    VStack(alignment: .leading) {
-                        HStack {
-                            Text("\(Strings.Inspection.Localization.Key.title):")
-                            Text(localization.key)
-                        }
+                    VStack(alignment: .leading, spacing: 1) {
+                        localizationDetailsRow(
+                            Text("\(Strings.Inspection.Localization.Key.title): ").bold() +
+                                Text(localization.key)
+                        )
 
-                        HStack {
-                            Text("\(Strings.Inspection.Localization.Table.title):")
-                            Text(localization.tableName ?? "Localizable")
-                        }
+                        localizationDetailsRow(
+                            Text("\(Strings.Inspection.Localization.Table.title): ").bold() +
+                                Text("\(localization.tableName ?? "Localizable").strings")
+                        )
 
-                        HStack {
-                            Text("\(Strings.Inspection.Localization.Comment.title):")
-                            Text(localization.comment ?? Strings.Inspection.Localization.Comment.none)
+                        if let comment = localization.comment {
+                            localizationDetailsRow(
+                                Text("\(Strings.Inspection.Localization.Comment.title): ").bold() +
+                                    Text(comment)
+                            )
                         }
                     }
+                    .cornerRadius(.Radius.m)
                 }
             }
             .frame(minHeight: store.keyboardHeight)
         }
         .padding(.top, .Space.m)
         .padding(.bottom, .Space.s)
-        .padding(.horizontal, .Space.s)
+        .padding(.horizontal, .Space.m)
         .background(Color.theme(.background))
         .bind($store.focusedField, to: $focusedField)
+    }
+
+    @ViewBuilder
+    func localizationDetailsRow(_ content: some View) -> some View {
+        content
+            .padding(.Space.s)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.theme(.localizationDetailsBackground))
     }
 }
 

@@ -3,6 +3,5 @@
 "inspection.language_picker.title" = "Language";
 "inspection.suggestion_field.placeholder" = "";
 "inspection.localization.key.title" = "Key";
-"inspection.localization.table.title" = "Table";
+"inspection.localization.table.title" = "File";
 "inspection.localization.comment.title" = "Comment";
-"inspection.localization.comment.none" = "[None]";

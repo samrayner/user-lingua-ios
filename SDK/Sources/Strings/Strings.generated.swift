@@ -22,8 +22,6 @@ public enum Strings {
 
         public enum Localization {
             public enum Comment {
-                /// [None]
-                public static let none = Strings.tr("Localizable", "inspection.localization.comment.none", fallback: "[None]")
                 /// Comment
                 public static let title = Strings.tr("Localizable", "inspection.localization.comment.title", fallback: "Comment")
             }
@@ -34,8 +32,8 @@ public enum Strings {
             }
 
             public enum Table {
-                /// Table
-                public static let title = Strings.tr("Localizable", "inspection.localization.table.title", fallback: "Table")
+                /// File
+                public static let title = Strings.tr("Localizable", "inspection.localization.table.title", fallback: "File")
             }
         }
 
