@@ -81,6 +81,12 @@ opt_in_rules:
   - static_operator
   - toggle_bool
 
+file_length:
+  warning: 600
+
+function_body_length:
+  warning: 100
+
 identifier_name:
   min_length: 2 # For a variable like `id`
   max_length:

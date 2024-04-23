@@ -6,7 +6,7 @@
 extension ThemeColor {
     package static let text = ThemeColor(\.foreground)
     package static let background = ThemeColor(\.background)
-    package static let tint = ThemeColor(\.accent)
+    package static let tint = ThemeColor(\.primary)
 }
 
 extension ThemeFont {

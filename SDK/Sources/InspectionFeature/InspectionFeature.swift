@@ -205,161 +205,173 @@ package struct InspectionFeatureView: View {
                 RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
 
                 VStack(spacing: 0) {
-                    // header background colour
-                    Color.clear
-                        .frame(height: store.isFullScreen ? 0 : store.headerFrame.height)
-                        .background {
-                            Color.theme(.background)
-                                .ignoresSafeArea(edges: .top)
-                        }
+                    headerBackground()
 
-                    // viewport through to app in UIWindow behind
-                    RoundedRectangle(cornerRadius: .Radius.l)
-                        .inset(by: -.BorderWidth.xl)
-                        .strokeBorder(Color.theme(.background), lineWidth: .BorderWidth.xl)
-                        .padding(.horizontal, store.isFullScreen ? 0 : .Space.xs)
-                        .ignoresSafeArea(.all)
-                        .background {
-                            GeometryReader { geometry in
-                                Color.clear
-                                    .onAppear {
-                                        store.send(.viewportFrameDidChange(geometry.frame(in: .global)))
-                                    }
-                                    .onChange(of: geometry.frame(in: .global)) {
-                                        store.send(.viewportFrameDidChange($0, animationDuration: .AnimationDuration.quick))
-                                    }
-                            }
-                        }
+                    appViewport()
 
                     if !store.isFullScreen {
-                        VStack {
-                            ZStack(alignment: .topLeading) {
-                                TextField(Strings.Inspection.SuggestionField.placeholder, text: $store.suggestionString, axis: .vertical)
-                                    .frame(minHeight: 30)
-                                    .focused($focusedField, equals: .suggestion)
-                                    .textFieldStyle(.plain)
-                                    .autocorrectionDisabled()
-                                    .textInputAutocapitalization(.never)
-                                    .overlay(alignment: .leading) {
-                                        if focusedField != .suggestion && store.suggestionString == store.localizedValue {
-                                            Text(
-                                                store.recognizedString.localizedValue(
-                                                    locale: store.locale,
-                                                    placeholderAttributes: [.backgroundColor: UIColor.theme(.placeholderHighlight)],
-                                                    placeholderTransform: { " \($0) " }
-                                                )
-                                            )
-                                            .background(Color.theme(.suggestionFieldBackground))
-                                            .onTapGesture { store.send(.didTapSuggestionPreview) }
-                                        }
-                                    }
-                            }
-                            .padding(.Space.s)
-                            .background(Color.theme(.suggestionFieldBackground))
-                            .cornerRadius(.Radius.m)
-
-                            VStack {
-                                if store.recognizedString.isLocalized {
-                                    Picker(Strings.Inspection.LanguagePicker.title, selection: $store.localeIdentifier) {
-                                        ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
-                                            Text(Locale.current.localizedString(forIdentifier: identifier) ?? identifier)
-                                        }
-                                    }
-                                    .pickerStyle(.segmented)
-                                    .frame(height: 50)
-                                }
-
-                                if let localization = store.recognizedString.localization {
-                                    VStack(alignment: .leading) {
-                                        HStack {
-                                            Text("\(Strings.Inspection.Localization.Key.title):")
-                                            Text(localization.key)
-                                        }
-
-                                        HStack {
-                                            Text("\(Strings.Inspection.Localization.Table.title):")
-                                            Text(localization.tableName ?? "Localizable")
-                                        }
-
-                                        HStack {
-                                            Text("\(Strings.Inspection.Localization.Comment.title):")
-                                            Text(localization.comment ?? Strings.Inspection.Localization.Comment.none)
-                                        }
-                                    }
-                                }
-                            }
-                            .frame(minHeight: store.keyboardHeight)
-                        }
-                        .padding(.top, .Space.m)
-                        .padding(.bottom, .Space.s)
-                        .padding(.horizontal, .Space.s)
-                        .background(Color.theme(.background))
-                        .transition(.move(edge: .bottom))
+                        inspectionPanel()
+                            .transition(.move(edge: .bottom))
                     }
                 }
                 .ignoresSafeArea(.all, edges: ignoredSafeAreaEdges)
 
-                HStack {
-                    Button(action: { store.send(.didTapClose) }) {
-                        Image.theme(.close)
-                            .padding(.Space.s)
-                    }
-                    .background {
-                        Color.theme(.background)
-                            .opacity(.Opacity.heavy)
-                            .cornerRadius(.infinity)
-                    }
+                header()
+            }
+            .font(.theme(.body))
+            .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
+        }
+    }
 
-                    Spacer()
+    @ViewBuilder
+    func headerBackground() -> some View {
+        Color.clear
+            .frame(height: store.isFullScreen ? 0 : store.headerFrame.height)
+            .background {
+                Color.theme(.background)
+                    .ignoresSafeArea(edges: .top)
+            }
+    }
 
-                    HStack(spacing: 0) {
-                        Button(action: { store.send(.didTapDecreaseTextSize) }) {
-                            Image.theme(.decreaseTextSize)
-                                .padding(.Space.s)
-                                .padding(.leading, .Space.s)
-                        }
+    @ViewBuilder
+    func header() -> some View {
+        HStack {
+            Button(action: { store.send(.didTapClose) }) {
+                Image.theme(.close)
+                    .padding(.Space.s)
+            }
+            .background {
+                Color.theme(.background)
+                    .opacity(.Opacity.heavy)
+                    .cornerRadius(.infinity)
+            }
 
-                        Button(action: { store.send(.didTapIncreaseTextSize) }) {
-                            Image.theme(.increaseTextSize)
-                                .padding(.Space.s)
-                        }
+            Spacer()
 
-                        Button(action: {
-                            store.send(.didTapToggleDarkMode)
-                        }) {
-                            Image.theme(store.darkModeIsToggled ? .untoggleDarkMode : .toggleDarkMode)
-                                .padding(.Space.s)
-                        }
-
-                        Button(action: { store.send(.didTapToggleFullScreen, animation: .easeOut) }) {
-                            Image.theme(store.isFullScreen ? .exitFullScreen : .enterFullScreen)
-                                .padding(.Space.s)
-                                .padding(.trailing, .Space.s)
-                        }
-                    }
-                    .background {
-                        Color.theme(.background)
-                            .opacity(.Opacity.heavy)
-                            .cornerRadius(.infinity)
-                    }
+            HStack(spacing: 0) {
+                Button(action: { store.send(.didTapDecreaseTextSize) }) {
+                    Image.theme(.decreaseTextSize)
+                        .padding(.Space.s)
+                        .padding(.leading, .Space.s)
                 }
-                .padding(.Space.s)
-                .background {
-                    GeometryReader { geometry in
-                        Color.clear
-                            .onAppear {
-                                store.send(.headerFrameDidChange(geometry.frame(in: .local)))
-                            }
-                            .onChange(of: geometry.frame(in: .local)) {
-                                store.send(.headerFrameDidChange($0), animation: .linear(duration: .AnimationDuration.quick))
-                            }
+
+                Button(action: { store.send(.didTapIncreaseTextSize) }) {
+                    Image.theme(.increaseTextSize)
+                        .padding(.Space.s)
+                }
+
+                Button(action: {
+                    store.send(.didTapToggleDarkMode)
+                }) {
+                    Image.theme(store.darkModeIsToggled ? .untoggleDarkMode : .toggleDarkMode)
+                        .padding(.Space.s)
+                }
+
+                Button(action: { store.send(.didTapToggleFullScreen, animation: .easeOut) }) {
+                    Image.theme(store.isFullScreen ? .exitFullScreen : .enterFullScreen)
+                        .padding(.Space.s)
+                        .padding(.trailing, .Space.s)
+                }
+            }
+            .background {
+                Color.theme(.background)
+                    .opacity(.Opacity.heavy)
+                    .cornerRadius(.infinity)
+            }
+        }
+        .padding(.Space.s)
+        .background {
+            GeometryReader { geometry in
+                Color.clear
+                    .onAppear {
+                        store.send(.headerFrameDidChange(geometry.frame(in: .local)))
+                    }
+                    .onChange(of: geometry.frame(in: .local)) {
+                        store.send(.headerFrameDidChange($0), animation: .linear(duration: .AnimationDuration.quick))
+                    }
+            }
+        }
+    }
+
+    @ViewBuilder
+    func appViewport() -> some View {
+        RoundedRectangle(cornerRadius: .Radius.l)
+            .inset(by: -.BorderWidth.xl)
+            .strokeBorder(Color.theme(.background), lineWidth: .BorderWidth.xl)
+            .padding(.horizontal, store.isFullScreen ? 0 : .Space.xs)
+            .ignoresSafeArea(.all)
+            .background {
+                GeometryReader { geometry in
+                    Color.clear
+                        .onAppear {
+                            store.send(.viewportFrameDidChange(geometry.frame(in: .global)))
+                        }
+                        .onChange(of: geometry.frame(in: .global)) {
+                            store.send(.viewportFrameDidChange($0, animationDuration: .AnimationDuration.quick))
+                        }
+                }
+            }
+    }
+
+    @ViewBuilder
+    func inspectionPanel() -> some View {
+        VStack(spacing: .Space.m) {
+            ZStack(alignment: .topLeading) {
+                TextField(Strings.Inspection.SuggestionField.placeholder, text: $store.suggestionString, axis: .vertical)
+                    .frame(minHeight: 30)
+                    .focused($focusedField, equals: .suggestion)
+                    .textFieldStyle(.plain)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .overlay(alignment: .leading) {
+                        if focusedField != .suggestion && store.suggestionString == store.localizedValue {
+                            Text(
+                                store.recognizedString.localizedValue(
+                                    locale: store.locale,
+                                    placeholderAttributes: [.backgroundColor: UIColor.theme(.placeholderHighlight)],
+                                    placeholderTransform: { " \($0) " }
+                                )
+                            )
+                            .background(Color.theme(.suggestionFieldBackground))
+                            .onTapGesture { store.send(.didTapSuggestionPreview) }
+                        }
+                    }
+            }
+            .padding(.Space.s)
+            .background(Color.theme(.suggestionFieldBackground))
+            .cornerRadius(.Radius.m)
+
+            Group {
+                if store.recognizedString.isLocalized {
+                    LocalePickerView(selectedIdentifier: $store.localeIdentifier)
+                }
+
+                if let localization = store.recognizedString.localization {
+                    VStack(alignment: .leading) {
+                        HStack {
+                            Text("\(Strings.Inspection.Localization.Key.title):")
+                            Text(localization.key)
+                        }
+
+                        HStack {
+                            Text("\(Strings.Inspection.Localization.Table.title):")
+                            Text(localization.tableName ?? "Localizable")
+                        }
+
+                        HStack {
+                            Text("\(Strings.Inspection.Localization.Comment.title):")
+                            Text(localization.comment ?? Strings.Inspection.Localization.Comment.none)
+                        }
                     }
                 }
             }
-            .font(.theme(.body))
-            .bind($store.focusedField, to: $focusedField)
-            .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
+            .frame(minHeight: store.keyboardHeight)
         }
+        .padding(.top, .Space.m)
+        .padding(.bottom, .Space.s)
+        .padding(.horizontal, .Space.s)
+        .background(Color.theme(.background))
+        .bind($store.focusedField, to: $focusedField)
     }
 }
 
