@@ -25,7 +25,8 @@ let package = Package(
         .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMinor(from: "1.9.3")),
         .package(url: "https://github.com/Matejkob/swift-spyable", .upToNextMinor(from: "0.3.0")),
         .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols", .upToNextMinor(from: "5.2.0")),
-        .package(url: "https://github.com/gohanlon/swift-memberwise-init-macro", .upToNextMinor(from: "0.3.0"))
+        .package(url: "https://github.com/gohanlon/swift-memberwise-init-macro", .upToNextMinor(from: "0.3.0")),
+        .package(url: "https://github.com/apple/swift-async-algorithms", .upToNextMinor(from: "1.0.0"))
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -44,7 +45,8 @@ let package = Package(
             dependencies: [
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
                 .product(name: "Spyable", package: "swift-spyable"),
-                .product(name: "MemberwiseInit", package: "swift-memberwise-init-macro")
+                .product(name: "MemberwiseInit", package: "swift-memberwise-init-macro"),
+                .product(name: "AsyncAlgorithms", package: "swift-async-algorithms")
             ]
         ),
         .target(

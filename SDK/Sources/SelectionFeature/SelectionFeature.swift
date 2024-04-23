@@ -1,5 +1,6 @@
 // SelectionFeature.swift
 
+import AsyncAlgorithms
 import ComposableArchitecture
 import Core
 import Foundation
@@ -49,7 +50,15 @@ package struct SelectionFeature {
                 }
             case .observeDeviceRotation:
                 return .run { send in
-                    for await _ in await notificationManager.observe(name: UIDevice.orientationDidChangeNotification) {
+                    let stream = await notificationManager
+                        .observe(name: UIDevice.orientationDidChangeNotification)
+                        .map { _ in await UIDevice.current.orientation }
+                        .filter {
+                            [.landscapeLeft, .landscapeRight, .portrait, .portraitUpsideDown].contains($0)
+                        }
+                        .removeDuplicates()
+
+                    for await _ in stream {
                         await send(.deviceOrientationDidChange)
                     }
                 }
