@@ -102,7 +102,8 @@ package struct RootFeature {
                 state.mode = .inspection(
                     .init(
                         recognizedString: recognizedString,
-                        appContentSizeCategory: contentSizeCategoryManager.systemPreferredContentSizeCategory
+                        appContentSizeCategory: contentSizeCategoryManager.systemPreferredContentSizeCategory,
+                        darkModeIsEnabled: windowManager.appUIStyle == .dark
                     )
                 )
                 return .none
@@ -140,7 +141,7 @@ package struct RootFeatureView: View {
             }
             .foregroundColor(.theme(.text))
             .tint(.theme(.tint))
-            .preferredColorScheme(windowManager.appUIStyle == .light ? .dark : .light)
+            .environment(\.colorScheme, windowManager.appUIStyle == .light ? .dark : .light)
         }
     }
 }

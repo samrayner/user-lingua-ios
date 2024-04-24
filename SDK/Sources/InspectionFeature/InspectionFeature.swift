@@ -28,13 +28,12 @@ package struct InspectionFeature {
 
         package let recognizedString: RecognizedString
         package var appContentSizeCategory: UIContentSizeCategory
+        package var darkModeIsEnabled: Bool
         package var recognition = RecognitionFeature.State()
         var focusedField: Field?
         var suggestionString: String
         var localeIdentifier = Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
-        var darkModeIsToggled = false
         var isFullScreen = false
-        var headerFrame: CGRect = .zero
         var keyboardHeight: CGFloat = 0
 
         package var locale: Locale {
@@ -55,10 +54,12 @@ package struct InspectionFeature {
 
         package init(
             recognizedString: RecognizedString,
-            appContentSizeCategory: UIContentSizeCategory
+            appContentSizeCategory: UIContentSizeCategory,
+            darkModeIsEnabled: Bool
         ) {
             self.recognizedString = recognizedString
             self.appContentSizeCategory = appContentSizeCategory
+            self.darkModeIsEnabled = darkModeIsEnabled
             self.suggestionString = recognizedString.value
         }
     }
@@ -74,7 +75,6 @@ package struct InspectionFeature {
         case didTapSubmit
         case saveSuggestion
         case viewportFrameDidChange(CGRect, animationDuration: TimeInterval = 0)
-        case headerFrameDidChange(CGRect)
         case keyboardWillChangeFrame(CGRect)
         case observeKeyboardWillChangeFrame
         case binding(BindingAction<State>)
@@ -116,8 +116,8 @@ package struct InspectionFeature {
                     await send(.delegate(.didDismiss))
                 }
             case .didTapToggleDarkMode:
-                state.darkModeIsToggled.toggle()
                 windowManager.toggleDarkMode()
+                state.darkModeIsEnabled.toggle()
                 return .none
             case .didTapToggleFullScreen:
                 state.focusedField = nil
@@ -139,9 +139,6 @@ package struct InspectionFeature {
                     in: frame,
                     animationDuration: animationDuration
                 )
-                return .none
-            case let .headerFrameDidChange(frame):
-                state.headerFrame = frame
                 return .none
             case let .keyboardWillChangeFrame(frame):
                 let newHeight = max(0, UIScreen.main.bounds.height - frame.origin.y)
@@ -206,9 +203,17 @@ package struct InspectionFeatureView: View {
                 RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
 
                 VStack(spacing: 0) {
-                    headerBackground()
+                    if !store.isFullScreen {
+                        header()
+                            .transition(.move(edge: .top))
+                    }
 
-                    appViewport()
+                    ZStack {
+                        previewControls()
+                            .environment(\.colorScheme, store.darkModeIsEnabled ? .light : .dark)
+
+                        viewport()
+                    }
 
                     if !store.isFullScreen {
                         inspectionPanel()
@@ -216,22 +221,10 @@ package struct InspectionFeatureView: View {
                     }
                 }
                 .ignoresSafeArea(.all, edges: ignoredSafeAreaEdges)
-
-                header()
             }
             .font(.theme(.body))
             .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
         }
-    }
-
-    @ViewBuilder
-    func headerBackground() -> some View {
-        Color.clear
-            .frame(height: store.isFullScreen ? 0 : store.headerFrame.height)
-            .background {
-                Color.theme(.background)
-                    .ignoresSafeArea(edges: .top)
-            }
     }
 
     @ViewBuilder
@@ -241,12 +234,21 @@ package struct InspectionFeatureView: View {
                 Image.theme(.close)
                     .padding(.Space.s)
             }
-            .background {
-                Color.theme(.background)
-                    .opacity(.Opacity.heavy)
-                    .cornerRadius(.infinity)
-            }
 
+            Spacer()
+
+            Text("PICKER")
+        }
+        .padding(.Space.s)
+        .background {
+            Color.theme(.background)
+                .ignoresSafeArea(edges: .top)
+        }
+    }
+
+    @ViewBuilder
+    func previewControls() -> some View {
+        VStack {
             Spacer()
 
             HStack(spacing: 0) {
@@ -264,7 +266,7 @@ package struct InspectionFeatureView: View {
                 Button(action: {
                     store.send(.didTapToggleDarkMode)
                 }) {
-                    Image.theme(store.darkModeIsToggled ? .untoggleDarkMode : .toggleDarkMode)
+                    Image.theme(store.darkModeIsEnabled ? .untoggleDarkMode : .toggleDarkMode)
                         .padding(.Space.s)
                 }
 
@@ -279,23 +281,13 @@ package struct InspectionFeatureView: View {
                     .opacity(.Opacity.heavy)
                     .cornerRadius(.infinity)
             }
-        }
-        .padding(.Space.s)
-        .background {
-            GeometryReader { geometry in
-                Color.clear
-                    .onAppear {
-                        store.send(.headerFrameDidChange(geometry.frame(in: .local)))
-                    }
-                    .onChange(of: geometry.frame(in: .local)) {
-                        store.send(.headerFrameDidChange($0), animation: .linear(duration: .AnimationDuration.quick))
-                    }
-            }
+            .padding(.Space.m)
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
 
     @ViewBuilder
-    func appViewport() -> some View {
+    func viewport() -> some View {
         RoundedRectangle(cornerRadius: .Radius.l)
             .inset(by: -.BorderWidth.xl)
             .strokeBorder(Color.theme(.background), lineWidth: .BorderWidth.xl)
@@ -348,7 +340,6 @@ package struct InspectionFeatureView: View {
                     Button(action: { store.send(.didTapDoneSuggesting) }) {
                         Image.theme(.doneSuggesting)
                     }
-                    .transition(.move(edge: .trailing))
                 }
             }
 
@@ -385,7 +376,6 @@ package struct InspectionFeatureView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.primary)
-                    .transition(.move(edge: .bottom))
                 }
             }
             .frame(minHeight: store.keyboardHeight)
