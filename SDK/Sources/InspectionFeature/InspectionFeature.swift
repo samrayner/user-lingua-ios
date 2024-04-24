@@ -44,7 +44,7 @@ package struct InspectionFeature {
         package var appContentSizeCategory: UIContentSizeCategory
         package var darkModeIsEnabled: Bool
         package var recognition = RecognitionFeature.State()
-        var configuration: Configuration = .init(baseLocale: Locale(identifier: "en")) // TODO: @Shared
+        var configuration: Configuration = .init(baseLocale: Locale(identifier: "en"))
         var focusedField: Field?
         var suggestionString: String
         var localeIdentifier = Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
@@ -333,30 +333,33 @@ package struct InspectionFeatureView: View {
             Spacer()
 
             HStack(spacing: 0) {
-                Button(action: { store.send(.didTapDecreaseTextSize) }) {
-                    Image.theme(.decreaseTextSize)
-                        .padding(.Space.s)
-                        .padding(.leading, .Space.s)
+                if store.configuration.appSupportsDynamicType {
+                    Button(action: { store.send(.didTapDecreaseTextSize) }) {
+                        Image.theme(.decreaseTextSize)
+                            .padding(.Space.s)
+                    }
+
+                    Button(action: { store.send(.didTapIncreaseTextSize) }) {
+                        Image.theme(.increaseTextSize)
+                            .padding(.Space.s)
+                    }
                 }
 
-                Button(action: { store.send(.didTapIncreaseTextSize) }) {
-                    Image.theme(.increaseTextSize)
-                        .padding(.Space.s)
-                }
-
-                Button(action: {
-                    store.send(.didTapToggleDarkMode)
-                }) {
-                    Image.theme(store.darkModeIsEnabled ? .untoggleDarkMode : .toggleDarkMode)
-                        .padding(.Space.s)
+                if store.configuration.appSupportsDarkMode {
+                    Button(action: {
+                        store.send(.didTapToggleDarkMode)
+                    }) {
+                        Image.theme(store.darkModeIsEnabled ? .untoggleDarkMode : .toggleDarkMode)
+                            .padding(.Space.s)
+                    }
                 }
 
                 Button(action: { store.send(.didTapToggleFullScreen, animation: .easeOut) }) {
                     Image.theme(store.isFullScreen ? .exitFullScreen : .enterFullScreen)
                         .padding(.Space.s)
-                        .padding(.trailing, .Space.s)
                 }
             }
+            .padding(.horizontal, .Space.s)
             .background {
                 Color.theme(.background)
                     .opacity(.Opacity.heavy)
