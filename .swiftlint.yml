@@ -67,6 +67,7 @@ opt_in_rules:
   - lower_acl_than_parent
   # - missing_docs
   - multiline_parameters
+  - no_extension_access_modifier
   - optional_enum_case_matching
   - overridden_super_call
   - override_in_extension

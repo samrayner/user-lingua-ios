@@ -3,7 +3,7 @@
 import Foundation
 import SwiftUI
 
-struct KeyboardNotification {
+struct KeyboardNotification: Equatable {
     let beginFrame: CGRect
     let endFrame: CGRect
     let animation: Animation?

@@ -1,5 +1,6 @@
 // InspectionFeature.swift
 
+import AsyncAlgorithms
 import ComposableArchitecture
 import Core
 import Foundation
@@ -63,13 +64,15 @@ package struct InspectionFeature {
     }
 
     package enum Action: BindableAction {
-        case saveSuggestion
         case didTapSuggestionPreview
         case didTapIncreaseTextSize
         case didTapDecreaseTextSize
         case didTapClose
         case didTapToggleDarkMode
         case didTapToggleFullScreen
+        case didTapDoneSuggesting
+        case didTapSubmit
+        case saveSuggestion
         case viewportFrameDidChange(CGRect, animationDuration: TimeInterval = 0)
         case headerFrameDidChange(CGRect)
         case keyboardWillChangeFrame(CGRect)
@@ -97,10 +100,6 @@ package struct InspectionFeature {
 
         Reduce { state, action in
             switch action {
-            case .saveSuggestion:
-                suggestionsRepository.saveSuggestion(state.makeSuggestion())
-                appViewModel.refresh()
-                return .none
             case .didTapSuggestionPreview:
                 state.focusedField = .suggestion
                 return .none
@@ -113,7 +112,6 @@ package struct InspectionFeature {
                 contentSizeCategoryManager.notifyDidChange(newValue: state.appContentSizeCategory)
                 return .none
             case .didTapClose:
-                state.keyboardHeight = 0
                 return .run { send in
                     await send(.delegate(.didDismiss))
                 }
@@ -123,10 +121,17 @@ package struct InspectionFeature {
                 return .none
             case .didTapToggleFullScreen:
                 state.focusedField = nil
-                // the above should be enough but the keyboard notification fires with
-                // a full keyboard endFrame height instead of a height of 0 for some reason
-                state.keyboardHeight = 0
                 state.isFullScreen.toggle()
+                return .none
+            case .didTapDoneSuggesting:
+                state.focusedField = nil
+                return .none
+            case .didTapSubmit:
+                print("SUBMITTED \(state.makeSuggestion())")
+                return .none
+            case .saveSuggestion:
+                suggestionsRepository.saveSuggestion(state.makeSuggestion())
+                appViewModel.refresh()
                 return .none
             case let .viewportFrameDidChange(frame, animationDuration):
                 windowManager.translateApp(
@@ -139,25 +144,21 @@ package struct InspectionFeature {
                 state.headerFrame = frame
                 return .none
             case let .keyboardWillChangeFrame(frame):
-                // For some reason the keyboard height is always
-                // reported as 75pts when it should be 0.
-                state.keyboardHeight = frame.height <= 100 ? 0 : frame.height
+                let newHeight = max(0, UIScreen.main.bounds.height - frame.origin.y)
+                if newHeight != state.keyboardHeight {
+                    state.keyboardHeight = newHeight
+                }
                 return .none
             case .observeKeyboardWillChangeFrame:
-                let keyboardNotificationNames: [Notification.Name] = [
-                    .swizzled(UIResponder.keyboardWillChangeFrameNotification),
-                    .swizzled(UIResponder.keyboardWillHideNotification),
-                    .swizzled(UIResponder.keyboardWillShowNotification)
-                ]
-
                 return .run { send in
-                    for await notification in await notificationManager.observe(names: keyboardNotificationNames) {
-                        if let keyboardNotification = KeyboardNotification(userInfo: notification.userInfo) {
-                            await send(
-                                .keyboardWillChangeFrame(keyboardNotification.endFrame),
-                                animation: keyboardNotification.animation
-                            )
-                        }
+                    let stream = await notificationManager.observe(name: .swizzled(UIResponder.keyboardWillChangeFrameNotification))
+                        .compactMap { KeyboardNotification(userInfo: $0.userInfo) }
+
+                    for await keyboardNotification in stream {
+                        await send(
+                            .keyboardWillChangeFrame(keyboardNotification.endFrame),
+                            animation: keyboardNotification.animation
+                        )
                     }
                 }
             case .binding(\.localeIdentifier):
@@ -316,18 +317,22 @@ package struct InspectionFeatureView: View {
     @ViewBuilder
     func inspectionPanel() -> some View {
         VStack(alignment: .leading, spacing: .Space.m) {
-            ZStack(alignment: .topLeading) {
+            HStack(spacing: .Space.m) {
                 TextField(Strings.Inspection.SuggestionField.placeholder, text: $store.suggestionString, axis: .vertical)
-                    .focused($focusedField, equals: .suggestion)
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
+                    .focused($focusedField, equals: .suggestion)
+                    .frame(maxWidth: .infinity, minHeight: 30)
                     .overlay(alignment: .leading) {
                         if focusedField != .suggestion && store.suggestionString == store.localizedValue {
                             Text(
                                 store.recognizedString.localizedValue(
                                     locale: store.locale,
-                                    placeholderAttributes: [.backgroundColor: UIColor.theme(.placeholderHighlight)],
+                                    placeholderAttributes: [
+                                        .backgroundColor: UIColor.theme(.placeholderBackground),
+                                        .foregroundColor: UIColor.theme(.placeholderText)
+                                    ],
                                     placeholderTransform: { " \($0) " }
                                 )
                             )
@@ -335,12 +340,19 @@ package struct InspectionFeatureView: View {
                             .onTapGesture { store.send(.didTapSuggestionPreview) }
                         }
                     }
-            }
-            .padding(.Space.s)
-            .background(Color.theme(.suggestionFieldBackground))
-            .cornerRadius(.Radius.m)
+                    .padding(.Space.s)
+                    .background(Color.theme(.suggestionFieldBackground))
+                    .cornerRadius(.Radius.m)
 
-            Group {
+                if focusedField == .suggestion {
+                    Button(action: { store.send(.didTapDoneSuggesting) }) {
+                        Image.theme(.doneSuggesting)
+                    }
+                    .transition(.move(edge: .trailing))
+                }
+            }
+
+            VStack(alignment: .leading, spacing: .Space.m) {
                 if store.recognizedString.isLocalized {
                     LocalePickerView(selectedIdentifier: $store.localeIdentifier)
                 }
@@ -365,6 +377,15 @@ package struct InspectionFeatureView: View {
                         }
                     }
                     .cornerRadius(.Radius.m)
+                }
+
+                if store.suggestionString != store.localizedValue {
+                    Button(action: { store.send(.didTapSubmit) }) {
+                        Text(Strings.Inspection.submitButton)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.primary)
+                    .transition(.move(edge: .bottom))
                 }
             }
             .frame(minHeight: store.keyboardHeight)

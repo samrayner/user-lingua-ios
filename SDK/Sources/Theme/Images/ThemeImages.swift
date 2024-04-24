@@ -10,4 +10,5 @@ package struct ThemeImages {
     package let untoggleDarkMode: ThemeImage
     package let enterFullScreen: ThemeImage
     package let exitFullScreen: ThemeImage
+    package let done: ThemeImage
 }

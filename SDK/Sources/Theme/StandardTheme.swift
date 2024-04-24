@@ -31,6 +31,10 @@ struct StandardTheme: ThemeProtocol {
             weight: .regular,
             size: 16
         ),
+        button: .system(
+            weight: .bold,
+            size: 16
+        ),
         labelSmall: .system(
             weight: .bold,
             size: 14
@@ -44,6 +48,7 @@ struct StandardTheme: ThemeProtocol {
         toggleDarkMode: .symbol(.circleLefthalfFilled),
         untoggleDarkMode: .symbol(.circleRighthalfFilled),
         enterFullScreen: .symbol(.arrowUpLeftAndArrowDownRight),
-        exitFullScreen: .symbol(.arrowDownRightAndArrowUpLeft)
+        exitFullScreen: .symbol(.arrowDownRightAndArrowUpLeft),
+        done: .symbol(.chevronDown)
     )
 }

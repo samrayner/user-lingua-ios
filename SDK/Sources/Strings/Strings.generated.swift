@@ -15,6 +15,8 @@ public enum Strings {
     /// UserLingua
     public static let sdkName = Strings.tr("Localizable", "sdkName", fallback: "UserLingua")
     public enum Inspection {
+        /// Submit suggestion
+        public static let submitButton = Strings.tr("Localizable", "inspection.submit_button", fallback: "Submit suggestion")
         public enum LanguagePicker {
             /// Language
             public static let title = Strings.tr("Localizable", "inspection.language_picker.title", fallback: "Language")
