@@ -6,6 +6,7 @@ import UIKit
 
 package protocol WindowManagerProtocol {
     var userLinguaWindow: UIWindow { get }
+    var appUIStyle: UIUserInterfaceStyle { get }
     func setRootView(_: some View)
     func screenshotAppWindow() -> UIImage?
     func showWindow()
@@ -19,6 +20,14 @@ package final class WindowManager: WindowManagerProtocol {
 
     var appWindow: UIWindow?
     var originalAppWindowUIStyleOverride: UIUserInterfaceStyle = .unspecified
+
+    package var appUIStyle: UIUserInterfaceStyle {
+        if originalAppWindowUIStyleOverride == .unspecified {
+            UIScreen.main.traitCollection.userInterfaceStyle
+        } else {
+            originalAppWindowUIStyleOverride
+        }
+    }
 
     package let userLinguaWindow: UIWindow = {
         let window = UIApplication.shared.windowScene.map(UIWindow.init) ?? UIWindow(frame: UIScreen.main.bounds)
@@ -128,6 +137,17 @@ class WindowManagerProtocolSpy: WindowManagerProtocol {
     }
 
     var underlyingUserLinguaWindow: UIWindow!
+
+    var appUIStyle: UIUserInterfaceStyle {
+        get {
+            underlyingAppUIStyle
+        }
+        set {
+            underlyingAppUIStyle = newValue
+        }
+    }
+
+    var underlyingAppUIStyle: UIUserInterfaceStyle!
     var setRootViewCallsCount = 0
     var setRootViewCalled: Bool {
         setRootViewCallsCount > 0

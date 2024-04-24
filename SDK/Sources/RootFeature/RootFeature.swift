@@ -114,6 +114,8 @@ package struct RootFeature {
 }
 
 package struct RootFeatureView: View {
+    @Dependency(WindowManagerDependency.self) var windowManager
+
     let store: StoreOf<RootFeature>
 
     package init(store: StoreOf<RootFeature>) {
@@ -138,6 +140,7 @@ package struct RootFeatureView: View {
             }
             .foregroundColor(.theme(.text))
             .tint(.theme(.tint))
+            .preferredColorScheme(windowManager.appUIStyle == .light ? .dark : .light)
         }
     }
 }

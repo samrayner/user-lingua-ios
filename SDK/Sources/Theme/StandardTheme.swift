@@ -17,13 +17,13 @@ struct StandardTheme: ThemeProtocol {
     }
 
     let colors = ThemeColors(
-        foreground: .init(light: Palette.linen, dark: Palette.slate),
-        background: .init(light: Palette.slate, dark: Palette.linen),
-        well: .init(light: Palette.black, dark: Palette.rainCloud),
-        surface: .init(light: Palette.stone, dark: Palette.white),
-        surfaceDim: .init(light: Palette.graphite, dark: Palette.offWhite),
-        primary: .init(light: Palette.cyanLight, dark: Palette.cyanDark),
-        onPrimary: .init(light: Palette.slate, dark: Palette.linen)
+        foreground: .init(light: Palette.slate, dark: Palette.linen),
+        background: .init(light: Palette.linen, dark: Palette.slate),
+        well: .init(light: Palette.rainCloud, dark: Palette.black),
+        surface: .init(light: Palette.white, dark: Palette.stone),
+        surfaceDim: .init(light: Palette.offWhite, dark: Palette.graphite),
+        primary: .init(light: Palette.cyanDark, dark: Palette.cyanLight),
+        onPrimary: .init(light: Palette.linen, dark: Palette.slate)
     )
 
     let fonts = ThemeFonts(
