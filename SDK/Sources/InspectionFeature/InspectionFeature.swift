@@ -90,7 +90,7 @@ package struct InspectionFeature {
         case didTapToggleFullScreen
         case didTapDoneSuggesting
         case didTapSubmit
-        case didTapOpenLocalePicker
+        case didTapToggleLocalePicker
         case didSelectLocaleIdentifier(String)
         case saveSuggestion
         case viewportFrameDidChange(CGRect, animationDuration: TimeInterval = 0)
@@ -148,12 +148,17 @@ package struct InspectionFeature {
             case .didTapSubmit:
                 print("SUBMITTED \(state.makeSuggestion())")
                 return .none
-            case .didTapOpenLocalePicker:
-                state.isSelectingLocale = true
+            case .didTapToggleLocalePicker:
+                state.isSelectingLocale.toggle()
                 return .none
             case let .didSelectLocaleIdentifier(identifier):
                 state.localeIdentifier = identifier
                 state.isSelectingLocale = false
+                state.suggestionString = suggestionsRepository.suggestion(
+                    for: state.recognizedString.value,
+                    locale: state.locale
+                )?.newValue ?? state.localizedValue
+                appViewModel.refresh()
                 return .none
             case .saveSuggestion:
                 suggestionsRepository.saveSuggestion(state.makeSuggestion())
@@ -184,13 +189,6 @@ package struct InspectionFeature {
                         )
                     }
                 }
-            case .binding(\.localeIdentifier):
-                state.suggestionString = suggestionsRepository.suggestion(
-                    for: state.recognizedString.value,
-                    locale: state.locale
-                )?.newValue ?? state.localizedValue
-                appViewModel.refresh()
-                return .none
             case .binding(\.suggestionString):
                 return .run { send in
                     await send(.saveSuggestion)
@@ -233,6 +231,7 @@ package struct InspectionFeatureView: View {
                 VStack(spacing: 0) {
                     if !store.isFullScreen {
                         header()
+                            .zIndex(10)
                             .transition(.move(edge: .top))
                     }
 
@@ -258,6 +257,7 @@ package struct InspectionFeatureView: View {
 
                     if !store.isFullScreen {
                         inspectionPanel()
+                            .zIndex(10)
                             .transition(.move(edge: .bottom))
                     }
                 }
@@ -290,12 +290,13 @@ package struct InspectionFeatureView: View {
             }
 
             // TODO: Only show if multiple languages are supported
-            Button(action: { store.send(.didTapOpenLocalePicker, animation: .easeIn) }) {
+            Button(action: { store.send(.didTapToggleLocalePicker, animation: .easeOut) }) {
                 HStack(spacing: .Space.s) {
                     Text(store.localeIdentifier)
-                    Image.theme(.openLocalePicker)
+                    Image.theme(store.isSelectingLocale ? .closeLocalePicker : .openLocalePicker)
                 }
             }
+            .font(.theme(.headerTitle))
         }
         .padding(.Space.s)
         .background {
@@ -306,7 +307,7 @@ package struct InspectionFeatureView: View {
 
     @ViewBuilder
     func localePicker() -> some View {
-        List {
+        VStack(spacing: 1) {
             ForEach(Bundle.main.preferredLocalizations.sorted(), id: \.self) { identifier in
                 Button(action: { store.send(.didSelectLocaleIdentifier(identifier), animation: .easeOut) }) {
                     if let languageName = Locale.current.localizedString(forLanguageCode: identifier) {
@@ -315,10 +316,11 @@ package struct InspectionFeatureView: View {
                         Text(identifier)
                     }
                 }
-                .id(identifier)
                 .buttonStyle(LocalePickerButtonStyle(isSelected: identifier == store.localeIdentifier))
+                .id(identifier)
             }
         }
+        .frame(maxHeight: .infinity, alignment: .top)
         .background(Color.theme(.background))
         .transition(.move(edge: .top))
     }
@@ -541,21 +543,6 @@ package struct InspectionFeatureView: View {
             ],
             placeholderTransform: { " \($0) " }
         )
-    }
-}
-
-private struct LocalePickerButtonStyle: ButtonStyle {
-    let isSelected: Bool
-
-    func makeBody(configuration: Self.Configuration) -> some View {
-        configuration.label
-            .font(.theme(.localePickerButton))
-            .padding(.vertical, .Space.s)
-            .padding(.horizontal, .Space.m)
-            .background(Color.theme(isSelected ? .localePickerButtonBackgroundSelected : .localePickerButtonBackground))
-            .foregroundStyle(Color.theme(isSelected ? .localePickerButtonTextSelected : .localePickerButtonText))
-            .cornerRadius(.infinity)
-            .opacity(configuration.isPressed ? .Opacity.heavy : .Opacity.opaque)
     }
 }
 

@@ -11,6 +11,8 @@ package struct ThemeImages {
     package let expandDiagonally: ThemeImage
     package let contractDiagonally: ThemeImage
     package let chevronDown: ThemeImage
+    package let chevronUp: ThemeImage
     package let paragraph: ThemeImage
     package let eye: ThemeImage
+    package let checkmark: ThemeImage
 }

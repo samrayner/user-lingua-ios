@@ -6,11 +6,9 @@ extension ThemeColor {
     static let suggestionFieldBackground = ThemeColor(\.well)
     static let placeholderBackground = ThemeColor(\.primary)
     static let placeholderText = ThemeColor(\.onPrimary)
-    static let localePickerButtonBackground = ThemeColor(\.surface)
-    static let localePickerButtonBackgroundSelected = ThemeColor(\.primary)
-    static let localePickerButtonText = ThemeColor(\.foreground)
-    static let localePickerButtonTextSelected = ThemeColor(\.onPrimary)
     static let localizationDetailsBackground = ThemeColor(\.surfaceDim)
+    static let localePickerSelectionIndicator = ThemeColor(\.primary)
+    static let localePickerButtonBackground = ThemeColor(\.surface)
 }
 
 extension ThemeImage {
@@ -24,10 +22,12 @@ extension ThemeImage {
     static let textualPreviewMode = ThemeImage(\.paragraph)
     static let visualPreviewMode = ThemeImage(\.eye)
     static let openLocalePicker = ThemeImage(\.chevronDown)
+    static let closeLocalePicker = ThemeImage(\.chevronUp)
+    static let localePickerSelection = ThemeImage(\.checkmark)
 }
 
 extension ThemeFont {
-    static let localePickerButton = ThemeFont(\.labelSmall)
+    static let headerTitle = ThemeFont(\.headingMedium)
     static let textualPreviewHeading = ThemeFont(\.headingSmall)
     static let textualPreviewString = ThemeFont(\.bodySmall)
 }

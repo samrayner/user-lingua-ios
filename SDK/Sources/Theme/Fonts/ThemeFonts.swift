@@ -7,5 +7,6 @@ package struct ThemeFonts {
     package let bodySmall: ThemeFont
     package let button: ThemeFont
     package let labelSmall: ThemeFont
+    package let headingMedium: ThemeFont
     package let headingSmall: ThemeFont
 }

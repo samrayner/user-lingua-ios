@@ -43,6 +43,10 @@ struct StandardTheme: ThemeProtocol {
             weight: .bold,
             size: 14
         ),
+        headingMedium: .system(
+            weight: .bold,
+            size: 14
+        ),
         headingSmall: .system(
             weight: .bold,
             size: 12
@@ -58,7 +62,9 @@ struct StandardTheme: ThemeProtocol {
         expandDiagonally: .symbol(.arrowUpLeftAndArrowDownRight),
         contractDiagonally: .symbol(.arrowDownRightAndArrowUpLeft),
         chevronDown: .symbol(.chevronDown),
+        chevronUp: .symbol(.chevronUp),
         paragraph: .symbol(.paragraphsign),
-        eye: .symbol(.eye)
+        eye: .symbol(.eye),
+        checkmark: .symbol(.checkmark)
     )
 }
