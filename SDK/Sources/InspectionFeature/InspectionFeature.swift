@@ -289,14 +289,15 @@ package struct InspectionFeatureView: View {
                 .fixedSize()
             }
 
-            // TODO: Only show if multiple languages are supported
-            Button(action: { store.send(.didTapToggleLocalePicker, animation: .easeOut) }) {
-                HStack(spacing: .Space.s) {
-                    Text(store.localeIdentifier)
-                    Image.theme(store.isSelectingLocale ? .closeLocalePicker : .openLocalePicker)
+            if Bundle.main.preferredLocalizations.count > 1 {
+                Button(action: { store.send(.didTapToggleLocalePicker, animation: .easeOut) }) {
+                    HStack(spacing: .Space.s) {
+                        Text(store.localeIdentifier)
+                        Image.theme(store.isSelectingLocale ? .closeLocalePicker : .openLocalePicker)
+                    }
                 }
+                .font(.theme(.headerTitle))
             }
-            .font(.theme(.headerTitle))
         }
         .padding(.Space.s)
         .background {
@@ -488,7 +489,7 @@ package struct InspectionFeatureView: View {
 
             VStack(alignment: .leading, spacing: .Space.m) {
                 if let localization = store.recognizedString.localization {
-                    VStack(alignment: .leading, spacing: 1) {
+                    VStack(alignment: .leading, spacing: 0) {
                         localizationDetailsRow(
                             Text("\(Strings.Inspection.Localization.Key.title): ").bold() +
                                 Text(localization.key)
@@ -507,6 +508,7 @@ package struct InspectionFeatureView: View {
                         }
                     }
                     .cornerRadius(.Radius.m)
+                    .font(.theme(.localizationDetails))
                 }
 
                 if store.suggestionString != store.localizedValue {
@@ -531,7 +533,6 @@ package struct InspectionFeatureView: View {
         content
             .padding(.Space.s)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.theme(.localizationDetailsBackground))
     }
 
     private func localizedValueWithHighlightedPlaceholders(locale: Locale) -> AttributedString {
