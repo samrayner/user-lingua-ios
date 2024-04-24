@@ -26,13 +26,29 @@ package struct InspectionFeature {
             case suggestion
         }
 
+        enum PreviewMode: CaseIterable {
+            case textual
+            case visual
+
+            var icon: Image {
+                switch self {
+                case .textual:
+                    Image.theme(.textualPreviewMode)
+                case .visual:
+                    Image.theme(.visualPreviewMode)
+                }
+            }
+        }
+
         package let recognizedString: RecognizedString
         package var appContentSizeCategory: UIContentSizeCategory
         package var darkModeIsEnabled: Bool
         package var recognition = RecognitionFeature.State()
+        var configuration: Configuration = .init(baseLocale: Locale(identifier: "en")) // TODO: @Shared
         var focusedField: Field?
         var suggestionString: String
         var localeIdentifier = Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
+        var previewMode: PreviewMode = .visual
         var isFullScreen = false
         var keyboardHeight: CGFloat = 0
 
@@ -180,6 +196,8 @@ package struct InspectionFeature {
 }
 
 package struct InspectionFeatureView: View {
+    @Environment(\.colorScheme) private var colorScheme
+    @Dependency(\.locale) var systemLocale
     @Perception.Bindable package var store: StoreOf<InspectionFeature>
     @FocusState var focusedField: InspectionFeature.State.Field?
 
@@ -209,8 +227,17 @@ package struct InspectionFeatureView: View {
                     }
 
                     ZStack {
-                        previewControls()
-                            .environment(\.colorScheme, store.darkModeIsEnabled ? .light : .dark)
+                        Group {
+                            if store.previewMode == .visual {
+                                visualPreviewControls()
+                                    .environment(\.colorScheme, store.darkModeIsEnabled ? .light : .dark)
+                            }
+
+                            if store.previewMode == .textual {
+                                textualPreview()
+                                    .environment(\.colorScheme, colorScheme == .dark ? .light : .dark)
+                            }
+                        }
 
                         viewport()
                     }
@@ -237,7 +264,14 @@ package struct InspectionFeatureView: View {
 
             Spacer()
 
-            Text("PICKER")
+            Picker(Strings.Inspection.PreviewModePicker.title, selection: $store.previewMode) {
+                ForEach(InspectionFeature.State.PreviewMode.allCases, id: \.self) { previewMode in
+                    previewMode.icon
+                        .tag(previewMode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .fixedSize()
         }
         .padding(.Space.s)
         .background {
@@ -247,7 +281,54 @@ package struct InspectionFeatureView: View {
     }
 
     @ViewBuilder
-    func previewControls() -> some View {
+    func textualPreview() -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                textualPreviewRow(
+                    title: Text(
+                        Strings.Inspection.TextualPreview.baseTitle(
+                            systemLocale.localizedString(forLanguageCode: store.configuration.baseLocale.identifier)
+                                ?? Strings.Inspection.TextualPreview.languageNameFallback,
+                            store.configuration.baseLocale.identifier
+                        )
+                    ),
+                    string: Text(localizedValueWithHighlightedPlaceholders(locale: store.configuration.baseLocale))
+                )
+
+                if store.localeIdentifier != store.configuration.baseLocale.identifier {
+                    HorizontalRule()
+
+                    textualPreviewRow(
+                        title: Text(
+                            Strings.Inspection.TextualPreview.originalTitle(
+                                systemLocale.localizedString(forLanguageCode: store.localeIdentifier)
+                                    ?? Strings.Inspection.TextualPreview.languageNameFallback,
+                                store.localeIdentifier
+                            )
+                        ),
+                        string: Text(localizedValueWithHighlightedPlaceholders(locale: store.locale))
+                    )
+                }
+
+                HorizontalRule()
+
+                textualPreviewRow(
+                    title: Text(
+                        Strings.Inspection.TextualPreview.suggestionTitle(
+                            systemLocale.localizedString(forLanguageCode: store.localeIdentifier)
+                                ?? store.localeIdentifier,
+                            store.localeIdentifier
+                        )
+                    ),
+                    string: Text(store.suggestionString)
+                )
+            }
+        }
+        .background(Color.theme(.background))
+    }
+
+    @ViewBuilder
+    private func visualPreviewControls() -> some View {
         VStack {
             Spacer()
 
@@ -287,7 +368,7 @@ package struct InspectionFeatureView: View {
     }
 
     @ViewBuilder
-    func viewport() -> some View {
+    private func viewport() -> some View {
         RoundedRectangle(cornerRadius: .Radius.l)
             .inset(by: -.BorderWidth.xl)
             .strokeBorder(Color.theme(.background), lineWidth: .BorderWidth.xl)
@@ -307,7 +388,21 @@ package struct InspectionFeatureView: View {
     }
 
     @ViewBuilder
-    func inspectionPanel() -> some View {
+    private func textualPreviewRow(title: Text, string: Text) -> some View {
+        VStack(alignment: .leading, spacing: .Space.s) {
+            title
+                .font(.theme(.textualPreviewHeading))
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            string
+                .font(.theme(.textualPreviewString))
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.Space.l)
+    }
+
+    @ViewBuilder
+    private func inspectionPanel() -> some View {
         VStack(alignment: .leading, spacing: .Space.m) {
             HStack(spacing: .Space.m) {
                 TextField(Strings.Inspection.SuggestionField.placeholder, text: $store.suggestionString, axis: .vertical)
@@ -388,11 +483,22 @@ package struct InspectionFeatureView: View {
     }
 
     @ViewBuilder
-    func localizationDetailsRow(_ content: some View) -> some View {
+    private func localizationDetailsRow(_ content: some View) -> some View {
         content
             .padding(.Space.s)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.theme(.localizationDetailsBackground))
+    }
+
+    private func localizedValueWithHighlightedPlaceholders(locale: Locale) -> AttributedString {
+        store.recognizedString.localizedValue(
+            locale: locale,
+            placeholderAttributes: [
+                .backgroundColor: UIColor.theme(.placeholderBackground),
+                .foregroundColor: UIColor.theme(.placeholderText)
+            ],
+            placeholderTransform: { " \($0) " }
+        )
     }
 }
 

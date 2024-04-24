@@ -4,6 +4,8 @@
 /// Very few mappings should exist here as most will be module-specific.
 
 extension ThemeColor {
+    static let horizontalRule = ThemeColor(\.surface)
+
     enum Button {
         enum Primary {
             static let text = ThemeColor(\.onPrimary)

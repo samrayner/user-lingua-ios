@@ -11,4 +11,6 @@ package struct ThemeImages {
     package let enterFullScreen: ThemeImage
     package let exitFullScreen: ThemeImage
     package let done: ThemeImage
+    package let text: ThemeImage
+    package let vision: ThemeImage
 }

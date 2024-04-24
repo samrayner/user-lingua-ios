@@ -14,15 +14,19 @@ extension ThemeColor {
 }
 
 extension ThemeImage {
-    package static let increaseTextSize = ThemeImage(\.increaseTextSize)
-    package static let decreaseTextSize = ThemeImage(\.decreaseTextSize)
-    package static let toggleDarkMode = ThemeImage(\.toggleDarkMode)
-    package static let untoggleDarkMode = ThemeImage(\.untoggleDarkMode)
-    package static let enterFullScreen = ThemeImage(\.enterFullScreen)
-    package static let exitFullScreen = ThemeImage(\.exitFullScreen)
-    package static let doneSuggesting = ThemeImage(\.done)
+    static let increaseTextSize = ThemeImage(\.increaseTextSize)
+    static let decreaseTextSize = ThemeImage(\.decreaseTextSize)
+    static let toggleDarkMode = ThemeImage(\.toggleDarkMode)
+    static let untoggleDarkMode = ThemeImage(\.untoggleDarkMode)
+    static let enterFullScreen = ThemeImage(\.enterFullScreen)
+    static let exitFullScreen = ThemeImage(\.exitFullScreen)
+    static let doneSuggesting = ThemeImage(\.done)
+    static let textualPreviewMode = ThemeImage(\.text)
+    static let visualPreviewMode = ThemeImage(\.vision)
 }
 
 extension ThemeFont {
-    package static let localePickerButton = ThemeFont(\.labelSmall)
+    static let localePickerButton = ThemeFont(\.labelSmall)
+    static let textualPreviewHeading = ThemeFont(\.headingSmall)
+    static let textualPreviewString = ThemeFont(\.bodySmall)
 }

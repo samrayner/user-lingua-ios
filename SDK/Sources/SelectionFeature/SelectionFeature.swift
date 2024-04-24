@@ -26,13 +26,11 @@ package struct SelectionFeature {
         case onAppear
         case observeDeviceRotation
         case deviceOrientationDidChange
-        case didTapClose
         case delegate(Delegate)
         case recognition(RecognitionFeature.Action)
 
         @CasePathable
         package enum Delegate {
-            case didDismiss
             case didSelectString(RecognizedString)
         }
     }
@@ -66,10 +64,6 @@ package struct SelectionFeature {
                 state.recognizedStrings = nil
                 return .run { send in
                     await send(.recognition(.start))
-                }
-            case .didTapClose:
-                return .run { send in
-                    await send(.delegate(.didDismiss))
                 }
             case let .recognition(.delegate(.didRecognizeStrings(recognizedStrings))):
                 state.recognizedStrings = recognizedStrings
@@ -111,17 +105,6 @@ package struct SelectionFeatureView: View {
                     )
                 }
                 .ignoresSafeArea()
-
-                Button(action: { store.send(.didTapClose) }) {
-                    Image.theme(.close)
-                        .padding(.Space.s)
-                        .background {
-                            Color.theme(.background)
-                                .opacity(.Opacity.heavy)
-                                .cornerRadius(.infinity)
-                        }
-                        .padding(.Space.s)
-                }
             }
             .onAppear { store.send(.onAppear) }
             .task { await store.send(.observeDeviceRotation).finish() }
