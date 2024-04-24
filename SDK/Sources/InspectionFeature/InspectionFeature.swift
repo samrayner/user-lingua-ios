@@ -50,6 +50,7 @@ package struct InspectionFeature {
         var localeIdentifier = Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
         var previewMode: PreviewMode = .visual
         var isFullScreen = false
+        var isSelectingLocale = false
         var keyboardHeight: CGFloat = 0
 
         package var locale: Locale {
@@ -89,6 +90,8 @@ package struct InspectionFeature {
         case didTapToggleFullScreen
         case didTapDoneSuggesting
         case didTapSubmit
+        case didTapOpenLocalePicker
+        case didSelectLocaleIdentifier(String)
         case saveSuggestion
         case viewportFrameDidChange(CGRect, animationDuration: TimeInterval = 0)
         case keyboardWillChangeFrame(CGRect)
@@ -144,6 +147,13 @@ package struct InspectionFeature {
                 return .none
             case .didTapSubmit:
                 print("SUBMITTED \(state.makeSuggestion())")
+                return .none
+            case .didTapOpenLocalePicker:
+                state.isSelectingLocale = true
+                return .none
+            case let .didSelectLocaleIdentifier(identifier):
+                state.localeIdentifier = identifier
+                state.isSelectingLocale = false
                 return .none
             case .saveSuggestion:
                 suggestionsRepository.saveSuggestion(state.makeSuggestion())
@@ -235,9 +245,13 @@ package struct InspectionFeatureView: View {
 
                             if store.previewMode == .textual {
                                 textualPreview()
-                                    .environment(\.colorScheme, colorScheme == .dark ? .light : .dark)
+                            }
+
+                            if store.isSelectingLocale {
+                                localePicker()
                             }
                         }
+                        .environment(\.colorScheme, colorScheme == .dark ? .light : .dark)
 
                         viewport()
                     }
@@ -256,28 +270,57 @@ package struct InspectionFeatureView: View {
 
     @ViewBuilder
     func header() -> some View {
-        HStack {
-            Button(action: { store.send(.didTapClose) }) {
-                Image.theme(.close)
-                    .padding(.Space.s)
+        ZStack {
+            HStack {
+                Button(action: { store.send(.didTapClose) }) {
+                    Image.theme(.close)
+                        .padding(.Space.s)
+                }
+
+                Spacer()
+
+                Picker(Strings.Inspection.PreviewModePicker.title, selection: $store.previewMode) {
+                    ForEach(InspectionFeature.State.PreviewMode.allCases, id: \.self) { previewMode in
+                        previewMode.icon
+                            .tag(previewMode)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .fixedSize()
             }
 
-            Spacer()
-
-            Picker(Strings.Inspection.PreviewModePicker.title, selection: $store.previewMode) {
-                ForEach(InspectionFeature.State.PreviewMode.allCases, id: \.self) { previewMode in
-                    previewMode.icon
-                        .tag(previewMode)
+            // TODO: Only show if multiple languages are supported
+            Button(action: { store.send(.didTapOpenLocalePicker, animation: .easeIn) }) {
+                HStack(spacing: .Space.s) {
+                    Text(store.localeIdentifier)
+                    Image.theme(.openLocalePicker)
                 }
             }
-            .pickerStyle(.segmented)
-            .fixedSize()
         }
         .padding(.Space.s)
         .background {
             Color.theme(.background)
                 .ignoresSafeArea(edges: .top)
         }
+    }
+
+    @ViewBuilder
+    func localePicker() -> some View {
+        List {
+            ForEach(Bundle.main.preferredLocalizations.sorted(), id: \.self) { identifier in
+                Button(action: { store.send(.didSelectLocaleIdentifier(identifier), animation: .easeOut) }) {
+                    if let languageName = Locale.current.localizedString(forLanguageCode: identifier) {
+                        Text("\(languageName) (\(identifier))")
+                    } else {
+                        Text(identifier)
+                    }
+                }
+                .id(identifier)
+                .buttonStyle(LocalePickerButtonStyle(isSelected: identifier == store.localeIdentifier))
+            }
+        }
+        .background(Color.theme(.background))
+        .transition(.move(edge: .top))
     }
 
     @ViewBuilder
@@ -442,10 +485,6 @@ package struct InspectionFeatureView: View {
             }
 
             VStack(alignment: .leading, spacing: .Space.m) {
-                if store.recognizedString.isLocalized {
-                    LocalePickerView(selectedIdentifier: $store.localeIdentifier)
-                }
-
                 if let localization = store.recognizedString.localization {
                     VStack(alignment: .leading, spacing: 1) {
                         localizationDetailsRow(
@@ -502,6 +541,21 @@ package struct InspectionFeatureView: View {
             ],
             placeholderTransform: { " \($0) " }
         )
+    }
+}
+
+private struct LocalePickerButtonStyle: ButtonStyle {
+    let isSelected: Bool
+
+    func makeBody(configuration: Self.Configuration) -> some View {
+        configuration.label
+            .font(.theme(.localePickerButton))
+            .padding(.vertical, .Space.s)
+            .padding(.horizontal, .Space.m)
+            .background(Color.theme(isSelected ? .localePickerButtonBackgroundSelected : .localePickerButtonBackground))
+            .foregroundStyle(Color.theme(isSelected ? .localePickerButtonTextSelected : .localePickerButtonText))
+            .cornerRadius(.infinity)
+            .opacity(configuration.isPressed ? .Opacity.heavy : .Opacity.opaque)
     }
 }
 

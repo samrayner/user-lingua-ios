@@ -18,11 +18,12 @@ extension ThemeImage {
     static let decreaseTextSize = ThemeImage(\.decreaseTextSize)
     static let toggleDarkMode = ThemeImage(\.toggleDarkMode)
     static let untoggleDarkMode = ThemeImage(\.untoggleDarkMode)
-    static let enterFullScreen = ThemeImage(\.enterFullScreen)
-    static let exitFullScreen = ThemeImage(\.exitFullScreen)
-    static let doneSuggesting = ThemeImage(\.done)
-    static let textualPreviewMode = ThemeImage(\.text)
-    static let visualPreviewMode = ThemeImage(\.vision)
+    static let enterFullScreen = ThemeImage(\.expandDiagonally)
+    static let exitFullScreen = ThemeImage(\.contractDiagonally)
+    static let doneSuggesting = ThemeImage(\.chevronDown)
+    static let textualPreviewMode = ThemeImage(\.paragraph)
+    static let visualPreviewMode = ThemeImage(\.eye)
+    static let openLocalePicker = ThemeImage(\.chevronDown)
 }
 
 extension ThemeFont {

@@ -55,10 +55,10 @@ struct StandardTheme: ThemeProtocol {
         decreaseTextSize: .symbol(.textformatSizeSmaller),
         toggleDarkMode: .symbol(.circleLefthalfFilled),
         untoggleDarkMode: .symbol(.circleRighthalfFilled),
-        enterFullScreen: .symbol(.arrowUpLeftAndArrowDownRight),
-        exitFullScreen: .symbol(.arrowDownRightAndArrowUpLeft),
-        done: .symbol(.chevronDown),
-        text: .symbol(.paragraphsign),
-        vision: .symbol(.eye)
+        expandDiagonally: .symbol(.arrowUpLeftAndArrowDownRight),
+        contractDiagonally: .symbol(.arrowDownRightAndArrowUpLeft),
+        chevronDown: .symbol(.chevronDown),
+        paragraph: .symbol(.paragraphsign),
+        eye: .symbol(.eye)
     )
 }

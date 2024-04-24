@@ -8,9 +8,9 @@ package struct ThemeImages {
     package let decreaseTextSize: ThemeImage
     package let toggleDarkMode: ThemeImage
     package let untoggleDarkMode: ThemeImage
-    package let enterFullScreen: ThemeImage
-    package let exitFullScreen: ThemeImage
-    package let done: ThemeImage
-    package let text: ThemeImage
-    package let vision: ThemeImage
+    package let expandDiagonally: ThemeImage
+    package let contractDiagonally: ThemeImage
+    package let chevronDown: ThemeImage
+    package let paragraph: ThemeImage
+    package let eye: ThemeImage
 }
