@@ -91,7 +91,7 @@ package struct InspectionFeature {
         case didTapSubmit
         case saveSuggestion
         case viewportFrameDidChange(CGRect, animationDuration: TimeInterval = 0)
-        case keyboardWillChangeFrame(CGRect)
+        case keyboardWillChangeFrame(KeyboardNotification)
         case observeKeyboardWillChangeFrame
         case binding(BindingAction<State>)
         case delegate(Delegate)
@@ -137,7 +137,9 @@ package struct InspectionFeature {
                 return .none
             case .didTapToggleFullScreen:
                 state.focusedField = nil
-                state.isFullScreen.toggle()
+                withAnimation(.linear) {
+                    state.isFullScreen.toggle()
+                }
                 return .none
             case .didTapDoneSuggesting:
                 state.focusedField = nil
@@ -156,10 +158,12 @@ package struct InspectionFeature {
                     animationDuration: animationDuration
                 )
                 return .none
-            case let .keyboardWillChangeFrame(frame):
-                let newHeight = max(0, UIScreen.main.bounds.height - frame.origin.y)
+            case let .keyboardWillChangeFrame(notification):
+                let newHeight = max(0, UIScreen.main.bounds.height - notification.endFrame.origin.y)
                 if newHeight != state.keyboardHeight {
-                    state.keyboardHeight = newHeight
+                    withAnimation(notification.animation) {
+                        state.keyboardHeight = newHeight
+                    }
                 }
                 return .none
             case .observeKeyboardWillChangeFrame:
@@ -168,10 +172,7 @@ package struct InspectionFeature {
                         .compactMap { KeyboardNotification(userInfo: $0.userInfo) }
 
                     for await keyboardNotification in stream {
-                        await send(
-                            .keyboardWillChangeFrame(keyboardNotification.endFrame),
-                            animation: keyboardNotification.animation
-                        )
+                        await send(.keyboardWillChangeFrame(keyboardNotification))
                     }
                 }
             case .binding(\.localeIdentifier):
@@ -362,7 +363,7 @@ package struct InspectionFeatureView: View {
                     }
                 }
 
-                Button(action: { store.send(.didTapToggleFullScreen, animation: .easeOut) }) {
+                Button(action: { store.send(.didTapToggleFullScreen) }) {
                     Image.theme(store.isFullScreen ? \.exitFullScreen : \.enterFullScreen)
                         .padding(.Space.s)
                 }

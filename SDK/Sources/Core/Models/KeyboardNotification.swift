@@ -3,12 +3,12 @@
 import Foundation
 import SwiftUI
 
-struct KeyboardNotification: Equatable {
-    let beginFrame: CGRect
-    let endFrame: CGRect
-    let animation: Animation?
+package struct KeyboardNotification: Equatable {
+    package let beginFrame: CGRect
+    package let endFrame: CGRect
+    package let animation: Animation?
 
-    init?(userInfo: [AnyHashable: Any]?) {
+    package init?(userInfo: [AnyHashable: Any]?) {
         guard let beginFrame = userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? CGRect,
               let endFrame = userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
         else { return nil }

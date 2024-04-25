@@ -124,21 +124,14 @@ package struct RootFeatureView: View {
 
     package var body: some View {
         WithPerceptionTracking {
-            Group {
-                switch store.mode {
-                case .disabled, .recording:
-                    EmptyView()
-                case .selection, .inspection:
-                    ZStack {
-                        if let store = store.scope(state: \.mode.selection, action: \.mode.selection) {
-                            SelectionFeatureView(store: store)
-                        } else if let store = store.scope(state: \.mode.inspection, action: \.mode.inspection) {
-                            InspectionFeatureView(store: store)
-                                .foregroundColor(.theme(\.text))
-                                .tint(.theme(\.tint))
-                                .preferredColorScheme(windowManager.appUIStyle == .light ? .dark : .light)
-                        }
-                    }
+            ZStack {
+                if let store = store.scope(state: \.mode.selection, action: \.mode.selection) {
+                    SelectionFeatureView(store: store)
+                } else if let store = store.scope(state: \.mode.inspection, action: \.mode.inspection) {
+                    InspectionFeatureView(store: store)
+                        .foregroundColor(.theme(\.text))
+                        .tint(.theme(\.tint))
+                        .preferredColorScheme(windowManager.appUIStyle == .light ? .dark : .light)
                 }
             }
         }
