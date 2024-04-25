@@ -17,6 +17,13 @@ public enum Strings {
     public enum Inspection {
         /// Submit suggestion
         public static let submitButton = Strings.tr("Localizable", "inspection.submit_button", fallback: "Submit suggestion")
+        /// Suggest Copy
+        public static let title = Strings.tr("Localizable", "inspection.title", fallback: "Suggest Copy")
+        public enum LocalePicker {
+            /// Language
+            public static let title = Strings.tr("Localizable", "inspection.locale_picker.title", fallback: "Language")
+        }
+
         public enum Localization {
             public enum Comment {
                 /// Comment

@@ -20,9 +20,6 @@ extension ThemeImage {
     static let doneSuggesting = ThemeImage(\.chevronDown)
     static let textualPreviewMode = ThemeImage(\.paragraph)
     static let visualPreviewMode = ThemeImage(\.eye)
-    static let openLocalePicker = ThemeImage(\.chevronDown)
-    static let closeLocalePicker = ThemeImage(\.chevronUp)
-    static let localePickerSelection = ThemeImage(\.checkmark)
 }
 
 extension ThemeFont {

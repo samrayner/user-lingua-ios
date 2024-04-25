@@ -62,7 +62,6 @@ struct StandardTheme: ThemeProtocol {
         expandDiagonally: .symbol(.arrowUpLeftAndArrowDownRight),
         contractDiagonally: .symbol(.arrowDownRightAndArrowUpLeft),
         chevronDown: .symbol(.chevronDown),
-        chevronUp: .symbol(.chevronUp),
         paragraph: .symbol(.paragraphsign),
         eye: .symbol(.eye),
         checkmark: .symbol(.checkmark)

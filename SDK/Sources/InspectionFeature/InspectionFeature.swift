@@ -50,7 +50,6 @@ package struct InspectionFeature {
         var localeIdentifier = Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
         var previewMode: PreviewMode = .visual
         var isFullScreen = false
-        var isSelectingLocale = false
         var keyboardHeight: CGFloat = 0
 
         package var locale: Locale {
@@ -90,8 +89,6 @@ package struct InspectionFeature {
         case didTapToggleFullScreen
         case didTapDoneSuggesting
         case didTapSubmit
-        case didTapToggleLocalePicker
-        case didSelectLocaleIdentifier(String)
         case saveSuggestion
         case viewportFrameDidChange(CGRect, animationDuration: TimeInterval = 0)
         case keyboardWillChangeFrame(CGRect)
@@ -148,18 +145,6 @@ package struct InspectionFeature {
             case .didTapSubmit:
                 print("SUBMITTED \(state.makeSuggestion())")
                 return .none
-            case .didTapToggleLocalePicker:
-                state.isSelectingLocale.toggle()
-                return .none
-            case let .didSelectLocaleIdentifier(identifier):
-                state.localeIdentifier = identifier
-                state.isSelectingLocale = false
-                state.suggestionString = suggestionsRepository.suggestion(
-                    for: state.recognizedString.value,
-                    locale: state.locale
-                )?.newValue ?? state.localizedValue
-                appViewModel.refresh()
-                return .none
             case .saveSuggestion:
                 suggestionsRepository.saveSuggestion(state.makeSuggestion())
                 appViewModel.refresh()
@@ -189,6 +174,13 @@ package struct InspectionFeature {
                         )
                     }
                 }
+            case .binding(\.localeIdentifier):
+                state.suggestionString = suggestionsRepository.suggestion(
+                    for: state.recognizedString.value,
+                    locale: state.locale
+                )?.newValue ?? state.localizedValue
+                appViewModel.refresh()
+                return .none
             case .binding(\.suggestionString):
                 return .run { send in
                     await send(.saveSuggestion)
@@ -245,10 +237,6 @@ package struct InspectionFeatureView: View {
                             if store.previewMode == .textual {
                                 textualPreview()
                             }
-
-                            if store.isSelectingLocale {
-                                localePicker()
-                            }
                         }
                         .environment(\.colorScheme, colorScheme == .dark ? .light : .dark)
 
@@ -261,7 +249,7 @@ package struct InspectionFeatureView: View {
                             .transition(.move(edge: .bottom))
                     }
                 }
-                .ignoresSafeArea(.all, edges: ignoredSafeAreaEdges)
+                .ignoresSafeArea(edges: ignoredSafeAreaEdges)
             }
             .font(.theme(.body))
             .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
@@ -271,6 +259,10 @@ package struct InspectionFeatureView: View {
     @ViewBuilder
     func header() -> some View {
         ZStack {
+            Text(Strings.Inspection.title)
+                .font(.theme(.headerTitle))
+                .frame(maxWidth: .infinity)
+
             HStack {
                 Button(action: { store.send(.didTapClose) }) {
                     Image.theme(.close)
@@ -288,42 +280,12 @@ package struct InspectionFeatureView: View {
                 .pickerStyle(.segmented)
                 .fixedSize()
             }
-
-            if Bundle.main.preferredLocalizations.count > 1 {
-                Button(action: { store.send(.didTapToggleLocalePicker, animation: .easeOut) }) {
-                    HStack(spacing: .Space.s) {
-                        Text(store.localeIdentifier)
-                        Image.theme(store.isSelectingLocale ? .closeLocalePicker : .openLocalePicker)
-                    }
-                }
-                .font(.theme(.headerTitle))
-            }
         }
         .padding(.Space.s)
         .background {
             Color.theme(.background)
-                .ignoresSafeArea(edges: .top)
+                .ignoresSafeArea(.all)
         }
-    }
-
-    @ViewBuilder
-    func localePicker() -> some View {
-        VStack(spacing: 1) {
-            ForEach(Bundle.main.preferredLocalizations.sorted(), id: \.self) { identifier in
-                Button(action: { store.send(.didSelectLocaleIdentifier(identifier), animation: .easeOut) }) {
-                    if let languageName = Locale.current.localizedString(forLanguageCode: identifier) {
-                        Text("\(languageName) (\(identifier))")
-                    } else {
-                        Text(identifier)
-                    }
-                }
-                .buttonStyle(LocalePickerButtonStyle(isSelected: identifier == store.localeIdentifier))
-                .id(identifier)
-            }
-        }
-        .frame(maxHeight: .infinity, alignment: .top)
-        .background(Color.theme(.background))
-        .transition(.move(edge: .top))
     }
 
     @ViewBuilder
@@ -488,8 +450,17 @@ package struct InspectionFeatureView: View {
             }
 
             VStack(alignment: .leading, spacing: .Space.m) {
+                if store.recognizedString.isLocalized && Bundle.main.preferredLocalizations.count > 1 {
+                    Picker(Strings.Inspection.LocalePicker.title, selection: $store.localeIdentifier) {
+                        ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
+                            Text(identifier)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
                 if let localization = store.recognizedString.localization {
-                    VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading, spacing: .Space.xs) {
                         localizationDetailsRow(
                             Text("\(Strings.Inspection.Localization.Key.title): ").bold() +
                                 Text(localization.key)
@@ -507,7 +478,6 @@ package struct InspectionFeatureView: View {
                             )
                         }
                     }
-                    .cornerRadius(.Radius.m)
                     .font(.theme(.localizationDetails))
                 }
 
@@ -531,7 +501,7 @@ package struct InspectionFeatureView: View {
     @ViewBuilder
     private func localizationDetailsRow(_ content: some View) -> some View {
         content
-            .padding(.Space.s)
+            .padding(.horizontal, .Space.s)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 

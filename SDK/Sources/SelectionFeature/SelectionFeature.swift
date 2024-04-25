@@ -89,7 +89,7 @@ package struct SelectionFeatureView: View {
 
                 ZStack {
                     Color.theme(.overlay)
-                        .opacity(0.2)
+                        .opacity(.Opacity.light)
                         .mask {
                             ZStack {
                                 Color(.white)
