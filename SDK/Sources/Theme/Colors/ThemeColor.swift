@@ -7,8 +7,8 @@ import UIKit
 typealias Hexadecimal = String
 
 package struct ThemeColor {
-    fileprivate let light: RGBA
-    fileprivate let dark: RGBA
+    let light: RGBA
+    let dark: RGBA
 
     func withAlphaComponent(_ alpha: Double) -> Self {
         Self(
@@ -27,25 +27,12 @@ extension ThemeColor {
         self.dark = .init(hexadecimal: dark)
     }
 
-    package init(_ keyPath: KeyPath<ThemeColors, ThemeColor>) {
-        self = Theme.current.theme.colors[keyPath: keyPath]
+    package init(_ moduleColor: ModuleColor) {
+        self = Theme.current.theme.colors[keyPath: moduleColor]
     }
 }
 
 extension UIColor {
-    package static func theme(_ themeColor: ThemeColor) -> UIColor {
-        .init { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                themeColor.dark.uiColor
-            case .light, .unspecified:
-                themeColor.light.uiColor
-            @unknown default:
-                themeColor.light.uiColor
-            }
-        }
-    }
-
     package func adjust(
         hue: CGFloat = 0,
         saturation: CGFloat = 0,
@@ -76,10 +63,6 @@ extension UIColor {
 }
 
 extension Color {
-    package static func theme(_ themeColor: ThemeColor) -> Color {
-        .init(uiColor: .theme(themeColor))
-    }
-
     package func adjust(
         hue: CGFloat = 0,
         saturation: CGFloat = 0,
@@ -89,7 +72,7 @@ extension Color {
     }
 }
 
-private struct RGBA {
+struct RGBA {
     let red: CGFloat
     let green: CGFloat
     let blue: CGFloat

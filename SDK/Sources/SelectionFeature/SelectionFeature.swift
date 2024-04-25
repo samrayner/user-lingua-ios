@@ -88,7 +88,7 @@ package struct SelectionFeatureView: View {
                 RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
 
                 ZStack {
-                    Color.theme(.overlay)
+                    Color.theme(\.overlay)
                         .opacity(.Opacity.light)
                         .mask {
                             ZStack {

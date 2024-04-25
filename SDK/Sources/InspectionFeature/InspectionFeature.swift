@@ -251,7 +251,7 @@ package struct InspectionFeatureView: View {
                 }
                 .ignoresSafeArea(edges: ignoredSafeAreaEdges)
             }
-            .font(.theme(.body))
+            .font(.theme(\.body))
             .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
         }
     }
@@ -260,7 +260,7 @@ package struct InspectionFeatureView: View {
     func header() -> some View {
         ZStack {
             Text(Strings.Inspection.title)
-                .font(.theme(.headerTitle))
+                .font(.theme(\.headerTitle))
                 .frame(maxWidth: .infinity)
 
             HStack {
@@ -283,7 +283,7 @@ package struct InspectionFeatureView: View {
         }
         .padding(.Space.s)
         .background {
-            Color.theme(.background)
+            Color.theme(\.background)
                 .ignoresSafeArea(.all)
         }
     }
@@ -332,7 +332,7 @@ package struct InspectionFeatureView: View {
                 )
             }
         }
-        .background(Color.theme(.background))
+        .background(Color.theme(\.background))
     }
 
     @ViewBuilder
@@ -369,7 +369,7 @@ package struct InspectionFeatureView: View {
             }
             .padding(.horizontal, .Space.s)
             .background {
-                Color.theme(.background)
+                Color.theme(\.background)
                     .opacity(.Opacity.heavy)
                     .cornerRadius(.infinity)
             }
@@ -382,7 +382,7 @@ package struct InspectionFeatureView: View {
     private func viewport() -> some View {
         RoundedRectangle(cornerRadius: .Radius.l)
             .inset(by: -.BorderWidth.xl)
-            .strokeBorder(Color.theme(.background), lineWidth: .BorderWidth.xl)
+            .strokeBorder(Color.theme(\.background), lineWidth: .BorderWidth.xl)
             .padding(.horizontal, store.isFullScreen ? 0 : .Space.xs)
             .ignoresSafeArea(.all)
             .background {
@@ -402,11 +402,11 @@ package struct InspectionFeatureView: View {
     private func textualPreviewRow(title: Text, string: Text) -> some View {
         VStack(alignment: .leading, spacing: .Space.s) {
             title
-                .font(.theme(.textualPreviewHeading))
+                .font(.theme(\.textualPreviewHeading))
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             string
-                .font(.theme(.textualPreviewString))
+                .font(.theme(\.textualPreviewString))
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.Space.l)
@@ -428,18 +428,18 @@ package struct InspectionFeatureView: View {
                                 store.recognizedString.localizedValue(
                                     locale: store.locale,
                                     placeholderAttributes: [
-                                        .backgroundColor: UIColor.theme(.placeholderBackground),
-                                        .foregroundColor: UIColor.theme(.placeholderText)
+                                        .backgroundColor: UIColor.theme(\.placeholderBackground),
+                                        .foregroundColor: UIColor.theme(\.placeholderText)
                                     ],
                                     placeholderTransform: { " \($0) " }
                                 )
                             )
-                            .background(Color.theme(.suggestionFieldBackground))
+                            .background(Color.theme(\.suggestionFieldBackground))
                             .onTapGesture { store.send(.didTapSuggestionPreview) }
                         }
                     }
                     .padding(.Space.s)
-                    .background(Color.theme(.suggestionFieldBackground))
+                    .background(Color.theme(\.suggestionFieldBackground))
                     .cornerRadius(.Radius.m)
 
                 if focusedField == .suggestion {
@@ -478,7 +478,7 @@ package struct InspectionFeatureView: View {
                             )
                         }
                     }
-                    .font(.theme(.localizationDetails))
+                    .font(.theme(\.localizationDetails))
                 }
 
                 if store.suggestionString != store.localizedValue {
@@ -494,7 +494,7 @@ package struct InspectionFeatureView: View {
         .padding(.top, .Space.m)
         .padding(.bottom, .Space.s)
         .padding(.horizontal, .Space.m)
-        .background(Color.theme(.background))
+        .background(Color.theme(\.background))
         .bind($store.focusedField, to: $focusedField)
     }
 
@@ -509,8 +509,8 @@ package struct InspectionFeatureView: View {
         store.recognizedString.localizedValue(
             locale: locale,
             placeholderAttributes: [
-                .backgroundColor: UIColor.theme(.placeholderBackground),
-                .foregroundColor: UIColor.theme(.placeholderText)
+                .backgroundColor: UIColor.theme(\.placeholderBackground),
+                .foregroundColor: UIColor.theme(\.placeholderText)
             ],
             placeholderTransform: { " \($0) " }
         )

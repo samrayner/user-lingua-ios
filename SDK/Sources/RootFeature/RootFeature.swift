@@ -134,8 +134,8 @@ package struct RootFeatureView: View {
                             SelectionFeatureView(store: store)
                         } else if let store = store.scope(state: \.mode.inspection, action: \.mode.inspection) {
                             InspectionFeatureView(store: store)
-                                .foregroundColor(.theme(.text))
-                                .tint(.theme(.tint))
+                                .foregroundColor(.theme(\.text))
+                                .tint(.theme(\.tint))
                                 .preferredColorScheme(windowManager.appUIStyle == .light ? .dark : .light)
                         }
                     }

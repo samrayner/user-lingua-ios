@@ -13,7 +13,7 @@ package struct PrimaryButtonStyle: ButtonStyle {
 
         var body: some View {
             configuration.label
-                .font(.theme(.Button.primary))
+                .font(.theme(\.primaryButton))
                 .multilineTextAlignment(.center)
                 .padding(.Space.m)
                 .background(backgroundColor(isPressed: configuration.isPressed))
@@ -22,15 +22,15 @@ package struct PrimaryButtonStyle: ButtonStyle {
         }
 
         var foregroundColor: Color {
-            .theme(isEnabled ? .Button.Primary.text : .Button.Primary.textDisabled)
+            .theme(isEnabled ? \.primaryButtonText : \.primaryButtonTextDisabled)
         }
 
         func backgroundColor(isPressed: Bool) -> Color {
             guard isEnabled else {
-                return .theme(.Button.Primary.backgroundDisabled)
+                return .theme(\.primaryButtonBackgroundDisabled)
             }
 
-            return .theme(.Button.Primary.background)
+            return .theme(\.primaryButtonBackground)
                 .opacity(isPressed ? .Opacity.heavy : .Opacity.opaque)
         }
     }

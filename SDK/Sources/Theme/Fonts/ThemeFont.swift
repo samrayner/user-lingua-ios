@@ -51,7 +51,7 @@ package struct ThemeFont {
         )
     }
 
-    fileprivate var font: Font {
+    var font: Font {
         switch source {
         case let .system(weight: weight):
             .system(size: scaledSize, weight: .init(weight), design: .init(design))
@@ -60,7 +60,7 @@ package struct ThemeFont {
         }
     }
 
-    fileprivate var uiFont: UIFont {
+    var uiFont: UIFont {
         switch source {
         case let .system(weight: weight):
             .systemFont(ofSize: scaledSize, weight: weight, design: design)
@@ -76,20 +76,8 @@ package struct ThemeFont {
 }
 
 extension ThemeFont {
-    package init(_ keyPath: KeyPath<ThemeFonts, ThemeFont>) {
-        self = Theme.current.theme.fonts[keyPath: keyPath]
-    }
-}
-
-extension UIFont {
-    package static func theme(_ themeFont: ThemeFont) -> UIFont {
-        themeFont.uiFont
-    }
-}
-
-extension Font {
-    package static func theme(_ themeFont: ThemeFont) -> Font {
-        themeFont.font
+    package init(_ moduleFont: ModuleFont) {
+        self = Theme.current.theme.fonts[keyPath: moduleFont]
     }
 }
 

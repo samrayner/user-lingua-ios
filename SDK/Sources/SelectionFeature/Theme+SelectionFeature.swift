@@ -2,6 +2,6 @@
 
 import Theme
 
-extension ThemeColor {
-    static let overlay = ThemeColor(\.foreground)
+extension ModuleColors {
+    var overlay: ModuleColor { \.foreground }
 }
