@@ -12,7 +12,3 @@ extension ThemeColor {
 extension ThemeFont {
     package static let body = ThemeFont(\.bodyMedium)
 }
-
-extension ThemeImage {
-    package static let close = ThemeImage(\.close)
-}

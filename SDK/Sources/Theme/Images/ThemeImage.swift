@@ -40,20 +40,14 @@ package struct ThemeImage {
     }
 }
 
-extension ThemeImage {
-    package init(_ themeImage: KeyPath<ThemeImages, ThemeImage>) {
-        self = Theme.current.theme.images[keyPath: themeImage]
-    }
-}
-
 extension UIImage {
-    package static func theme(_ themeImage: ThemeImage) -> UIImage {
-        themeImage.uiImage
+    package static func theme(_ keyPath: KeyPath<ThemeImages, ThemeImage>) -> UIImage {
+        Theme.current.theme.images[keyPath: keyPath].uiImage
     }
 }
 
 extension Image {
-    package static func theme(_ themeImage: ThemeImage) -> Image {
-        themeImage.image
+    package static func theme(_ keyPath: KeyPath<ThemeImages, ThemeImage>) -> Image {
+        Theme.current.theme.images[keyPath: keyPath].image
     }
 }

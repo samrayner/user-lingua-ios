@@ -59,11 +59,10 @@ struct StandardTheme: ThemeProtocol {
         decreaseTextSize: .symbol(.textformatSizeSmaller),
         toggleDarkMode: .symbol(.circleLefthalfFilled),
         untoggleDarkMode: .symbol(.circleRighthalfFilled),
-        expandDiagonally: .symbol(.arrowUpLeftAndArrowDownRight),
-        contractDiagonally: .symbol(.arrowDownRightAndArrowUpLeft),
-        chevronDown: .symbol(.chevronDown),
-        paragraph: .symbol(.paragraphsign),
-        eye: .symbol(.eye),
-        checkmark: .symbol(.checkmark)
+        enterFullScreen: .symbol(.arrowUpLeftAndArrowDownRight),
+        exitFullScreen: .symbol(.arrowDownRightAndArrowUpLeft),
+        doneSuggesting: .symbol(.chevronDown),
+        textualPreviewMode: .symbol(.paragraphsign),
+        visualPreviewMode: .symbol(.eye)
     )
 }

@@ -33,9 +33,9 @@ package struct InspectionFeature {
             var icon: Image {
                 switch self {
                 case .textual:
-                    Image.theme(.textualPreviewMode)
+                    Image.theme(\.textualPreviewMode)
                 case .visual:
-                    Image.theme(.visualPreviewMode)
+                    Image.theme(\.visualPreviewMode)
                 }
             }
         }
@@ -265,7 +265,7 @@ package struct InspectionFeatureView: View {
 
             HStack {
                 Button(action: { store.send(.didTapClose) }) {
-                    Image.theme(.close)
+                    Image.theme(\.close)
                         .padding(.Space.s)
                 }
 
@@ -343,12 +343,12 @@ package struct InspectionFeatureView: View {
             HStack(spacing: 0) {
                 if store.configuration.appSupportsDynamicType {
                     Button(action: { store.send(.didTapDecreaseTextSize) }) {
-                        Image.theme(.decreaseTextSize)
+                        Image.theme(\.decreaseTextSize)
                             .padding(.Space.s)
                     }
 
                     Button(action: { store.send(.didTapIncreaseTextSize) }) {
-                        Image.theme(.increaseTextSize)
+                        Image.theme(\.increaseTextSize)
                             .padding(.Space.s)
                     }
                 }
@@ -357,13 +357,13 @@ package struct InspectionFeatureView: View {
                     Button(action: {
                         store.send(.didTapToggleDarkMode)
                     }) {
-                        Image.theme(store.darkModeIsEnabled ? .untoggleDarkMode : .toggleDarkMode)
+                        Image.theme(store.darkModeIsEnabled ? \.untoggleDarkMode : \.toggleDarkMode)
                             .padding(.Space.s)
                     }
                 }
 
                 Button(action: { store.send(.didTapToggleFullScreen, animation: .easeOut) }) {
-                    Image.theme(store.isFullScreen ? .exitFullScreen : .enterFullScreen)
+                    Image.theme(store.isFullScreen ? \.exitFullScreen : \.enterFullScreen)
                         .padding(.Space.s)
                 }
             }
@@ -444,7 +444,7 @@ package struct InspectionFeatureView: View {
 
                 if focusedField == .suggestion {
                     Button(action: { store.send(.didTapDoneSuggesting) }) {
-                        Image.theme(.doneSuggesting)
+                        Image.theme(\.doneSuggesting)
                     }
                 }
             }
