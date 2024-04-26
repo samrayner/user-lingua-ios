@@ -11,6 +11,7 @@ import Theme
 
 @Reducer
 package struct RootFeature {
+    @Dependency(\.continuousClock) var clock
     @Dependency(WindowManagerDependency.self) var windowManager
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
     @Dependency(NotificationManagerDependency.self) var notificationManager
@@ -49,6 +50,7 @@ package struct RootFeature {
         case enable
         case configure(Configuration)
         case didShake
+        case backgroundTransitionDidComplete
         case mode(Mode.Action)
     }
 
@@ -90,21 +92,33 @@ package struct RootFeature {
                 onForeground()
                 return .none
             case .mode(.inspection(.delegate(.didDismiss))):
-                state.mode = .recording
                 contentSizeCategoryManager.notifyDidChange(newValue: contentSizeCategoryManager.systemPreferredContentSizeCategory)
+                windowManager.resetAppWindow()
+                withAnimation {
+                    state.mode = .recording
+                }
                 appViewModel.refresh()
-                windowManager.hideWindow()
                 onBackground()
+                return .run { send in
+                    // withAnimation(completion:) is iOS 17+ only
+                    try await clock.sleep(for: .seconds(.AnimationDuration.screenTransition))
+                    await send(.backgroundTransitionDidComplete)
+                }
+            case .backgroundTransitionDidComplete:
+                windowManager.hideWindow()
                 return .none
             case let .mode(.selection(.delegate(.didSelectString(recognizedString)))):
                 ThemeFont.scaleFactor = contentSizeCategoryManager.systemPreferredContentSizeCategory.fontScaleFactor
-                state.mode = .inspection(
-                    .init(
-                        recognizedString: recognizedString,
-                        appContentSizeCategory: contentSizeCategoryManager.systemPreferredContentSizeCategory,
-                        darkModeIsEnabled: windowManager.appUIStyle == .dark
+                withAnimation {
+                    state.mode = .inspection(
+                        .init(
+                            recognizedString: recognizedString,
+                            appContentSizeCategory: contentSizeCategoryManager.systemPreferredContentSizeCategory,
+                            darkModeIsEnabled: windowManager.appUIStyle == .dark,
+                            appFacade: windowManager.screenshotAppWindow()
+                        )
                     )
-                )
+                }
                 return .none
             case .mode:
                 return .none
@@ -118,6 +132,10 @@ package struct RootFeatureView: View {
 
     let store: StoreOf<RootFeature>
 
+    private var invertedColorSchene: ColorScheme {
+        windowManager.appUIStyle == .light ? .dark : .light
+    }
+
     package init(store: StoreOf<RootFeature>) {
         self.store = store
     }
@@ -125,15 +143,19 @@ package struct RootFeatureView: View {
     package var body: some View {
         WithPerceptionTracking {
             ZStack {
-                if let store = store.scope(state: \.mode.selection, action: \.mode.selection) {
-                    SelectionFeatureView(store: store)
-                } else if let store = store.scope(state: \.mode.inspection, action: \.mode.inspection) {
-                    InspectionFeatureView(store: store)
-                        .foregroundColor(.theme(\.text))
-                        .tint(.theme(\.tint))
-                        .preferredColorScheme(windowManager.appUIStyle == .light ? .dark : .light)
+                if let selectionStore = store.scope(state: \.mode.selection, action: \.mode.selection) {
+                    SelectionFeatureView(store: selectionStore)
+                } else if let inspectionStore = store.scope(state: \.mode.inspection, action: \.mode.inspection) {
+                    InspectionFeatureView(store: inspectionStore)
+                        .preferredColorScheme(invertedColorSchene)
+                        .transition(.move(edge: .bottom))
+                } else {
+                    // retain status bar colour during InspectionFeatureView transitions
+                    Color.clear.preferredColorScheme(invertedColorSchene)
                 }
             }
+            .foregroundColor(.theme(\.text))
+            .tint(.theme(\.tint))
         }
     }
 }

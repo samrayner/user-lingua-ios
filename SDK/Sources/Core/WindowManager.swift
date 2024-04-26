@@ -10,6 +10,7 @@ package protocol WindowManagerProtocol {
     func setRootView(_: some View)
     func screenshotAppWindow() -> UIImage?
     func showWindow()
+    func resetAppWindow()
     func hideWindow()
     func toggleDarkMode()
     func translateApp(focusing: CGPoint, in: CGRect, animationDuration: TimeInterval)
@@ -76,12 +77,15 @@ package final class WindowManager: WindowManagerProtocol {
     }
 
     package func hideWindow() {
-        appWindow?.layer.transform = CATransform3DTranslate(CATransform3DIdentity, 0, 0, 0)
-        appWindow?.overrideUserInterfaceStyle = originalAppWindowUIStyleOverride
         appWindow?.makeKeyAndVisible()
         appWindow = nil
         originalAppWindowUIStyleOverride = .unspecified
         userLinguaWindow.isHidden = true
+    }
+
+    package func resetAppWindow() {
+        appWindow?.layer.removeTranslation()
+        appWindow?.overrideUserInterfaceStyle = originalAppWindowUIStyleOverride
     }
 
     package func toggleDarkMode() {
@@ -93,23 +97,17 @@ package final class WindowManager: WindowManagerProtocol {
 
         let maxTranslateUp = viewportFrame.maxY - appWindow.bounds.maxY
         let maxTranslateDown = viewportFrame.minY
-        let yOffset = viewportFrame.midY - focalPoint.y
-        let boundedYOffset = min(maxTranslateDown, max(maxTranslateUp, yOffset))
-
-        func applyTransform() {
-            appWindow.layer.transform = CATransform3DTranslate(CATransform3DIdentity, 0, boundedYOffset, 0)
-        }
+        let yOffset = (viewportFrame.midY - focalPoint.y).clamped(to: maxTranslateUp ... maxTranslateDown)
 
         if animationDuration > 0 {
             let animation = CABasicAnimation(keyPath: "transform.translation.y")
-            // translation matrix is [1 0 0 0; 0 1 0 0; 0 0 1 0; tx TY tz 1]
-            animation.fromValue = appWindow.layer.transform.m42
-            animation.toValue = boundedYOffset
+            animation.fromValue = appWindow.layer.translationIn2D.y
+            animation.toValue = yOffset
             animation.duration = animationDuration
-            applyTransform()
+            appWindow.layer.translate(y: yOffset)
             appWindow.layer.add(animation, forKey: nil)
         } else {
-            applyTransform()
+            appWindow.layer.translate(y: yOffset)
         }
     }
 }
@@ -199,6 +197,17 @@ class WindowManagerProtocolSpy: WindowManagerProtocol {
     func hideWindow() {
         hideWindowCallsCount += 1
         hideWindowClosure?()
+    }
+
+    var resetAppWindowCallsCount = 0
+    var resetAppWindowCalled: Bool {
+        resetAppWindowCallsCount > 0
+    }
+
+    var resetAppWindowClosure: (() -> Void)?
+    func resetAppWindow() {
+        resetAppWindowCallsCount += 1
+        resetAppWindowClosure?()
     }
 
     var toggleDarkModeCallsCount = 0

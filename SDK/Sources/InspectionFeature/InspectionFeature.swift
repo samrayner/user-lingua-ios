@@ -11,6 +11,7 @@ import Theme
 
 @Reducer
 package struct InspectionFeature {
+    @Dependency(\.continuousClock) var clock
     @Dependency(\.mainQueue) var mainQueue
     @Dependency(SuggestionsRepositoryDependency.self) var suggestionsRepository
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
@@ -51,9 +52,14 @@ package struct InspectionFeature {
         var previewMode: PreviewMode = .visual
         var isFullScreen = false
         var keyboardHeight: CGFloat = 0
+        var appFacade: UIImage?
 
         package var locale: Locale {
             Locale(identifier: localeIdentifier)
+        }
+
+        var isTransitioning: Bool {
+            appFacade != nil
         }
 
         var localizedValue: String {
@@ -71,11 +77,13 @@ package struct InspectionFeature {
         package init(
             recognizedString: RecognizedString,
             appContentSizeCategory: UIContentSizeCategory,
-            darkModeIsEnabled: Bool
+            darkModeIsEnabled: Bool,
+            appFacade: UIImage?
         ) {
             self.recognizedString = recognizedString
             self.appContentSizeCategory = appContentSizeCategory
             self.darkModeIsEnabled = darkModeIsEnabled
+            self.appFacade = appFacade
             self.suggestionString = recognizedString.value
         }
     }
@@ -89,6 +97,8 @@ package struct InspectionFeature {
         case didTapToggleFullScreen
         case didTapDoneSuggesting
         case didTapSubmit
+        case onAppear
+        case didAppear
         case saveSuggestion
         case viewportFrameDidChange(CGRect, animationDuration: TimeInterval = 0)
         case keyboardWillChangeFrame(KeyboardNotification)
@@ -128,6 +138,7 @@ package struct InspectionFeature {
                 contentSizeCategoryManager.notifyDidChange(newValue: state.appContentSizeCategory)
                 return .none
             case .didTapClose:
+                state.appFacade = windowManager.screenshotAppWindow()
                 return .run { send in
                     await send(.delegate(.didDismiss))
                 }
@@ -146,6 +157,15 @@ package struct InspectionFeature {
                 return .none
             case .didTapSubmit:
                 print("SUBMITTED \(state.makeSuggestion())")
+                return .none
+            case .onAppear:
+                return .run { send in
+                    // withAnimation(completion:) is iOS 17+ only
+                    try await clock.sleep(for: .seconds(.AnimationDuration.screenTransition))
+                    await send(.didAppear)
+                }
+            case .didAppear:
+                state.appFacade = nil
                 return .none
             case .saveSuggestion:
                 suggestionsRepository.saveSuggestion(state.makeSuggestion())
@@ -221,6 +241,11 @@ package struct InspectionFeatureView: View {
             ZStack(alignment: .top) {
                 RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
 
+                if let appFacade = store.appFacade {
+                    Image(uiImage: appFacade)
+                        .ignoresSafeArea(.all)
+                }
+
                 VStack(spacing: 0) {
                     if !store.isFullScreen {
                         header()
@@ -254,6 +279,7 @@ package struct InspectionFeatureView: View {
             }
             .font(.theme(\.body))
             .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
+            .onAppear { store.send(.onAppear) }
         }
     }
 
@@ -389,10 +415,8 @@ package struct InspectionFeatureView: View {
             .background {
                 GeometryReader { geometry in
                     Color.clear
-                        .onAppear {
-                            store.send(.viewportFrameDidChange(geometry.frame(in: .global)))
-                        }
                         .onChange(of: geometry.frame(in: .global)) {
+                            guard !store.isTransitioning else { return }
                             store.send(.viewportFrameDidChange($0, animationDuration: .AnimationDuration.quick))
                         }
                 }
