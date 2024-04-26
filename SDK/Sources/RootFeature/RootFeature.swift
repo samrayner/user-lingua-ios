@@ -94,9 +94,7 @@ package struct RootFeature {
             case .mode(.inspection(.delegate(.didDismiss))):
                 contentSizeCategoryManager.notifyDidChange(newValue: contentSizeCategoryManager.systemPreferredContentSizeCategory)
                 windowManager.resetAppWindow()
-                withAnimation {
-                    state.mode = .recording
-                }
+                state.mode = .recording
                 appViewModel.refresh()
                 onBackground()
                 return .run { send in
@@ -109,16 +107,14 @@ package struct RootFeature {
                 return .none
             case let .mode(.selection(.delegate(.didSelectString(recognizedString)))):
                 ThemeFont.scaleFactor = contentSizeCategoryManager.systemPreferredContentSizeCategory.fontScaleFactor
-                withAnimation {
-                    state.mode = .inspection(
-                        .init(
-                            recognizedString: recognizedString,
-                            appContentSizeCategory: contentSizeCategoryManager.systemPreferredContentSizeCategory,
-                            darkModeIsEnabled: windowManager.appUIStyle == .dark,
-                            appFacade: windowManager.screenshotAppWindow()
-                        )
+                state.mode = .inspection(
+                    .init(
+                        recognizedString: recognizedString,
+                        appContentSizeCategory: contentSizeCategoryManager.systemPreferredContentSizeCategory,
+                        darkModeIsEnabled: windowManager.appUIStyle == .dark,
+                        appFacade: windowManager.screenshotAppWindow()
                     )
-                }
+                )
                 return .none
             case .mode:
                 return .none
@@ -145,17 +141,22 @@ package struct RootFeatureView: View {
             ZStack {
                 if let selectionStore = store.scope(state: \.mode.selection, action: \.mode.selection) {
                     SelectionFeatureView(store: selectionStore)
-                } else if let inspectionStore = store.scope(state: \.mode.inspection, action: \.mode.inspection) {
-                    InspectionFeatureView(store: inspectionStore)
-                        .preferredColorScheme(invertedColorSchene)
-                        .transition(.move(edge: .bottom))
                 } else {
-                    // retain status bar colour during InspectionFeatureView transitions
+                    // retain ColorScheme for InspectionFeatureView during transitions
                     Color.clear.preferredColorScheme(invertedColorSchene)
                 }
+
+                Group {
+                    if let inspectionStore = store.scope(state: \.mode.inspection, action: \.mode.inspection) {
+                        InspectionFeatureView(store: inspectionStore)
+                            .foregroundColor(.theme(\.text))
+                            .tint(.theme(\.tint))
+                            .preferredColorScheme(invertedColorSchene)
+                            .transition(.move(edge: .bottom))
+                    }
+                }
+                .animation(.snappy, value: store.mode) // animate the transition in/out
             }
-            .foregroundColor(.theme(\.text))
-            .tint(.theme(\.tint))
         }
     }
 }
