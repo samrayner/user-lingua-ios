@@ -13,6 +13,7 @@ import Theme
 package struct InspectionFeature {
     @Dependency(\.continuousClock) var clock
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.dismiss) var dismiss
     @Dependency(SuggestionsRepositoryDependency.self) var suggestionsRepository
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
     @Dependency(ContentSizeCategoryManagerDependency.self) var contentSizeCategoryManager
@@ -104,13 +105,7 @@ package struct InspectionFeature {
         case keyboardWillChangeFrame(KeyboardNotification)
         case observeKeyboardWillChangeFrame
         case binding(BindingAction<State>)
-        case delegate(Delegate)
         case recognition(RecognitionFeature.Action)
-
-        @CasePathable
-        package enum Delegate {
-            case didDismiss
-        }
     }
 
     enum CancelID {
@@ -139,8 +134,8 @@ package struct InspectionFeature {
                 return .none
             case .didTapClose:
                 state.appFacade = windowManager.screenshotAppWindow()
-                return .run { send in
-                    await send(.delegate(.didDismiss))
+                return .run { _ in
+                    await dismiss()
                 }
             case .didTapToggleDarkMode:
                 windowManager.toggleDarkMode()
@@ -209,7 +204,7 @@ package struct InspectionFeature {
                 // debounce primarily to avoid SwiftUI bug:
                 // https://github.com/pointfreeco/swift-composable-architecture/discussions/1093
                 .debounce(id: CancelID.suggestionSaveDebounce, for: .seconds(0.1), scheduler: mainQueue)
-            case .recognition, .binding, .delegate:
+            case .recognition, .binding:
                 return .none
             }
         }
@@ -219,7 +214,7 @@ package struct InspectionFeature {
 package struct InspectionFeatureView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Dependency(\.locale) var systemLocale
-    @Perception.Bindable package var store: StoreOf<InspectionFeature>
+    @Perception.Bindable var store: StoreOf<InspectionFeature>
     @FocusState var focusedField: InspectionFeature.State.Field?
 
     package init(store: StoreOf<InspectionFeature>) {

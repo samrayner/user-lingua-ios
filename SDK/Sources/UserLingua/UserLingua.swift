@@ -55,10 +55,8 @@ public final class UserLingua {
     var isTakingScreenshot: Bool {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
             switch store.mode {
-            case let .selection(state):
-                state.recognition.isTakingScreenshot
-            case let .inspection(state):
-                state.recognition.isTakingScreenshot
+            case let .visible(state):
+                state.inspection?.recognition.isTakingScreenshot ?? state.recognition.isTakingScreenshot
             default:
                 false
             }
@@ -68,8 +66,8 @@ public final class UserLingua {
     var appContentSizeCategory: UIContentSizeCategory {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
             switch store.mode {
-            case let .inspection(state):
-                state.appContentSizeCategory
+            case let .visible(state):
+                state.inspection?.appContentSizeCategory ?? contentSizeCategoryManager.systemPreferredContentSizeCategory
             default:
                 contentSizeCategoryManager.systemPreferredContentSizeCategory
             }
@@ -168,7 +166,9 @@ public final class UserLingua {
                 return formattedString.value
             }
 
-            if case let .inspection(state) = store.mode, state.recognizedString.value == formattedString.value {
+            if case let .visible(state) = store.mode,
+               let state = state.inspection,
+               state.recognizedString.value == formattedString.value {
                 // we're currently inspected this string so display the
                 // suggestion the user is making if there is one
                 if let suggestion = suggestionsRepository.suggestion(for: formattedString.value, locale: state.locale) {

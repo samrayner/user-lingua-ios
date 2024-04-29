@@ -28,13 +28,11 @@ package struct RootFeature {
         self.onBackground = onBackground
     }
 
-    // https://github.com/pointfreeco/swift-composable-architecture/discussions/2936
     @Reducer(state: .equatable)
-    public enum Mode {
+    package enum Mode {
         case disabled
         case recording
-        case selection(SelectionFeature)
-        case inspection(InspectionFeature)
+        case visible(SelectionFeature)
     }
 
     @ObservableState
@@ -46,8 +44,8 @@ package struct RootFeature {
     }
 
     package enum Action {
-        case disable
         case enable
+        case disable
         case configure(Configuration)
         case didShake
         case backgroundTransitionDidComplete
@@ -61,11 +59,8 @@ package struct RootFeature {
     package var body: some ReducerOf<Self> {
         Scope(state: \.mode, action: \.mode) {
             EmptyReducer()
-                .ifCaseLet(\.selection, action: \.selection) {
+                .ifCaseLet(\.visible, action: \.visible) {
                     SelectionFeature()
-                }
-                .ifCaseLet(\.inspection, action: \.inspection) {
-                    InspectionFeature()
                 }
         }
 
@@ -88,10 +83,10 @@ package struct RootFeature {
             case .didShake:
                 guard state.mode == .recording else { return .none }
                 windowManager.showWindow()
-                state.mode = .selection(.init())
+                state.mode = .visible(.init())
                 onForeground()
                 return .none
-            case .mode(.inspection(.delegate(.didDismiss))):
+            case .mode(.visible(.delegate(.inspectionDidDismiss))):
                 contentSizeCategoryManager.notifyDidChange(newValue: contentSizeCategoryManager.systemPreferredContentSizeCategory)
                 windowManager.resetAppWindow()
                 state.mode = .recording
@@ -105,17 +100,6 @@ package struct RootFeature {
             case .backgroundTransitionDidComplete:
                 windowManager.hideWindow()
                 return .none
-            case let .mode(.selection(.delegate(.didSelectString(recognizedString)))):
-                ThemeFont.scaleFactor = contentSizeCategoryManager.systemPreferredContentSizeCategory.fontScaleFactor
-                state.mode = .inspection(
-                    .init(
-                        recognizedString: recognizedString,
-                        appContentSizeCategory: contentSizeCategoryManager.systemPreferredContentSizeCategory,
-                        darkModeIsEnabled: windowManager.appUIStyle == .dark,
-                        appFacade: windowManager.screenshotAppWindow()
-                    )
-                )
-                return .none
             case .mode:
                 return .none
             }
@@ -124,13 +108,7 @@ package struct RootFeature {
 }
 
 package struct RootFeatureView: View {
-    @Dependency(WindowManagerDependency.self) var windowManager
-
     let store: StoreOf<RootFeature>
-
-    private var invertedColorSchene: ColorScheme {
-        windowManager.appUIStyle == .light ? .dark : .light
-    }
 
     package init(store: StoreOf<RootFeature>) {
         self.store = store
@@ -139,24 +117,12 @@ package struct RootFeatureView: View {
     package var body: some View {
         WithPerceptionTracking {
             ZStack {
-                if let selectionStore = store.scope(state: \.mode.selection, action: \.mode.selection) {
-                    SelectionFeatureView(store: selectionStore)
-                } else {
-                    // retain ColorScheme for InspectionFeatureView during transitions
-                    Color.clear.preferredColorScheme(invertedColorSchene)
+                if let store = store.scope(state: \.mode.visible, action: \.mode.visible) {
+                    SelectionFeatureView(store: store)
                 }
-
-                Group {
-                    if let inspectionStore = store.scope(state: \.mode.inspection, action: \.mode.inspection) {
-                        InspectionFeatureView(store: inspectionStore)
-                            .foregroundColor(.theme(\.text))
-                            .tint(.theme(\.tint))
-                            .preferredColorScheme(invertedColorSchene)
-                            .transition(.move(edge: .bottom))
-                    }
-                }
-                .animation(.snappy, value: store.mode) // animate the transition in/out
             }
+            .foregroundColor(.theme(\.text))
+            .tint(.theme(\.tint))
         }
     }
 }
