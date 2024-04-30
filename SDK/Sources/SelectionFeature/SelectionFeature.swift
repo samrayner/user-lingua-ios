@@ -104,6 +104,7 @@ package struct SelectionFeature {
 package struct SelectionFeatureView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Perception.Bindable package var store: StoreOf<SelectionFeature>
+    @State private var isVisible = false
 
     package init(store: StoreOf<SelectionFeature>) {
         self.store = store
@@ -114,7 +115,7 @@ package struct SelectionFeatureView: View {
             ZStack(alignment: .topLeading) {
                 if store.recognizedStrings != nil {
                     Color.theme(\.overlay)
-                        .opacity(.Opacity.light)
+                        .opacity(isVisible ? .Opacity.light : .Opacity.transparent)
                         .mask {
                             ZStack {
                                 Color(.white)
@@ -123,6 +124,9 @@ package struct SelectionFeatureView: View {
                             .compositingGroup()
                             .luminanceToAlpha()
                         }
+                        .animation(.smooth, value: isVisible)
+                        .onAppear { isVisible = true }
+                        .onDisappear { isVisible = false }
 
                     highlights(
                         color: .interactableClear,
@@ -170,9 +174,12 @@ private struct RecognizedStringHighlight: View {
             color
                 .cornerRadius(5)
                 .frame(width: line.boundingBox.width + 20, height: line.boundingBox.height + 20)
-                .position(x: isVisible ? line.boundingBox.midX : -line.boundingBox.width, y: line.boundingBox.midY)
+                .position(x: line.boundingBox.midX, y: line.boundingBox.midY)
+                .scaleEffect(isVisible ? 1 : 2)
+                .opacity(isVisible ? .Opacity.opaque : .Opacity.transparent)
                 .animation(.bouncy.delay(.random(in: 0 ... TimeInterval.AnimationDuration.quick)), value: isVisible)
         }
         .onAppear { isVisible = true }
+        .onDisappear { isVisible = false }
     }
 }
