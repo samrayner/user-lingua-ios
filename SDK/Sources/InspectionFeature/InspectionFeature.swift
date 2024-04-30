@@ -44,22 +44,18 @@ package struct InspectionFeature {
 
         package let recognizedString: RecognizedString
         package var darkModeIsEnabled: Bool
+        package var appFacade: UIImage?
         @Shared(RecognitionFeature.State.persistenceKey) var recognition = .init()
-        var configuration: Configuration = .init(baseLocale: Locale(identifier: "en"))
+        @Shared(Configuration.persistenceKey) var configuration = .init()
         var focusedField: Field?
         var suggestionString: String
         var localeIdentifier = Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
         var previewMode: PreviewMode = .visual
         var isFullScreen = false
         var keyboardHeight: CGFloat = 0
-        var appFacade: UIImage?
 
         package var locale: Locale {
             Locale(identifier: localeIdentifier)
-        }
-
-        package var isTransitioning: Bool {
-            appFacade != nil
         }
 
         var localizedValue: String {
@@ -407,7 +403,7 @@ package struct InspectionFeatureView: View {
                 GeometryReader { geometry in
                     Color.clear
                         .onChange(of: geometry.frame(in: .global)) {
-                            guard !store.isTransitioning else { return }
+                            guard store.appFacade == nil else { return }
                             store.send(.viewportFrameDidChange($0, animationDuration: .AnimationDuration.quick))
                         }
                 }
