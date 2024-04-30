@@ -231,47 +231,46 @@ package struct InspectionFeatureView: View {
 
     package var body: some View {
         WithPerceptionTracking {
-            ZStack(alignment: .top) {
-                RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
-
-                VStack(spacing: 0) {
-                    if !store.isFullScreen {
-                        header()
-                            .zIndex(10)
-                            .transition(.move(edge: .top))
-                    }
-
-                    ZStack {
-                        Group {
-                            if store.previewMode == .visual {
-                                visualPreviewControls()
-                                    .environment(\.colorScheme, store.darkModeIsEnabled ? .light : .dark)
-                            }
-
-                            if store.previewMode == .textual {
-                                textualPreview()
-                            }
-                        }
-                        .environment(\.colorScheme, colorScheme == .dark ? .light : .dark)
-
-                        viewport()
-                    }
-
-                    if !store.isFullScreen {
-                        inspectionPanel()
-                            .zIndex(10)
-                            .transition(.move(edge: .bottom))
-                    }
+            VStack(spacing: 0) {
+                if !store.isFullScreen {
+                    header()
+                        .zIndex(10)
+                        .transition(.move(edge: .top))
                 }
-                .ignoresSafeArea(edges: ignoredSafeAreaEdges)
-                .background {
-                    if let appFacade = store.appFacade {
-                        Image(uiImage: appFacade)
-                            .ignoresSafeArea(.all)
+
+                ZStack {
+                    Group {
+                        if store.previewMode == .visual {
+                            visualPreviewControls()
+                                .environment(\.colorScheme, store.darkModeIsEnabled ? .light : .dark)
+                        }
+
+                        if store.previewMode == .textual {
+                            textualPreview()
+                        }
                     }
+                    .environment(\.colorScheme, colorScheme == .dark ? .light : .dark)
+
+                    viewport()
+                }
+
+                if !store.isFullScreen {
+                    inspectionPanel()
+                        .zIndex(10)
+                        .transition(.move(edge: .bottom))
+                }
+            }
+            .ignoresSafeArea(edges: ignoredSafeAreaEdges)
+            .background {
+                if let appFacade = store.appFacade {
+                    Image(uiImage: appFacade)
+                        .ignoresSafeArea(.all)
                 }
             }
             .font(.theme(\.body))
+            .background {
+                RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
+            }
             .clearPresentationBackground()
             .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
             .onAppear { store.send(.onAppear) }

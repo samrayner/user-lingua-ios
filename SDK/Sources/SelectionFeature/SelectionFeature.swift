@@ -103,7 +103,6 @@ package struct SelectionFeature {
 
 package struct SelectionFeatureView: View {
     @Environment(\.colorScheme) private var colorScheme
-    @Dependency(WindowManagerDependency.self) var windowManager
     @Perception.Bindable package var store: StoreOf<SelectionFeature>
 
     package init(store: StoreOf<SelectionFeature>) {
@@ -113,28 +112,27 @@ package struct SelectionFeatureView: View {
     package var body: some View {
         WithPerceptionTracking {
             ZStack(alignment: .topLeading) {
-                RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
-
                 if store.recognizedStrings != nil {
-                    ZStack {
-                        Color.theme(\.overlay)
-                            .opacity(.Opacity.light)
-                            .mask {
-                                ZStack {
-                                    Color(.white)
-                                    highlights(color: .black)
-                                }
-                                .compositingGroup()
-                                .luminanceToAlpha()
+                    Color.theme(\.overlay)
+                        .opacity(.Opacity.light)
+                        .mask {
+                            ZStack {
+                                Color(.white)
+                                highlights(color: .black)
                             }
+                            .compositingGroup()
+                            .luminanceToAlpha()
+                        }
 
-                        highlights(
-                            color: .interactableClear,
-                            onSelectString: { store.send(.didSelectString($0)) }
-                        )
-                    }
-                    .ignoresSafeArea()
+                    highlights(
+                        color: .interactableClear,
+                        onSelectString: { store.send(.didSelectString($0)) }
+                    )
                 }
+            }
+            .ignoresSafeArea()
+            .background {
+                RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
             }
             .onAppear { store.send(.onAppear) }
             .fullScreenCover(
