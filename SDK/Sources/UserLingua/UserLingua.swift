@@ -56,7 +56,7 @@ public final class UserLingua {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
             switch store.mode {
             case let .visible(state):
-                state.inspection?.recognition.isTakingScreenshot ?? state.recognition.isTakingScreenshot
+                state.recognition.isTakingScreenshot
             default:
                 false
             }

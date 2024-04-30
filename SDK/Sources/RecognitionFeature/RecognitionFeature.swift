@@ -16,6 +16,8 @@ package struct RecognitionFeature {
 
     @ObservableState
     package struct State: Equatable {
+        package static var persistenceKey: InMemoryKey<Self> { .init("recognition") }
+
         package var isRecognizingStrings = false
         package var isTakingScreenshot = false
         var appFacade: UIImage?

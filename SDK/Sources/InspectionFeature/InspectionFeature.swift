@@ -44,7 +44,7 @@ package struct InspectionFeature {
 
         package let recognizedString: RecognizedString
         package var darkModeIsEnabled: Bool
-        package var recognition = RecognitionFeature.State()
+        @Shared(RecognitionFeature.State.persistenceKey) var recognition = .init()
         var configuration: Configuration = .init(baseLocale: Locale(identifier: "en"))
         var focusedField: Field?
         var suggestionString: String
@@ -268,9 +268,6 @@ package struct InspectionFeatureView: View {
                 }
             }
             .font(.theme(\.body))
-            .background {
-                RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
-            }
             .clearPresentationBackground()
             .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
             .onAppear { store.send(.onAppear) }
