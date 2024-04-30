@@ -1,5 +1,5 @@
 {
-  "originHash" : "6bb9d6fb2e54c6782bf05d85d755e5525152b3b0ca642c2a78078c08bcfe060a",
+  "originHash" : "1d6bca97279c1e3d207480eed4fdeccadf1cd5784c155b82d9e0fbdba5115ada",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-composable-architecture",
       "state" : {
-        "revision" : "8624a8e2c35f78e5e61d5f12c69110e9020e80c8",
-        "version" : "1.10.0"
+        "revision" : "e6c0959044cbe2c934ac0ce9c3c4ead86350f44f",
+        "version" : "1.10.2"
       }
     },
     {
@@ -114,8 +114,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-perception",
       "state" : {
-        "revision" : "a5bb578d963fcdbffe4fd56c92b2e222f5b02c8a",
-        "version" : "1.1.2"
+        "revision" : "8e8ca36c02abc7775a3ab81f9468c0df5fe22c2c",
+        "version" : "1.1.7"
       }
     },
     {

@@ -22,7 +22,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-syntax", "509.0.0" ..< "511.0.0"),
-        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMinor(from: "1.10.0")),
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMinor(from: "1.10.2")),
         .package(url: "https://github.com/Matejkob/swift-spyable", .upToNextMinor(from: "0.3.0")),
         .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols", .upToNextMinor(from: "5.2.0")),
         .package(url: "https://github.com/gohanlon/swift-memberwise-init-macro", .upToNextMinor(from: "0.3.0")),
