@@ -43,7 +43,6 @@ package struct InspectionFeature {
         }
 
         package let recognizedString: RecognizedString
-        package var appContentSizeCategory: UIContentSizeCategory
         package var darkModeIsEnabled: Bool
         package var recognition = RecognitionFeature.State()
         var configuration: Configuration = .init(baseLocale: Locale(identifier: "en"))
@@ -59,7 +58,7 @@ package struct InspectionFeature {
             Locale(identifier: localeIdentifier)
         }
 
-        var isTransitioning: Bool {
+        package var isTransitioning: Bool {
             appFacade != nil
         }
 
@@ -77,12 +76,10 @@ package struct InspectionFeature {
 
         package init(
             recognizedString: RecognizedString,
-            appContentSizeCategory: UIContentSizeCategory,
             darkModeIsEnabled: Bool,
             appFacade: UIImage?
         ) {
             self.recognizedString = recognizedString
-            self.appContentSizeCategory = appContentSizeCategory
             self.darkModeIsEnabled = darkModeIsEnabled
             self.appFacade = appFacade
             self.suggestionString = recognizedString.value
@@ -125,15 +122,16 @@ package struct InspectionFeature {
                 state.focusedField = .suggestion
                 return .none
             case .didTapIncreaseTextSize:
-                state.appContentSizeCategory = state.appContentSizeCategory.incremented()
-                contentSizeCategoryManager.notifyDidChange(newValue: state.appContentSizeCategory)
+                contentSizeCategoryManager.incrementAppContentSizeCategory()
                 return .none
             case .didTapDecreaseTextSize:
-                state.appContentSizeCategory = state.appContentSizeCategory.decremented()
-                contentSizeCategoryManager.notifyDidChange(newValue: state.appContentSizeCategory)
+                contentSizeCategoryManager.decrementAppContentSizeCategory()
                 return .none
             case .didTapClose:
                 state.appFacade = windowManager.screenshotAppWindow()
+                contentSizeCategoryManager.resetAppContentSizeCategory()
+                windowManager.resetAppWindow()
+                appViewModel.refresh() // rerun UserLingua.shared.displayString
                 return .run { _ in
                     await dismiss()
                 }
@@ -154,8 +152,8 @@ package struct InspectionFeature {
                 print("SUBMITTED \(state.makeSuggestion())")
                 return .none
             case .onAppear:
+                ThemeFont.scaleFactor = contentSizeCategoryManager.systemContentSizeCategory.fontScaleFactor
                 return .run { send in
-                    // withAnimation(completion:) is iOS 17+ only
                     try await clock.sleep(for: .seconds(.AnimationDuration.screenTransition))
                     await send(.didAppear)
                 }
@@ -236,11 +234,6 @@ package struct InspectionFeatureView: View {
             ZStack(alignment: .top) {
                 RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
 
-                if let appFacade = store.appFacade {
-                    Image(uiImage: appFacade)
-                        .ignoresSafeArea(.all)
-                }
-
                 VStack(spacing: 0) {
                     if !store.isFullScreen {
                         header()
@@ -271,8 +264,15 @@ package struct InspectionFeatureView: View {
                     }
                 }
                 .ignoresSafeArea(edges: ignoredSafeAreaEdges)
+                .background {
+                    if let appFacade = store.appFacade {
+                        Image(uiImage: appFacade)
+                            .ignoresSafeArea(.all)
+                    }
+                }
             }
             .font(.theme(\.body))
+            .clearPresentationBackground()
             .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
             .onAppear { store.send(.onAppear) }
         }

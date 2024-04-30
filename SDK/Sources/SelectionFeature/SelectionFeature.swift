@@ -13,7 +13,6 @@ import Theme
 package struct SelectionFeature {
     @Dependency(NotificationManagerDependency.self) var notificationManager
     @Dependency(WindowManagerDependency.self) var windowManager
-    @Dependency(ContentSizeCategoryManagerDependency.self) var contentSizeCategoryManager
 
     package init() {}
 
@@ -54,10 +53,8 @@ package struct SelectionFeature {
         Reduce { state, action in
             switch action {
             case let .didSelectString(recognizedString):
-                ThemeFont.scaleFactor = contentSizeCategoryManager.systemPreferredContentSizeCategory.fontScaleFactor
                 state.inspection = .init(
                     recognizedString: recognizedString,
-                    appContentSizeCategory: contentSizeCategoryManager.systemPreferredContentSizeCategory,
                     darkModeIsEnabled: windowManager.appUIStyle == .dark,
                     appFacade: windowManager.screenshotAppWindow()
                 )
@@ -68,6 +65,7 @@ package struct SelectionFeature {
                     await send(.delegate(.inspectionDidDismiss))
                 }
             case .onAppear:
+                state.recognizedStrings = []
                 return .run { send in
                     await send(.recognition(.start))
                 }
@@ -93,7 +91,7 @@ package struct SelectionFeature {
             case let .recognition(.delegate(.didRecognizeStrings(recognizedStrings))):
                 state.recognizedStrings = recognizedStrings
                 return .none
-            case .delegate, .inspection, .recognition, .binding:
+            case .inspection, .recognition, .binding, .delegate:
                 return .none
             }
         }
@@ -140,13 +138,10 @@ package struct SelectionFeatureView: View {
             .onAppear { store.send(.onAppear) }
             .fullScreenCover(
                 item: $store.scope(state: \.inspection, action: \.inspection),
-                onDismiss: {
-                    store.send(.inspectionDidDismiss)
-                }
+                onDismiss: { store.send(.inspectionDidDismiss) }
             ) { store in
                 InspectionFeatureView(store: store)
                     .preferredColorScheme(windowManager.appUIStyle == .light ? .dark : .light)
-                    .clearPresentationBackground()
             }
             .task { await store.send(.observeDeviceRotation).finish() }
         }
@@ -167,32 +162,5 @@ package struct SelectionFeatureView: View {
             }
         }
         .ignoresSafeArea()
-    }
-}
-
-private struct PresentationBackgroundRemovalView: UIViewRepresentable {
-    private class BackgroundRemovalView: UIView {
-        override func didMoveToWindow() {
-            super.didMoveToWindow()
-            superview?.superview?.backgroundColor = .clear
-        }
-    }
-
-    func makeUIView(context _: Context) -> UIView {
-        BackgroundRemovalView()
-    }
-
-    func updateUIView(_: UIView, context _: Context) {}
-}
-
-extension View {
-    fileprivate func clearPresentationBackground() -> some View {
-        Group {
-            if #available(iOS 16.4, *) {
-                presentationBackground(.clear)
-            } else {
-                background(PresentationBackgroundRemovalView())
-            }
-        }
     }
 }

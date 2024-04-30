@@ -7,24 +7,37 @@ import UIKit
 
 @Spyable
 package protocol ContentSizeCategoryManagerProtocol {
-    var systemPreferredContentSizeCategory: UIContentSizeCategory { get }
-    func notifyDidChange(newValue: UIContentSizeCategory)
+    var systemContentSizeCategory: UIContentSizeCategory { get }
+    var appContentSizeCategory: UIContentSizeCategory { get }
+    func incrementAppContentSizeCategory()
+    func decrementAppContentSizeCategory()
+    func resetAppContentSizeCategory()
 }
 
 package final class ContentSizeCategoryManager: ContentSizeCategoryManagerProtocol {
-    package private(set) var systemPreferredContentSizeCategory = UITraitCollection.current.preferredContentSizeCategory
+    package private(set) var systemContentSizeCategory = UITraitCollection.current.preferredContentSizeCategory
+    package private(set) var appContentSizeCategory = UITraitCollection.current.preferredContentSizeCategory
     private var cancellables = Set<AnyCancellable>()
 
     package init() {
         NotificationCenter.default
             .publisher(for: UIContentSizeCategory.didChangeNotification)
-            .filter { $0.userInfo?[UIContentSizeCategory.isUserLinguaNotificationUserInfoKey] == nil }
-            .compactMap { $0.userInfo?[UIContentSizeCategory.newValueUserInfoKey] as? UIContentSizeCategory }
-            .assign(to: \.systemPreferredContentSizeCategory, on: self)
+            .sink { [weak self] in
+                guard let contentSizeCategory = $0.userInfo?[UIContentSizeCategory.newValueUserInfoKey] as? UIContentSizeCategory
+                else { return }
+
+                let isUserLinguaNotification = $0.userInfo?[UIContentSizeCategory.isUserLinguaNotificationUserInfoKey] as? Bool == true
+
+                if isUserLinguaNotification {
+                    self?.appContentSizeCategory = contentSizeCategory
+                } else {
+                    self?.systemContentSizeCategory = contentSizeCategory
+                }
+            }
             .store(in: &cancellables)
     }
 
-    package func notifyDidChange(newValue: UIContentSizeCategory) {
+    private func notifyDidChange(newValue: UIContentSizeCategory) {
         NotificationCenter.default.post(
             name: UIContentSizeCategory.didChangeNotification,
             object: nil,
@@ -33,6 +46,18 @@ package final class ContentSizeCategoryManager: ContentSizeCategoryManagerProtoc
                 UIContentSizeCategory.isUserLinguaNotificationUserInfoKey: true
             ]
         )
+    }
+
+    package func incrementAppContentSizeCategory() {
+        notifyDidChange(newValue: appContentSizeCategory.incremented())
+    }
+
+    package func decrementAppContentSizeCategory() {
+        notifyDidChange(newValue: appContentSizeCategory.decremented())
+    }
+
+    package func resetAppContentSizeCategory() {
+        notifyDidChange(newValue: systemContentSizeCategory)
     }
 }
 

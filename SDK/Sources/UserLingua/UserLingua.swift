@@ -66,10 +66,10 @@ public final class UserLingua {
     var appContentSizeCategory: UIContentSizeCategory {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
             switch store.mode {
-            case let .visible(state):
-                state.inspection?.appContentSizeCategory ?? contentSizeCategoryManager.systemPreferredContentSizeCategory
+            case .visible:
+                contentSizeCategoryManager.appContentSizeCategory
             default:
-                contentSizeCategoryManager.systemPreferredContentSizeCategory
+                contentSizeCategoryManager.systemContentSizeCategory
             }
         }
     }
@@ -166,9 +166,8 @@ public final class UserLingua {
                 return formattedString.value
             }
 
-            if case let .visible(state) = store.mode,
-               let state = state.inspection,
-               state.recognizedString.value == formattedString.value {
+            if case let .visible(state) = store.mode, let state = state.inspection,
+               !state.isTransitioning && state.recognizedString.value == formattedString.value {
                 // we're currently inspected this string so display the
                 // suggestion the user is making if there is one
                 if let suggestion = suggestionsRepository.suggestion(for: formattedString.value, locale: state.locale) {

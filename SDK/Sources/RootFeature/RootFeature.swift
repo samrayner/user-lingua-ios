@@ -11,11 +11,8 @@ import Theme
 
 @Reducer
 package struct RootFeature {
-    @Dependency(\.continuousClock) var clock
     @Dependency(WindowManagerDependency.self) var windowManager
-    @Dependency(UserLinguaObservableDependency.self) var appViewModel
     @Dependency(NotificationManagerDependency.self) var notificationManager
-    @Dependency(ContentSizeCategoryManagerDependency.self) var contentSizeCategoryManager
 
     let onForeground: () -> Void
     let onBackground: () -> Void
@@ -48,7 +45,6 @@ package struct RootFeature {
         case disable
         case configure(Configuration)
         case didShake
-        case backgroundTransitionDidComplete
         case mode(Mode.Action)
     }
 
@@ -87,17 +83,8 @@ package struct RootFeature {
                 onForeground()
                 return .none
             case .mode(.visible(.delegate(.inspectionDidDismiss))):
-                contentSizeCategoryManager.notifyDidChange(newValue: contentSizeCategoryManager.systemPreferredContentSizeCategory)
-                windowManager.resetAppWindow()
                 state.mode = .recording
-                appViewModel.refresh()
                 onBackground()
-                return .run { send in
-                    // withAnimation(completion:) is iOS 17+ only
-                    try await clock.sleep(for: .seconds(.AnimationDuration.screenTransition))
-                    await send(.backgroundTransitionDidComplete)
-                }
-            case .backgroundTransitionDidComplete:
                 windowManager.hideWindow()
                 return .none
             case .mode:
