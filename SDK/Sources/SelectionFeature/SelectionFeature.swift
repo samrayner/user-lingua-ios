@@ -102,6 +102,7 @@ package struct SelectionFeature {
 }
 
 package struct SelectionFeatureView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Dependency(WindowManagerDependency.self) var windowManager
     @Perception.Bindable package var store: StoreOf<SelectionFeature>
 
@@ -141,7 +142,7 @@ package struct SelectionFeatureView: View {
                 onDismiss: { store.send(.inspectionDidDismiss) }
             ) { store in
                 InspectionFeatureView(store: store)
-                    .preferredColorScheme(windowManager.appUIStyle == .light ? .dark : .light)
+                    .preferredColorScheme(colorScheme == .light ? .dark : .light)
             }
             .task { await store.send(.observeDeviceRotation).finish() }
         }
