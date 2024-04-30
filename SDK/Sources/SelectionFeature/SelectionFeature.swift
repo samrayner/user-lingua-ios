@@ -149,17 +149,30 @@ package struct SelectionFeatureView: View {
     func highlights(color: Color, onSelectString: @escaping (RecognizedString) -> Void = { _ in }) -> some View {
         ZStack(alignment: .topLeading) {
             ForEach(store.recognizedStrings ?? []) { recognizedString in
-                ForEach(recognizedString.lines) { line in
-                    color
-                        .cornerRadius(5)
-                        .frame(width: line.boundingBox.width + 20, height: line.boundingBox.height + 20)
-                        .position(x: line.boundingBox.midX, y: line.boundingBox.midY)
-                        .onTapGesture {
-                            onSelectString(recognizedString)
-                        }
-                }
+                RecognizedStringHighlight(
+                    recognizedString: recognizedString,
+                    color: color
+                )
+                .onTapGesture { onSelectString(recognizedString) }
             }
         }
         .ignoresSafeArea()
+    }
+}
+
+private struct RecognizedStringHighlight: View {
+    @State private var isVisible = false
+    let recognizedString: RecognizedString
+    let color: Color
+
+    var body: some View {
+        ForEach(recognizedString.lines) { line in
+            color
+                .cornerRadius(5)
+                .frame(width: line.boundingBox.width + 20, height: line.boundingBox.height + 20)
+                .position(x: isVisible ? line.boundingBox.midX : -line.boundingBox.width, y: line.boundingBox.midY)
+                .animation(.bouncy.delay(.random(in: 0 ... TimeInterval.AnimationDuration.quick)), value: isVisible)
+        }
+        .onAppear { isVisible = true }
     }
 }
