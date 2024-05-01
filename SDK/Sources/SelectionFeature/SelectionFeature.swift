@@ -20,6 +20,7 @@ package struct SelectionFeature {
     package struct State: Equatable {
         @Shared(RecognitionFeature.State.persistenceKey) package var recognition = .init()
         var recognizedStrings: [RecognizedString]?
+        var lastDeviceOrientation = UIDevice.current.orientation
 
         @Presents package var inspection: InspectionFeature.State?
 
@@ -28,10 +29,11 @@ package struct SelectionFeature {
 
     package enum Action: BindableAction {
         case didSelectString(RecognizedString)
+        case didTapOverlay
         case inspectionDidDismiss
         case onAppear
         case observeDeviceRotation
-        case deviceOrientationDidChange
+        case deviceOrientationDidChange(UIDeviceOrientation)
         case inspection(PresentationAction<InspectionFeature.Action>)
         case recognition(RecognitionFeature.Action)
         case binding(BindingAction<State>)
@@ -40,7 +42,11 @@ package struct SelectionFeature {
 
     @CasePathable
     package enum Delegate {
-        case inspectionDidDismiss
+        case dismiss
+    }
+
+    enum CancelID {
+        case deviceOrientationObservation
     }
 
     package var body: some ReducerOf<Self> {
@@ -59,15 +65,16 @@ package struct SelectionFeature {
                     appFacade: windowManager.screenshotAppWindow()
                 )
                 state.recognizedStrings = nil
-                return .none
-            case .inspectionDidDismiss:
+                return .cancel(id: CancelID.deviceOrientationObservation)
+            case .didTapOverlay, .inspectionDidDismiss:
                 return .run { send in
-                    await send(.delegate(.inspectionDidDismiss))
+                    await send(.delegate(.dismiss))
                 }
             case .onAppear:
                 state.recognizedStrings = []
                 return .run { send in
                     await send(.recognition(.start))
+                    await send(.observeDeviceRotation)
                 }
             case .observeDeviceRotation:
                 return .run { send in
@@ -79,12 +86,15 @@ package struct SelectionFeature {
                         }
                         .removeDuplicates()
 
-                    for await _ in stream {
-                        await send(.deviceOrientationDidChange)
+                    for await orientation in stream {
+                        await send(.deviceOrientationDidChange(orientation))
                     }
                 }
-            case .deviceOrientationDidChange:
-                state.recognizedStrings = nil
+                .cancellable(id: CancelID.deviceOrientationObservation)
+            case let .deviceOrientationDidChange(orientation):
+                guard orientation != state.lastDeviceOrientation else { return .none }
+                state.lastDeviceOrientation = orientation
+                state.recognizedStrings = []
                 return .run { send in
                     await send(.recognition(.start))
                 }
@@ -124,6 +134,7 @@ package struct SelectionFeatureView: View {
                             .compositingGroup()
                             .luminanceToAlpha()
                         }
+                        .onTapGesture { store.send(.didTapOverlay) }
                         .animation(.smooth, value: isVisible)
                         .onAppear { isVisible = true }
                         .onDisappear { isVisible = false }
@@ -146,7 +157,6 @@ package struct SelectionFeatureView: View {
                 InspectionFeatureView(store: store)
                     .preferredColorScheme(colorScheme == .light ? .dark : .light)
             }
-            .task { await store.send(.observeDeviceRotation).finish() }
         }
     }
 

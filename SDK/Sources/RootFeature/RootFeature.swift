@@ -82,7 +82,7 @@ package struct RootFeature {
                 state.mode = .visible(.init())
                 onForeground()
                 return .none
-            case .mode(.visible(.delegate(.inspectionDidDismiss))):
+            case .mode(.visible(.delegate(.dismiss))):
                 state.mode = .recording
                 onBackground()
                 windowManager.hideWindow()
