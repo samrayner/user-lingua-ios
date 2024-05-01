@@ -44,7 +44,7 @@ package struct InspectionFeature {
 
         package let recognizedString: RecognizedString
         package var darkModeIsEnabled: Bool
-        package var appFacade: UIImage?
+        package var isTransitioning = true
         @Shared(RecognitionFeature.State.persistenceKey) var recognition = .init()
         @Shared(Configuration.persistenceKey) var configuration = .init()
         var focusedField: Field?
@@ -53,6 +53,7 @@ package struct InspectionFeature {
         var previewMode: PreviewMode = .visual
         var isFullScreen = false
         var keyboardHeight: CGFloat = 0
+        var appFacade: UIImage?
 
         package var locale: Locale {
             Locale(identifier: localeIdentifier)
@@ -125,6 +126,7 @@ package struct InspectionFeature {
                 return .none
             case .didTapClose:
                 state.appFacade = windowManager.screenshotAppWindow()
+                state.isTransitioning = true
                 contentSizeCategoryManager.resetAppContentSizeCategory()
                 windowManager.resetAppWindow()
                 appViewModel.refresh() // rerun UserLingua.shared.displayString
@@ -155,6 +157,7 @@ package struct InspectionFeature {
                 }
             case .didAppear:
                 state.appFacade = nil
+                state.isTransitioning = false
                 return .none
             case .saveSuggestion:
                 suggestionsRepository.saveSuggestion(state.makeSuggestion())
@@ -402,9 +405,13 @@ package struct InspectionFeatureView: View {
             .background {
                 GeometryReader { geometry in
                     Color.clear
-                        .onChange(of: geometry.frame(in: .global)) {
-                            guard store.appFacade == nil else { return }
-                            store.send(.viewportFrameDidChange($0, animationDuration: .AnimationDuration.quick))
+                        .onChange(of: geometry.frame(in: .global)) { frame in
+                            guard !store.isTransitioning else { return }
+                            store.send(.viewportFrameDidChange(frame, animationDuration: .AnimationDuration.quick))
+                        }
+                        .onChange(of: store.isTransitioning) { _ in
+                            guard !store.isTransitioning else { return }
+                            store.send(.viewportFrameDidChange(geometry.frame(in: .global), animationDuration: .AnimationDuration.quick))
                         }
                 }
             }
