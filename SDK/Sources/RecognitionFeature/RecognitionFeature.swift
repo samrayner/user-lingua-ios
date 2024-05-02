@@ -52,7 +52,7 @@ package struct RecognitionFeature {
                 state.appFacade = windowService.screenshotAppWindow()
                 state.isTakingScreenshot = true
                 state.appYOffset = windowService.appYOffset
-                windowService.positionApp(yOffset: 0, animationDuration: 0)
+                windowService.resetAppPosition()
                 appViewModel.refresh() // refresh app views with scrambled text
                 return .run { send in
                     await send(.recognizeStrings)

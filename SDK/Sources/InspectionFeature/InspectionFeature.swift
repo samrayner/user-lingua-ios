@@ -100,7 +100,7 @@ package struct InspectionFeature {
         case observeOrientation
         case orientationDidChange(UIDeviceOrientation)
         case viewportFrameDidChange(CGRect)
-        case focusViewport
+        case focusViewport(fromZeroPosition: Bool = false)
         case keyboardWillChangeFrame(KeyboardNotification)
         case observeKeyboardWillChangeFrame
         case binding(BindingAction<State>)
@@ -185,14 +185,18 @@ package struct InspectionFeature {
 
                 state.recognizedString = recognizedString
                 return .run { send in
-                    await send(.focusViewport)
+                    await send(.focusViewport(fromZeroPosition: true))
                 }
             case let .viewportFrameDidChange(frame):
                 state.viewportFrame = frame
                 return .run { send in
-                    await send(.focusViewport)
+                    await send(.focusViewport())
                 }
-            case .focusViewport:
+            case let .focusViewport(fromZeroPosition):
+                if fromZeroPosition {
+                    windowService.resetAppPosition()
+                }
+
                 windowService.positionApp(
                     focusing: state.recognizedString.boundingBoxCenter,
                     in: state.viewportFrame,

@@ -101,6 +101,17 @@ class WindowServiceProtocolSpy: WindowServiceProtocol {
         resetAppWindowClosure?()
     }
 
+    var resetAppPositionCallsCount = 0
+    var resetAppPositionCalled: Bool {
+        resetAppWindowCallsCount > 0
+    }
+
+    var resetAppPositionClosure: (() -> Void)?
+    func resetAppPosition() {
+        resetAppPositionCallsCount += 1
+        resetAppPositionClosure?()
+    }
+
     var toggleDarkModeCallsCount = 0
     var toggleDarkModeCalled: Bool {
         toggleDarkModeCallsCount > 0

@@ -15,6 +15,7 @@ package protocol WindowServiceProtocol {
     func toggleDarkMode()
     func positionApp(focusing: CGPoint, in: CGRect, animationDuration: TimeInterval)
     func positionApp(yOffset: CGFloat, animationDuration: TimeInterval)
+    func resetAppPosition()
     func resetAppWindow()
 }
 
@@ -121,8 +122,15 @@ package final class WindowService: WindowServiceProtocol {
         }
     }
 
-    package func resetAppWindow() {
+    package func resetAppPosition() {
         positionApp(yOffset: 0)
+        // hack sometimes required to force the window to redraw
+        appWindow?.isHidden.toggle()
+        appWindow?.isHidden.toggle()
+    }
+
+    package func resetAppWindow() {
+        resetAppPosition()
         appWindow?.overrideUserInterfaceStyle = originalAppWindowUIStyleOverride
     }
 }
