@@ -21,15 +21,16 @@ package struct RecognitionFeature {
         package var isRecognizingStrings = false
         package var isTakingScreenshot = false
         var appFacade: UIImage?
+        var appYOffset: CGFloat = 0
 
         package init() {}
     }
 
     package enum Action {
         case start
-        case setUpScreenshot
+        case prepareApp
         case recognizeStrings
-        case tearDownScreenshot
+        case resetApp
         case finish
         case delegate(Delegate)
 
@@ -45,11 +46,13 @@ package struct RecognitionFeature {
             case .start:
                 state.isRecognizingStrings = true
                 return .run { send in
-                    await send(.setUpScreenshot)
+                    await send(.prepareApp)
                 }
-            case .setUpScreenshot:
+            case .prepareApp:
                 state.appFacade = windowService.screenshotAppWindow()
                 state.isTakingScreenshot = true
+                state.appYOffset = windowService.appYOffset
+                windowService.positionApp(yOffset: 0, animationDuration: 0)
                 appViewModel.refresh() // refresh app views with scrambled text
                 return .run { send in
                     await send(.recognizeStrings)
@@ -57,25 +60,25 @@ package struct RecognitionFeature {
             case .recognizeStrings:
                 guard let screenshot = windowService.screenshotAppWindow() else {
                     return .run { send in
-                        await send(.tearDownScreenshot)
+                        await send(.resetApp)
                         await send(.delegate(.didRecognizeStrings([])))
                     }
                 }
 
                 return .run { send in
-                    await send(.tearDownScreenshot)
+                    await send(.resetApp)
                     let recognizedStrings = try await stringRecognizer.recognizeStrings(in: screenshot)
                     await send(.delegate(.didRecognizeStrings(recognizedStrings)))
                 }
-            case .tearDownScreenshot:
+            case .resetApp:
+                windowService.positionApp(yOffset: state.appYOffset, animationDuration: 0)
                 state.isTakingScreenshot = false
                 appViewModel.refresh() // refresh app views with unscrambled text
                 return .run { send in
                     await send(.finish)
                 }
             case .finish:
-                state.appFacade = nil
-                state.isRecognizingStrings = false
+                state = .init()
                 return .none
             case .delegate:
                 return .none

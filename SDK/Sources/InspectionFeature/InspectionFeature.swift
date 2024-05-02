@@ -19,6 +19,7 @@ package struct InspectionFeature {
     @Dependency(ContentSizeCategoryServiceDependency.self) var contentSizeCategoryService
     @Dependency(WindowServiceDependency.self) var windowService
     @Dependency(NotificationServiceDependency.self) var notificationService
+    @Dependency(OrientationServiceDependency.self) var orientationService
 
     package init() {}
 
@@ -42,9 +43,9 @@ package struct InspectionFeature {
             }
         }
 
-        package let recognizedString: RecognizedString
-        package var darkModeIsEnabled: Bool
-        package var isTransitioning = true
+        package internal(set) var recognizedString: RecognizedString
+        package internal(set) var darkModeIsEnabled: Bool
+        package internal(set) var isTransitioning = true
         @Shared(RecognitionFeature.State.persistenceKey) var recognition = .init()
         @Shared(Configuration.persistenceKey) var configuration = .init()
         var focusedField: Field?
@@ -54,6 +55,7 @@ package struct InspectionFeature {
         var isFullScreen = false
         var keyboardHeight: CGFloat = 0
         var appFacade: UIImage?
+        var viewportFrame: CGRect = .zero
 
         package var locale: Locale {
             Locale(identifier: localeIdentifier)
@@ -95,7 +97,10 @@ package struct InspectionFeature {
         case onAppear
         case didAppear
         case saveSuggestion
-        case viewportFrameDidChange(CGRect, animationDuration: TimeInterval = 0)
+        case observeOrientation
+        case orientationDidChange(UIDeviceOrientation)
+        case viewportFrameDidChange(CGRect)
+        case focusViewport
         case keyboardWillChangeFrame(KeyboardNotification)
         case observeKeyboardWillChangeFrame
         case binding(BindingAction<State>)
@@ -163,11 +168,35 @@ package struct InspectionFeature {
                 suggestionsRepository.saveSuggestion(state.makeSuggestion())
                 appViewModel.refresh()
                 return .none
-            case let .viewportFrameDidChange(frame, animationDuration):
-                windowService.translateApp(
+            case .observeOrientation:
+                return .run { send in
+                    for await orientation in await orientationService.orientationDidChange() {
+                        await send(.orientationDidChange(orientation))
+                    }
+                }
+            case .orientationDidChange:
+                return .run { send in
+                    await send(.recognition(.start))
+                }
+            case let .recognition(.delegate(.didRecognizeStrings(recognizedStrings))):
+                guard let recognizedString = recognizedStrings.first(
+                    where: { $0.recordedString.formatted == state.recognizedString.recordedString.formatted }
+                ) else { return .none }
+
+                state.recognizedString = recognizedString
+                return .run { send in
+                    await send(.focusViewport)
+                }
+            case let .viewportFrameDidChange(frame):
+                state.viewportFrame = frame
+                return .run { send in
+                    await send(.focusViewport)
+                }
+            case .focusViewport:
+                windowService.positionApp(
                     focusing: state.recognizedString.boundingBoxCenter,
-                    in: frame,
-                    animationDuration: animationDuration
+                    in: state.viewportFrame,
+                    animationDuration: .AnimationDuration.quick
                 )
                 return .none
             case let .keyboardWillChangeFrame(notification):
@@ -268,8 +297,9 @@ package struct InspectionFeatureView: View {
             }
             .font(.theme(\.body))
             .clearPresentationBackground()
-            .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
             .onAppear { store.send(.onAppear) }
+            .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
+            .task { await store.send(.observeOrientation).finish() }
         }
     }
 
@@ -407,11 +437,11 @@ package struct InspectionFeatureView: View {
                     Color.clear
                         .onChange(of: geometry.frame(in: .global)) { frame in
                             guard !store.isTransitioning else { return }
-                            store.send(.viewportFrameDidChange(frame, animationDuration: .AnimationDuration.quick))
+                            store.send(.viewportFrameDidChange(frame))
                         }
                         .onChange(of: store.isTransitioning) { _ in
                             guard !store.isTransitioning else { return }
-                            store.send(.viewportFrameDidChange(geometry.frame(in: .global), animationDuration: .AnimationDuration.quick))
+                            store.send(.viewportFrameDidChange(geometry.frame(in: .global)))
                         }
                 }
             }

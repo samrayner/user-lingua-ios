@@ -23,6 +23,10 @@ package final class OrientationService: OrientationServiceProtocol {
                     [.landscapeLeft, .landscapeRight, .portrait, .portraitUpsideDown].contains($0)
                         && $0 != self?.lastOrientation
                 }
+                .map { [weak self] in
+                    self?.lastOrientation = $0
+                    return $0
+                }
         )
     }
 }

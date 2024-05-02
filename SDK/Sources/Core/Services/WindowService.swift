@@ -7,13 +7,15 @@ import UIKit
 package protocol WindowServiceProtocol {
     var userLinguaWindow: UIWindow { get }
     var appUIStyle: UIUserInterfaceStyle { get }
+    var appYOffset: CGFloat { get }
     func setRootView(_: some View)
     func screenshotAppWindow() -> UIImage?
     func showWindow()
-    func resetAppWindow()
     func hideWindow()
     func toggleDarkMode()
-    func translateApp(focusing: CGPoint, in: CGRect, animationDuration: TimeInterval)
+    func positionApp(focusing: CGPoint, in: CGRect, animationDuration: TimeInterval)
+    func positionApp(yOffset: CGFloat, animationDuration: TimeInterval)
+    func resetAppWindow()
 }
 
 package final class WindowService: WindowServiceProtocol {
@@ -28,6 +30,10 @@ package final class WindowService: WindowServiceProtocol {
         } else {
             originalAppWindowUIStyleOverride
         }
+    }
+
+    package var appYOffset: CGFloat {
+        appWindow?.layer.translationIn2D.y ?? 0
     }
 
     package let userLinguaWindow: UIWindow = {
@@ -83,21 +89,25 @@ package final class WindowService: WindowServiceProtocol {
         userLinguaWindow.isHidden = true
     }
 
-    package func resetAppWindow() {
-        appWindow?.layer.removeTranslation()
-        appWindow?.overrideUserInterfaceStyle = originalAppWindowUIStyleOverride
-    }
-
     package func toggleDarkMode() {
         appWindow?.toggleDarkMode()
     }
 
-    package func translateApp(focusing focalPoint: CGPoint, in viewportFrame: CGRect, animationDuration: TimeInterval = 0) {
+    package func positionApp(focusing focalPoint: CGPoint, in viewportFrame: CGRect, animationDuration: TimeInterval = 0) {
         guard let appWindow else { return }
 
         let maxTranslateUp = viewportFrame.maxY - appWindow.bounds.maxY
         let maxTranslateDown = viewportFrame.minY
         let yOffset = (viewportFrame.midY - focalPoint.y).clamped(to: maxTranslateUp ... maxTranslateDown)
+
+        positionApp(
+            yOffset: yOffset,
+            animationDuration: animationDuration
+        )
+    }
+
+    package func positionApp(yOffset: CGFloat, animationDuration: TimeInterval = 0) {
+        guard let appWindow else { return }
 
         if animationDuration > 0 {
             let animation = CABasicAnimation(keyPath: "transform.translation.y")
@@ -110,6 +120,11 @@ package final class WindowService: WindowServiceProtocol {
             appWindow.layer.translate(y: yOffset)
         }
     }
+
+    package func resetAppWindow() {
+        positionApp(yOffset: 0)
+        appWindow?.overrideUserInterfaceStyle = originalAppWindowUIStyleOverride
+    }
 }
 
 extension UIApplication {
@@ -120,120 +135,6 @@ extension UIApplication {
                     $0.activationState == .foregroundActive
             }
             .flatMap { $0 as? UIWindowScene }
-    }
-}
-
-// Spyable doesn't handle `some View` properly
-class WindowServiceProtocolSpy: WindowServiceProtocol {
-    var userLinguaWindow: UIWindow {
-        get {
-            underlyingUserLinguaWindow
-        }
-        set {
-            underlyingUserLinguaWindow = newValue
-        }
-    }
-
-    var underlyingUserLinguaWindow: UIWindow!
-
-    var appUIStyle: UIUserInterfaceStyle {
-        get {
-            underlyingAppUIStyle
-        }
-        set {
-            underlyingAppUIStyle = newValue
-        }
-    }
-
-    var underlyingAppUIStyle: UIUserInterfaceStyle!
-    var setRootViewCallsCount = 0
-    var setRootViewCalled: Bool {
-        setRootViewCallsCount > 0
-    }
-
-    var setRootViewReceived: (any View)?
-    var setRootViewReceivedInvocations: [any View] = []
-    var setRootViewClosure: ((any View) -> Void)?
-    func setRootView(_ rootView: some View) {
-        setRootViewCallsCount += 1
-        setRootViewReceived = rootView
-        setRootViewReceivedInvocations.append(rootView)
-        setRootViewClosure?(rootView)
-    }
-
-    var screenshotAppWindowCallsCount = 0
-    var screenshotAppWindowCalled: Bool {
-        screenshotAppWindowCallsCount > 0
-    }
-
-    var screenshotAppWindowReturnValue: UIImage?
-    var screenshotAppWindowClosure: (() -> UIImage?)?
-    func screenshotAppWindow() -> UIImage? {
-        screenshotAppWindowCallsCount += 1
-        if screenshotAppWindowClosure != nil {
-            return screenshotAppWindowClosure!()
-        } else {
-            return screenshotAppWindowReturnValue
-        }
-    }
-
-    var showWindowCallsCount = 0
-    var showWindowCalled: Bool {
-        showWindowCallsCount > 0
-    }
-
-    var showWindowClosure: (() -> Void)?
-    func showWindow() {
-        showWindowCallsCount += 1
-        showWindowClosure?()
-    }
-
-    var hideWindowCallsCount = 0
-    var hideWindowCalled: Bool {
-        hideWindowCallsCount > 0
-    }
-
-    var hideWindowClosure: (() -> Void)?
-    func hideWindow() {
-        hideWindowCallsCount += 1
-        hideWindowClosure?()
-    }
-
-    var resetAppWindowCallsCount = 0
-    var resetAppWindowCalled: Bool {
-        resetAppWindowCallsCount > 0
-    }
-
-    var resetAppWindowClosure: (() -> Void)?
-    func resetAppWindow() {
-        resetAppWindowCallsCount += 1
-        resetAppWindowClosure?()
-    }
-
-    var toggleDarkModeCallsCount = 0
-    var toggleDarkModeCalled: Bool {
-        toggleDarkModeCallsCount > 0
-    }
-
-    var toggleDarkModeClosure: (() -> Void)?
-    func toggleDarkMode() {
-        toggleDarkModeCallsCount += 1
-        toggleDarkModeClosure?()
-    }
-
-    var translateAppFocusingInCallsCount = 0
-    var translateAppFocusingInCalled: Bool {
-        translateAppFocusingInCallsCount > 0
-    }
-
-    var translateAppFocusingInReceivedArguments: (focusing: CGPoint, in: CGRect, animationDuration: TimeInterval)?
-    var translateAppFocusingInReceivedInvocations: [(focusing: CGPoint, in: CGRect, animationDuration: TimeInterval)] = []
-    var translateAppFocusingInClosure: ((CGPoint, CGRect, TimeInterval) -> Void)?
-    func translateApp(focusing: CGPoint, in rect: CGRect, animationDuration: TimeInterval) {
-        translateAppFocusingInCallsCount += 1
-        translateAppFocusingInReceivedArguments = (focusing, rect, animationDuration)
-        translateAppFocusingInReceivedInvocations.append((focusing, rect, animationDuration))
-        translateAppFocusingInClosure?(focusing, rect, animationDuration)
     }
 }
 
