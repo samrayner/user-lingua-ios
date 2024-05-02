@@ -9,7 +9,7 @@ import UIKit
 @Reducer
 package struct RecognitionFeature {
     @Dependency(StringRecognizerDependency.self) var stringRecognizer
-    @Dependency(WindowManagerDependency.self) var windowManager
+    @Dependency(WindowServiceDependency.self) var windowService
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
 
     package init() {}
@@ -48,14 +48,14 @@ package struct RecognitionFeature {
                     await send(.setUpScreenshot)
                 }
             case .setUpScreenshot:
-                state.appFacade = windowManager.screenshotAppWindow()
+                state.appFacade = windowService.screenshotAppWindow()
                 state.isTakingScreenshot = true
                 appViewModel.refresh() // refresh app views with scrambled text
                 return .run { send in
                     await send(.recognizeStrings)
                 }
             case .recognizeStrings:
-                guard let screenshot = windowManager.screenshotAppWindow() else {
+                guard let screenshot = windowService.screenshotAppWindow() else {
                     return .run { send in
                         await send(.tearDownScreenshot)
                         await send(.delegate(.didRecognizeStrings([])))

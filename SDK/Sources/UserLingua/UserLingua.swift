@@ -12,8 +12,8 @@ public final class UserLingua {
     public static let shared = UserLingua()
 
     public let viewModel = UserLinguaObservable()
-    private let windowManager: WindowManagerProtocol = WindowManager()
-    private let contentSizeCategoryManager: ContentSizeCategoryManagerProtocol = ContentSizeCategoryManager()
+    private let windowService: WindowServiceProtocol = WindowService()
+    private let contentSizeCategoryService: ContentSizeCategoryServiceProtocol = ContentSizeCategoryService()
     private let suggestionsRepository: SuggestionsRepositoryProtocol = SuggestionsRepository()
     private let stringsRepository: StringsRepositoryProtocol = StringsRepository()
 
@@ -27,8 +27,8 @@ public final class UserLingua {
         },
         withDependencies: {
             $0[UserLinguaObservableDependency.self] = self.viewModel
-            $0[WindowManagerDependency.self] = self.windowManager
-            $0[ContentSizeCategoryManagerDependency.self] = self.contentSizeCategoryManager
+            $0[WindowServiceDependency.self] = self.windowService
+            $0[ContentSizeCategoryServiceDependency.self] = self.contentSizeCategoryService
             $0[SuggestionsRepositoryDependency.self] = self.suggestionsRepository
             $0[StringsRepositoryDependency.self] = self.stringsRepository
         }
@@ -43,7 +43,7 @@ public final class UserLingua {
     }
 
     private init() {
-        windowManager.setRootView(RootFeatureView(store: store))
+        windowService.setRootView(RootFeatureView(store: store))
     }
 
     public var configuration: Configuration {
@@ -67,15 +67,15 @@ public final class UserLingua {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
             switch store.mode {
             case .visible:
-                contentSizeCategoryManager.appContentSizeCategory
+                contentSizeCategoryService.appContentSizeCategory
             default:
-                contentSizeCategoryManager.systemContentSizeCategory
+                contentSizeCategoryService.systemContentSizeCategory
             }
         }
     }
 
     var window: UIWindow {
-        windowManager.userLinguaWindow
+        windowService.userLinguaWindow
     }
 
     var isEnabled: Bool {

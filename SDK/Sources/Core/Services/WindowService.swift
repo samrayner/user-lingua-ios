@@ -1,10 +1,10 @@
-// WindowManager.swift
+// WindowService.swift
 
 import Dependencies
 import SwiftUI
 import UIKit
 
-package protocol WindowManagerProtocol {
+package protocol WindowServiceProtocol {
     var userLinguaWindow: UIWindow { get }
     var appUIStyle: UIUserInterfaceStyle { get }
     func setRootView(_: some View)
@@ -16,7 +16,7 @@ package protocol WindowManagerProtocol {
     func translateApp(focusing: CGPoint, in: CGRect, animationDuration: TimeInterval)
 }
 
-package final class WindowManager: WindowManagerProtocol {
+package final class WindowService: WindowServiceProtocol {
     package init() {}
 
     var appWindow: UIWindow?
@@ -124,7 +124,7 @@ extension UIApplication {
 }
 
 // Spyable doesn't handle `some View` properly
-class WindowManagerProtocolSpy: WindowManagerProtocol {
+class WindowServiceProtocolSpy: WindowServiceProtocol {
     var userLinguaWindow: UIWindow {
         get {
             underlyingUserLinguaWindow
@@ -237,8 +237,8 @@ class WindowManagerProtocolSpy: WindowManagerProtocol {
     }
 }
 
-package enum WindowManagerDependency: DependencyKey {
-    package static let liveValue: any WindowManagerProtocol = WindowManager()
-    package static let previewValue: any WindowManagerProtocol = WindowManagerProtocolSpy()
-    package static let testValue: any WindowManagerProtocol = WindowManagerProtocolSpy()
+package enum WindowServiceDependency: DependencyKey {
+    package static let liveValue: any WindowServiceProtocol = WindowService()
+    package static let previewValue: any WindowServiceProtocol = WindowServiceProtocolSpy()
+    package static let testValue: any WindowServiceProtocol = WindowServiceProtocolSpy()
 }

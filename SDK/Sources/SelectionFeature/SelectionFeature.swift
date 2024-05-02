@@ -11,8 +11,8 @@ import Theme
 
 @Reducer
 package struct SelectionFeature {
-    @Dependency(NotificationManagerDependency.self) var notificationManager
-    @Dependency(WindowManagerDependency.self) var windowManager
+    @Dependency(OrientationServiceDependency.self) var orientationService
+    @Dependency(WindowServiceDependency.self) var windowService
 
     package init() {}
 
@@ -20,7 +20,6 @@ package struct SelectionFeature {
     package struct State: Equatable {
         @Shared(RecognitionFeature.State.persistenceKey) package var recognition = .init()
         var recognizedStrings: [RecognizedString]?
-        var lastDeviceOrientation = UIDevice.current.orientation
 
         @Presents package var inspection: InspectionFeature.State?
 
@@ -32,8 +31,8 @@ package struct SelectionFeature {
         case didTapOverlay
         case inspectionDidDismiss
         case onAppear
-        case observeDeviceRotation
-        case deviceOrientationDidChange(UIDeviceOrientation)
+        case observeOrientation
+        case orientationDidChange(UIDeviceOrientation)
         case inspection(PresentationAction<InspectionFeature.Action>)
         case recognition(RecognitionFeature.Action)
         case binding(BindingAction<State>)
@@ -61,8 +60,8 @@ package struct SelectionFeature {
             case let .didSelectString(recognizedString):
                 state.inspection = .init(
                     recognizedString: recognizedString,
-                    darkModeIsEnabled: windowManager.appUIStyle == .dark,
-                    appFacade: windowManager.screenshotAppWindow()
+                    darkModeIsEnabled: windowService.appUIStyle == .dark,
+                    appFacade: windowService.screenshotAppWindow()
                 )
                 state.recognizedStrings = nil
                 return .cancel(id: CancelID.deviceOrientationObservation)
@@ -74,26 +73,16 @@ package struct SelectionFeature {
                 state.recognizedStrings = []
                 return .run { send in
                     await send(.recognition(.start))
-                    await send(.observeDeviceRotation)
+                    await send(.observeOrientation)
                 }
-            case .observeDeviceRotation:
+            case .observeOrientation:
                 return .run { send in
-                    let stream = await notificationManager
-                        .observe(name: UIDevice.orientationDidChangeNotification)
-                        .map { _ in await UIDevice.current.orientation }
-                        .filter {
-                            [.landscapeLeft, .landscapeRight, .portrait, .portraitUpsideDown].contains($0)
-                        }
-                        .removeDuplicates()
-
-                    for await orientation in stream {
-                        await send(.deviceOrientationDidChange(orientation))
+                    for await orientation in await orientationService.orientationDidChange() {
+                        await send(.orientationDidChange(orientation))
                     }
                 }
                 .cancellable(id: CancelID.deviceOrientationObservation)
-            case let .deviceOrientationDidChange(orientation):
-                guard orientation != state.lastDeviceOrientation else { return .none }
-                state.lastDeviceOrientation = orientation
+            case .orientationDidChange:
                 state.recognizedStrings = []
                 return .run { send in
                     await send(.recognition(.start))

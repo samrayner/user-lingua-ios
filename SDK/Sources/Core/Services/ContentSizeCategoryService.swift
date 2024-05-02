@@ -1,4 +1,4 @@
-// ContentSizeCategoryManager.swift
+// ContentSizeCategoryService.swift
 
 import Combine
 import Dependencies
@@ -6,7 +6,7 @@ import Spyable
 import UIKit
 
 @Spyable
-package protocol ContentSizeCategoryManagerProtocol {
+package protocol ContentSizeCategoryServiceProtocol {
     var systemContentSizeCategory: UIContentSizeCategory { get }
     var appContentSizeCategory: UIContentSizeCategory { get }
     func incrementAppContentSizeCategory()
@@ -14,7 +14,7 @@ package protocol ContentSizeCategoryManagerProtocol {
     func resetAppContentSizeCategory()
 }
 
-package final class ContentSizeCategoryManager: ContentSizeCategoryManagerProtocol {
+package final class ContentSizeCategoryService: ContentSizeCategoryServiceProtocol {
     package private(set) var systemContentSizeCategory = UITraitCollection.current.preferredContentSizeCategory
     package private(set) var appContentSizeCategory = UITraitCollection.current.preferredContentSizeCategory
     private var cancellables = Set<AnyCancellable>()
@@ -61,8 +61,8 @@ package final class ContentSizeCategoryManager: ContentSizeCategoryManagerProtoc
     }
 }
 
-package enum ContentSizeCategoryManagerDependency: DependencyKey {
-    package static let liveValue: any ContentSizeCategoryManagerProtocol = ContentSizeCategoryManager()
-    package static let previewValue: any ContentSizeCategoryManagerProtocol = ContentSizeCategoryManagerProtocolSpy()
-    package static let testValue: any ContentSizeCategoryManagerProtocol = ContentSizeCategoryManagerProtocolSpy()
+package enum ContentSizeCategoryServiceDependency: DependencyKey {
+    package static let liveValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryService()
+    package static let previewValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryServiceProtocolSpy()
+    package static let testValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryServiceProtocolSpy()
 }

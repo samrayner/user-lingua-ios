@@ -16,9 +16,9 @@ package struct InspectionFeature {
     @Dependency(\.dismiss) var dismiss
     @Dependency(SuggestionsRepositoryDependency.self) var suggestionsRepository
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
-    @Dependency(ContentSizeCategoryManagerDependency.self) var contentSizeCategoryManager
-    @Dependency(WindowManagerDependency.self) var windowManager
-    @Dependency(NotificationManagerDependency.self) var notificationManager
+    @Dependency(ContentSizeCategoryServiceDependency.self) var contentSizeCategoryService
+    @Dependency(WindowServiceDependency.self) var windowService
+    @Dependency(NotificationServiceDependency.self) var notificationService
 
     package init() {}
 
@@ -119,22 +119,22 @@ package struct InspectionFeature {
                 state.focusedField = .suggestion
                 return .none
             case .didTapIncreaseTextSize:
-                contentSizeCategoryManager.incrementAppContentSizeCategory()
+                contentSizeCategoryService.incrementAppContentSizeCategory()
                 return .none
             case .didTapDecreaseTextSize:
-                contentSizeCategoryManager.decrementAppContentSizeCategory()
+                contentSizeCategoryService.decrementAppContentSizeCategory()
                 return .none
             case .didTapClose:
-                state.appFacade = windowManager.screenshotAppWindow()
+                state.appFacade = windowService.screenshotAppWindow()
                 state.isTransitioning = true
-                contentSizeCategoryManager.resetAppContentSizeCategory()
-                windowManager.resetAppWindow()
+                contentSizeCategoryService.resetAppContentSizeCategory()
+                windowService.resetAppWindow()
                 appViewModel.refresh() // rerun UserLingua.shared.displayString
                 return .run { _ in
                     await dismiss()
                 }
             case .didTapToggleDarkMode:
-                windowManager.toggleDarkMode()
+                windowService.toggleDarkMode()
                 state.darkModeIsEnabled.toggle()
                 return .none
             case .didTapToggleFullScreen:
@@ -150,7 +150,7 @@ package struct InspectionFeature {
                 print("SUBMITTED \(state.makeSuggestion())")
                 return .none
             case .onAppear:
-                ThemeFont.scaleFactor = contentSizeCategoryManager.systemContentSizeCategory.fontScaleFactor
+                ThemeFont.scaleFactor = contentSizeCategoryService.systemContentSizeCategory.fontScaleFactor
                 return .run { send in
                     try await clock.sleep(for: .seconds(.AnimationDuration.screenTransition))
                     await send(.didAppear)
@@ -164,7 +164,7 @@ package struct InspectionFeature {
                 appViewModel.refresh()
                 return .none
             case let .viewportFrameDidChange(frame, animationDuration):
-                windowManager.translateApp(
+                windowService.translateApp(
                     focusing: state.recognizedString.boundingBoxCenter,
                     in: frame,
                     animationDuration: animationDuration
@@ -180,7 +180,7 @@ package struct InspectionFeature {
                 return .none
             case .observeKeyboardWillChangeFrame:
                 return .run { send in
-                    let stream = await notificationManager.observe(name: .swizzled(UIResponder.keyboardWillChangeFrameNotification))
+                    let stream = await notificationService.observe(name: .swizzled(UIResponder.keyboardWillChangeFrameNotification))
                         .compactMap { KeyboardNotification(userInfo: $0.userInfo) }
 
                     for await keyboardNotification in stream {

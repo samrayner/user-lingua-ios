@@ -11,8 +11,8 @@ import Theme
 
 @Reducer
 package struct RootFeature {
-    @Dependency(WindowManagerDependency.self) var windowManager
-    @Dependency(NotificationManagerDependency.self) var notificationManager
+    @Dependency(WindowServiceDependency.self) var windowService
+    @Dependency(NotificationServiceDependency.self) var notificationService
 
     let onForeground: () -> Void
     let onBackground: () -> Void
@@ -65,7 +65,7 @@ package struct RootFeature {
             case .enable:
                 state.mode = .recording
                 return .run { send in
-                    for await _ in await notificationManager.observe(name: .deviceDidShake) {
+                    for await _ in await notificationService.observe(name: .deviceDidShake) {
                         await send(.didShake)
                     }
                 }
@@ -78,14 +78,14 @@ package struct RootFeature {
                 return .none
             case .didShake:
                 guard state.mode == .recording else { return .none }
-                windowManager.showWindow()
+                windowService.showWindow()
                 state.mode = .visible(.init())
                 onForeground()
                 return .none
             case .mode(.visible(.delegate(.dismiss))):
                 state.mode = .recording
                 onBackground()
-                windowManager.hideWindow()
+                windowService.hideWindow()
                 return .none
             case .mode:
                 return .none
