@@ -8,6 +8,8 @@ extension ModuleColors {
     var placeholderText: ModuleColor { \.onPrimary }
     var localePickerSelectionIndicator: ModuleColor { \.primary }
     var localePickerButtonBackground: ModuleColor { \.surface }
+    var diffInsertion: ModuleColor { \.positive }
+    var diffDeletion: ModuleColor { \.negative }
 }
 
 extension ModuleFonts {

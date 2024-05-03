@@ -5,6 +5,7 @@
 "inspection.textual_preview.base_title" = "Original %@ (%@) - Base Language";
 "inspection.textual_preview.original_title" = "Original %@ (%@)";
 "inspection.textual_preview.suggestion_title" = "Suggested %@ (%@)";
+"inspection.textual_preview.diff_title" = "Changes from original %@ (%@)";
 "inspection.textual_preview.language_name_fallback" = "Language";
 "inspection.suggestion_field.placeholder" = "";
 "inspection.locale_picker.title" = "Language";

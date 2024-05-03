@@ -10,4 +10,6 @@ package struct ThemeColors {
     package let surfaceDim: ThemeColor
     package let primary: ThemeColor
     package let onPrimary: ThemeColor
+    package let positive: ThemeColor
+    package let negative: ThemeColor
 }

@@ -14,6 +14,10 @@ struct StandardTheme: ThemeProtocol {
         static let white = "#FFFFFF"
         static let cyanLight = "#00ffff"
         static let cyanDark = "#00b3b3"
+        static let greenLight = "#5faf4e"
+        static let greenDark = "#1E5128"
+        static let redLight = "#dc5366"
+        static let redDark = "#872341"
     }
 
     let colors = ThemeColors(
@@ -23,7 +27,9 @@ struct StandardTheme: ThemeProtocol {
         surface: .init(light: Palette.white, dark: Palette.stone),
         surfaceDim: .init(light: Palette.offWhite, dark: Palette.graphite),
         primary: .init(light: Palette.cyanDark, dark: Palette.cyanLight),
-        onPrimary: .init(light: Palette.linen, dark: Palette.slate)
+        onPrimary: .init(light: Palette.linen, dark: Palette.slate),
+        positive: .init(light: Palette.greenDark, dark: Palette.greenLight),
+        negative: .init(light: Palette.redDark, dark: Palette.redLight)
     )
 
     let fonts = ThemeFonts(

@@ -63,6 +63,17 @@ public enum Strings {
                 )
             }
 
+            /// Changes from original %@ (%@)
+            public static func diffTitle(_ p1: Any, _ p2: Any) -> String {
+                Strings.tr(
+                    "Localizable",
+                    "inspection.textual_preview.diff_title",
+                    String(describing: p1),
+                    String(describing: p2),
+                    fallback: "Changes from original %@ (%@)"
+                )
+            }
+
             /// Language
             public static let languageNameFallback = Strings.tr(
                 "Localizable",

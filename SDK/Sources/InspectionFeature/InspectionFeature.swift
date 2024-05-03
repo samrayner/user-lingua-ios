@@ -65,6 +65,26 @@ package struct InspectionFeature {
             recognizedString.localizedValue(locale: locale)
         }
 
+        var diff: NSAttributedString {
+            NSAttributedString(
+                source: localizedValue,
+                target: suggestionString,
+                attributes: .init(
+                    insert: [
+                        .foregroundColor: UIColor.theme(\.diffInsertion),
+                        .underlineColor: UIColor.theme(\.diffInsertion),
+                        .underlineStyle: NSUnderlineStyle.single.rawValue
+                    ],
+                    delete: [
+                        .foregroundColor: UIColor.theme(\.diffDeletion),
+                        .strikethroughColor: UIColor.theme(\.diffDeletion),
+                        .strikethroughStyle: NSUnderlineStyle.single.rawValue
+                    ],
+                    same: [:]
+                )
+            )
+        }
+
         func makeSuggestion() -> Suggestion {
             .init(
                 recordedString: recognizedString.recordedString,
@@ -381,6 +401,19 @@ package struct InspectionFeatureView: View {
                     ),
                     string: Text(store.suggestionString)
                 )
+
+                HorizontalRule()
+
+                textualPreviewRow(
+                    title: Text(
+                        Strings.Inspection.TextualPreview.diffTitle(
+                            systemLocale.localizedString(forLanguageCode: store.localeIdentifier)
+                                ?? store.localeIdentifier,
+                            store.localeIdentifier
+                        )
+                    ),
+                    string: Text(AttributedString(store.diff))
+                )
             }
         }
         .background(Color.theme(\.background))
@@ -569,19 +602,3 @@ package struct InspectionFeatureView: View {
         )
     }
 }
-
-// #Preview {
-//    InspectionFeatureView(
-//        store: Store(
-//            initialState: InspectionFeature.State(
-//                recognizedString: .init(
-//                    recordedString: .init("Hello"),
-//                    lines: []
-//                )
-//            ),
-//            reducer: {
-//                InspectionFeature()
-//            }
-//        )
-//    )
-// }
