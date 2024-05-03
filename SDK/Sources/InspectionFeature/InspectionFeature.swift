@@ -362,7 +362,8 @@ package struct InspectionFeatureView: View {
     func textualPreview() -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                textualPreviewRow(
+                TextualPreviewRowView(
+                    isExpanded: .constant(true),
                     title: Text(
                         Strings.Inspection.TextualPreview.baseTitle(
                             systemLocale.localizedString(forLanguageCode: store.configuration.baseLocale.identifier)
@@ -370,13 +371,14 @@ package struct InspectionFeatureView: View {
                             store.configuration.baseLocale.identifier
                         )
                     ),
-                    string: Text(localizedValueWithHighlightedPlaceholders(locale: store.configuration.baseLocale))
+                    content: Text(localizedValueWithHighlightedPlaceholders(locale: store.configuration.baseLocale))
                 )
 
                 if store.localeIdentifier != store.configuration.baseLocale.identifier {
                     HorizontalRule()
 
-                    textualPreviewRow(
+                    TextualPreviewRowView(
+                        isExpanded: .constant(true),
                         title: Text(
                             Strings.Inspection.TextualPreview.originalTitle(
                                 systemLocale.localizedString(forLanguageCode: store.localeIdentifier)
@@ -384,26 +386,14 @@ package struct InspectionFeatureView: View {
                                 store.localeIdentifier
                             )
                         ),
-                        string: Text(localizedValueWithHighlightedPlaceholders(locale: store.locale))
+                        content: Text(localizedValueWithHighlightedPlaceholders(locale: store.locale))
                     )
                 }
 
                 HorizontalRule()
 
-                textualPreviewRow(
-                    title: Text(
-                        Strings.Inspection.TextualPreview.suggestionTitle(
-                            systemLocale.localizedString(forLanguageCode: store.localeIdentifier)
-                                ?? store.localeIdentifier,
-                            store.localeIdentifier
-                        )
-                    ),
-                    string: Text(store.suggestionString)
-                )
-
-                HorizontalRule()
-
-                textualPreviewRow(
+                TextualPreviewRowView(
+                    isExpanded: .constant(true),
                     title: Text(
                         Strings.Inspection.TextualPreview.diffTitle(
                             systemLocale.localizedString(forLanguageCode: store.localeIdentifier)
@@ -411,7 +401,21 @@ package struct InspectionFeatureView: View {
                             store.localeIdentifier
                         )
                     ),
-                    string: Text(store.diff)
+                    content: Text(store.diff)
+                )
+
+                HorizontalRule()
+
+                TextualPreviewRowView(
+                    isExpanded: .constant(true),
+                    title: Text(
+                        Strings.Inspection.TextualPreview.suggestionTitle(
+                            systemLocale.localizedString(forLanguageCode: store.localeIdentifier)
+                                ?? store.localeIdentifier,
+                            store.localeIdentifier
+                        )
+                    ),
+                    content: Text(store.suggestionString)
                 )
             }
         }
@@ -481,20 +485,6 @@ package struct InspectionFeatureView: View {
                         }
                 }
             }
-    }
-
-    @ViewBuilder
-    private func textualPreviewRow(title: Text, string: Text) -> some View {
-        VStack(alignment: .leading, spacing: .Space.s) {
-            title
-                .font(.theme(\.textualPreviewHeading))
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            string
-                .font(.theme(\.textualPreviewString))
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding(.Space.l)
     }
 
     @ViewBuilder
