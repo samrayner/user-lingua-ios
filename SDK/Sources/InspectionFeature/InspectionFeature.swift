@@ -65,11 +65,11 @@ package struct InspectionFeature {
             recognizedString.localizedValue(locale: locale)
         }
 
-        var diff: NSAttributedString {
-            NSAttributedString(
-                source: localizedValue,
-                target: suggestionString,
-                attributes: .init(
+        var diff: AttributedString {
+            .init(
+                old: localizedValue,
+                new: suggestionString,
+                diffAttributes: .init(
                     insert: [
                         .foregroundColor: UIColor.theme(\.diffInsertion),
                         .underlineColor: UIColor.theme(\.diffInsertion),
@@ -79,8 +79,7 @@ package struct InspectionFeature {
                         .foregroundColor: UIColor.theme(\.diffDeletion),
                         .strikethroughColor: UIColor.theme(\.diffDeletion),
                         .strikethroughStyle: NSUnderlineStyle.single.rawValue
-                    ],
-                    same: [:]
+                    ]
                 )
             )
         }
@@ -412,7 +411,7 @@ package struct InspectionFeatureView: View {
                             store.localeIdentifier
                         )
                     ),
-                    string: Text(AttributedString(store.diff))
+                    string: Text(store.diff)
                 )
             }
         }

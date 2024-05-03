@@ -5,16 +5,9 @@ import Foundation
 // Based on https://github.com/wzxha/Sdifft
 
 enum DiffScript {
-    case insert(into: Int)
+    case insert(at: Int)
     case delete(at: Int)
     case same(at: Int)
-}
-
-struct Vertice: Equatable {
-    let x, y: Int
-    static func == (lhs: Vertice, rhs: Vertice) -> Bool {
-        lhs.x == rhs.x && lhs.y == rhs.y
-    }
 }
 
 struct Path {
@@ -22,16 +15,26 @@ struct Path {
     let script: DiffScript
 }
 
-class Diff<T: Equatable & Hashable> {
+struct Vertice: Equatable {
+    // swiftlint:disable identifier_name
+    let x: Int
+    let y: Int
+    // swiftlint:enable identifier_name
+    static func == (lhs: Vertice, rhs: Vertice) -> Bool {
+        lhs.x == rhs.x && lhs.y == rhs.y
+    }
+}
+
+class Diff<Element: Equatable & Hashable> {
     let scripts: [DiffScript]
 
-    init(source: [T], target: [T]) {
+    init(source: [Element], target: [Element]) {
         if source.isEmpty, target.isEmpty {
             self.scripts = []
         } else if source.isEmpty, !target.isEmpty {
             // Under normal circumstances, scripts is a reversed (index) array
-            // you need to reverse the array youself if need.
-            self.scripts = (0 ..< target.count).reversed().compactMap { DiffScript.insert(into: $0) }
+            // you need to reverse the array youself if needed.
+            self.scripts = (0 ..< target.count).reversed().compactMap { DiffScript.insert(at: $0) }
         } else if !source.isEmpty, target.isEmpty {
             self.scripts = (0 ..< source.count).reversed().compactMap { DiffScript.delete(at: $0) }
         } else {
@@ -40,13 +43,14 @@ class Diff<T: Equatable & Hashable> {
         }
     }
 
-    static func exploreEditGraph(source: [T], target: [T]) -> [Path] {
+    // swiftlint:disable identifier_name
+    static func exploreEditGraph(source: [Element], target: [Element]) -> [Path] {
         let max = source.count + target.count
         var furthest = Array(repeating: 0, count: 2 * max + 1)
         var paths: [Path] = []
 
         let snake: (Int, Int, Int) -> Int = { x, _, k in
-            var _x = x // swiftlint:disable:this identifier_name
+            var _x = x
             var y: Int { _x - k }
             while _x < target.count && y < source.count && source[y] == target[_x] {
                 _x += 1
@@ -78,8 +82,9 @@ class Diff<T: Equatable & Hashable> {
                     x = furthest[index - 1] + 1
                     paths.append(
                         Path(
-                            from: .init(x: x - 1, y: y), to: .init(x: x, y: y),
-                            script: .insert(into: x - 1)
+                            from: .init(x: x - 1, y: y),
+                            to: .init(x: x, y: y),
+                            script: .insert(at: x - 1)
                         )
                     )
                 }
@@ -94,6 +99,8 @@ class Diff<T: Equatable & Hashable> {
         return []
     }
 
+    // swiftlint:enable identifier_name
+
     // Search for the path from the back to the front
     static func reverseTree(paths: [Path], sinkVertice: Vertice) -> [DiffScript] {
         var scripts: [DiffScript] = []
@@ -105,89 +112,59 @@ class Diff<T: Equatable & Hashable> {
         }
         return scripts
     }
+
+    static func script(source: [Element], target: [Element]) -> [DiffScript] {
+        Diff(source: source.reversed(), target: target.reversed())
+            .scripts
+            .reverseIndex(source: source, target: target)
+    }
 }
 
 extension String {
-    subscript(_ idx: Int) -> String {
+    fileprivate subscript(_ idx: Int) -> String {
         String(self[index(startIndex, offsetBy: idx)])
     }
 }
 
 struct DiffAttributes {
-    let insert, delete, same: [NSAttributedString.Key: Any]
-    init(
-        insert: [NSAttributedString.Key: Any],
-        delete: [NSAttributedString.Key: Any],
-        same: [NSAttributedString.Key: Any]
-    ) {
-        self.insert = insert
-        self.delete = delete
-        self.same = same
-    }
+    var insert: [NSAttributedString.Key: Any] = [:]
+    var delete: [NSAttributedString.Key: Any] = [:]
+    var same: [NSAttributedString.Key: Any] = [:]
 }
 
 extension [DiffScript] {
     func reverseIndex<T>(source: [T], target: [T]) -> [DiffScript] {
         map {
             switch $0 {
-            case let .delete(at: idx):
-                DiffScript.delete(at: source.count - 1 - idx)
-            case let .insert(into: idx):
-                DiffScript.insert(into: target.count - 1 - idx)
-            case let .same(at: idx):
-                DiffScript.same(at: target.count - 1 - idx)
+            case let .delete(at: index):
+                DiffScript.delete(at: source.endIndex - 1 - index)
+            case let .insert(at: index):
+                DiffScript.insert(at: target.endIndex - 1 - index)
+            case let .same(at: index):
+                DiffScript.same(at: target.endIndex - 1 - index)
             }
         }
     }
 }
 
-extension NSAttributedString {
-    private static func script<T: Equatable & Hashable>(withSource source: [T], target: [T]) -> [DiffScript] {
-        Diff(source: source.reversed(), target: target.reversed())
-            .scripts
-            .reverseIndex(source: source, target: target)
-    }
+extension AttributedString {
+    init(old: String, new: String, diffAttributes: DiffAttributes) {
+        let scripts = Diff.script(source: .init(old), target: .init(new))
 
-    convenience init(source: String, target: String, attributes: DiffAttributes) {
-        let attributedString = NSMutableAttributedString()
-        let scripts = NSAttributedString.script(withSource: .init(source), target: .init(target))
+        var attributedString = AttributedString()
 
         for script in scripts {
-            switch script {
-            case let .insert(into: idx):
-                attributedString.append(NSAttributedString(string: target[idx], attributes: attributes.insert))
-            case let .delete(at: idx):
-                attributedString.append(NSAttributedString(string: source[idx], attributes: attributes.delete))
-            case let .same(at: idx):
-                attributedString.append(NSAttributedString(string: target[idx], attributes: attributes.same))
+            let attributedSubstring = switch script {
+            case let .insert(at: index):
+                AttributedString(new[index], attributes: .init(diffAttributes.insert))
+            case let .delete(at: index):
+                AttributedString(old[index], attributes: .init(diffAttributes.delete))
+            case let .same(at: index):
+                AttributedString(new[index], attributes: .init(diffAttributes.same))
             }
+            attributedString.append(attributedSubstring)
         }
 
-        self.init(attributedString: attributedString)
-    }
-
-    convenience init(
-        source: [String], target: [String],
-        attributes: DiffAttributes,
-        handler: ((DiffScript, NSAttributedString) -> NSAttributedString)? = nil
-    ) {
-        let attributedString = NSMutableAttributedString()
-        let scripts = NSAttributedString.script(withSource: source, target: target)
-        for script in scripts {
-            var scriptAttributedString: NSAttributedString = switch script {
-            case let .insert(into: idx):
-                NSAttributedString(string: target[idx], attributes: attributes.insert)
-            case let .delete(at: idx):
-                NSAttributedString(string: source[idx], attributes: attributes.delete)
-            case let .same(at: idx):
-                NSAttributedString(string: target[idx], attributes: attributes.same)
-            }
-            if let handler {
-                scriptAttributedString = handler(script, scriptAttributedString)
-            }
-            attributedString.append(scriptAttributedString)
-        }
-
-        self.init(attributedString: attributedString)
+        self = attributedString
     }
 }
