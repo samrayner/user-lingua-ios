@@ -26,11 +26,11 @@ package final class WindowService: WindowServiceProtocol {
     var originalAppWindowUIStyleOverride: UIUserInterfaceStyle = .unspecified
 
     package var appUIStyle: UIUserInterfaceStyle {
-        if originalAppWindowUIStyleOverride == .unspecified {
-            UIScreen.main.traitCollection.userInterfaceStyle
-        } else {
-            originalAppWindowUIStyleOverride
+        guard let appWindow, appWindow.overrideUserInterfaceStyle != .unspecified else {
+            return UIScreen.main.traitCollection.userInterfaceStyle
         }
+
+        return appWindow.overrideUserInterfaceStyle
     }
 
     package var appYOffset: CGFloat {

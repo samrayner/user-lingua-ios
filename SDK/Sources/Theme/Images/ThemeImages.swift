@@ -7,7 +7,6 @@ package struct ThemeImages {
     package let increaseTextSize: ThemeImage
     package let decreaseTextSize: ThemeImage
     package let toggleDarkMode: ThemeImage
-    package let untoggleDarkMode: ThemeImage
     package let enterFullScreen: ThemeImage
     package let exitFullScreen: ThemeImage
     package let doneSuggesting: ThemeImage

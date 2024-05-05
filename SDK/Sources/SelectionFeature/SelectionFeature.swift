@@ -60,7 +60,6 @@ package struct SelectionFeature {
             case let .didSelectString(recognizedString):
                 state.inspection = .init(
                     recognizedString: recognizedString,
-                    darkModeIsEnabled: windowService.appUIStyle == .dark,
                     appFacade: windowService.screenshotAppWindow()
                 )
                 state.recognizedStrings = nil

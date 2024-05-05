@@ -44,18 +44,19 @@ package struct InspectionFeature {
         }
 
         package internal(set) var recognizedString: RecognizedString
-        package internal(set) var darkModeIsEnabled: Bool
-        package internal(set) var isTransitioning = true
+        @Shared var isFullScreen: Bool
         @Shared(RecognitionFeature.State.persistenceKey) var recognition = .init()
         @Shared(Configuration.persistenceKey) var configuration = .init()
+        package internal(set) var isTransitioning = true
         var focusedField: Field?
         var suggestionString: String
         var localeIdentifier = Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
-        var previewMode: PreviewMode = .visual
-        var isFullScreen = false
         var keyboardHeight: CGFloat = 0
         var appFacade: UIImage?
         var viewportFrame: CGRect = .zero
+        var previewMode: PreviewMode = .visual
+        var visualPreview: VisualPreviewFeature.State
+        // TODO: var textualPreview: TextualPreviewFeature.State = .init()
 
         package var locale: Locale {
             Locale(identifier: localeIdentifier)
@@ -94,23 +95,22 @@ package struct InspectionFeature {
 
         package init(
             recognizedString: RecognizedString,
-            darkModeIsEnabled: Bool,
             appFacade: UIImage?
         ) {
             self.recognizedString = recognizedString
-            self.darkModeIsEnabled = darkModeIsEnabled
             self.appFacade = appFacade
             self.suggestionString = recognizedString.value
+
+            let isFullScreen = Shared<Bool>(false)
+
+            self._isFullScreen = isFullScreen
+            self.visualPreview = .init(isFullScreen: isFullScreen)
         }
     }
 
     package enum Action: BindableAction {
         case didTapSuggestionPreview
-        case didTapIncreaseTextSize
-        case didTapDecreaseTextSize
         case didTapClose
-        case didTapToggleDarkMode
-        case didTapToggleFullScreen
         case didTapDoneSuggesting
         case didTapSubmit
         case onAppear
@@ -124,6 +124,8 @@ package struct InspectionFeature {
         case observeKeyboardWillChangeFrame
         case binding(BindingAction<State>)
         case recognition(RecognitionFeature.Action)
+        case visualPreview(VisualPreviewFeature.Action)
+        // TODO: case textualPreview(TextualPreviewFeature.Action)
     }
 
     enum CancelID {
@@ -137,16 +139,19 @@ package struct InspectionFeature {
             RecognitionFeature()
         }
 
+        Scope(state: \.visualPreview, action: \.visualPreview) {
+            VisualPreviewFeature()
+        }
+
+        // TODO:
+//        Scope(state: \.textualPreview, action: \.textualPreview) {
+//            TextualPreviewFeature()
+//        }
+
         Reduce { state, action in
             switch action {
             case .didTapSuggestionPreview:
                 state.focusedField = .suggestion
-                return .none
-            case .didTapIncreaseTextSize:
-                contentSizeCategoryService.incrementAppContentSizeCategory()
-                return .none
-            case .didTapDecreaseTextSize:
-                contentSizeCategoryService.decrementAppContentSizeCategory()
                 return .none
             case .didTapClose:
                 state.appFacade = windowService.screenshotAppWindow()
@@ -157,16 +162,6 @@ package struct InspectionFeature {
                 return .run { _ in
                     await dismiss()
                 }
-            case .didTapToggleDarkMode:
-                windowService.toggleDarkMode()
-                state.darkModeIsEnabled.toggle()
-                return .none
-            case .didTapToggleFullScreen:
-                state.focusedField = nil
-                withAnimation(.linear) {
-                    state.isFullScreen.toggle()
-                }
-                return .none
             case .didTapDoneSuggesting:
                 state.focusedField = nil
                 return .none
@@ -197,6 +192,12 @@ package struct InspectionFeature {
                 return .run { send in
                     await send(.recognition(.start))
                 }
+            case .visualPreview(.delegate(.didTapToggleFullScreen)):
+                state.focusedField = nil
+                withAnimation(.linear) {
+                    state.isFullScreen.toggle()
+                }
+                return .none
             case let .recognition(.delegate(.didRecognizeStrings(recognizedStrings))):
                 guard let recognizedString = recognizedStrings.first(
                     where: { $0.recordedString.formatted == state.recognizedString.recordedString.formatted }
@@ -253,7 +254,7 @@ package struct InspectionFeature {
                 // debounce primarily to avoid SwiftUI bug:
                 // https://github.com/pointfreeco/swift-composable-architecture/discussions/1093
                 .debounce(id: CancelID.suggestionSaveDebounce, for: .seconds(0.1), scheduler: mainQueue)
-            case .recognition, .binding:
+            case .recognition, .visualPreview, .binding: // TODO: .textualPreview
                 return .none
             }
         }
@@ -262,9 +263,10 @@ package struct InspectionFeature {
 
 package struct InspectionFeatureView: View {
     @Environment(\.colorScheme) private var colorScheme
-    @Dependency(\.locale) var systemLocale
-    @Perception.Bindable var store: StoreOf<InspectionFeature>
-    @FocusState var focusedField: InspectionFeature.State.Field?
+    @Dependency(WindowServiceDependency.self) private var windowService
+    @Dependency(\.locale) private var systemLocale
+    @Perception.Bindable private var store: StoreOf<InspectionFeature>
+    @FocusState private var focusedField: InspectionFeature.State.Field?
 
     package init(store: StoreOf<InspectionFeature>) {
         self.store = store
@@ -291,16 +293,16 @@ package struct InspectionFeatureView: View {
 
                 ZStack {
                     Group {
-                        if store.previewMode == .visual {
-                            visualPreviewControls()
-                                .environment(\.colorScheme, store.darkModeIsEnabled ? .light : .dark)
-                        }
-
-                        if store.previewMode == .textual {
+                        switch store.previewMode {
+                        case .visual:
+                            VisualPreviewFeatureView(
+                                store: store.scope(state: \.visualPreview, action: \.visualPreview),
+                                isInDarkMode: windowService.appUIStyle == .dark
+                            )
+                        case .textual:
                             textualPreview()
                         }
                     }
-                    .environment(\.colorScheme, colorScheme == .dark ? .light : .dark)
 
                     viewport()
                 }
@@ -366,15 +368,15 @@ package struct InspectionFeatureView: View {
                     isExpanded: .constant(true),
                     title: Text(
                         Strings.Inspection.TextualPreview.baseTitle(
-                            systemLocale.localizedString(forLanguageCode: store.configuration.baseLocale.identifier)
+                            systemLocale.localizedString(forLanguageCode: store.configuration.baseLocale.identifier(.bcp47))
                                 ?? Strings.Inspection.TextualPreview.languageNameFallback,
-                            store.configuration.baseLocale.identifier
+                            store.configuration.baseLocale.identifier(.bcp47)
                         )
                     ),
                     content: Text(localizedValueWithHighlightedPlaceholders(locale: store.configuration.baseLocale))
                 )
 
-                if store.localeIdentifier != store.configuration.baseLocale.identifier {
+                if store.locale != store.configuration.baseLocale {
                     HorizontalRule()
 
                     TextualPreviewRowView(
@@ -420,49 +422,7 @@ package struct InspectionFeatureView: View {
             }
         }
         .background(Color.theme(\.background))
-    }
-
-    @ViewBuilder
-    private func visualPreviewControls() -> some View {
-        VStack {
-            Spacer()
-
-            HStack(spacing: 0) {
-                if store.configuration.appSupportsDynamicType {
-                    Button(action: { store.send(.didTapDecreaseTextSize) }) {
-                        Image.theme(\.decreaseTextSize)
-                            .padding(.Space.s)
-                    }
-
-                    Button(action: { store.send(.didTapIncreaseTextSize) }) {
-                        Image.theme(\.increaseTextSize)
-                            .padding(.Space.s)
-                    }
-                }
-
-                if store.configuration.appSupportsDarkMode {
-                    Button(action: {
-                        store.send(.didTapToggleDarkMode)
-                    }) {
-                        Image.theme(store.darkModeIsEnabled ? \.untoggleDarkMode : \.toggleDarkMode)
-                            .padding(.Space.s)
-                    }
-                }
-
-                Button(action: { store.send(.didTapToggleFullScreen) }) {
-                    Image.theme(store.isFullScreen ? \.exitFullScreen : \.enterFullScreen)
-                        .padding(.Space.s)
-                }
-            }
-            .padding(.horizontal, .Space.s)
-            .background {
-                Color.theme(\.background)
-                    .opacity(.Opacity.heavy)
-                    .cornerRadius(.infinity)
-            }
-            .padding(.Space.m)
-            .frame(maxWidth: .infinity, alignment: .trailing)
-        }
+        .environment(\.colorScheme, colorScheme == .dark ? .light : .dark)
     }
 
     @ViewBuilder

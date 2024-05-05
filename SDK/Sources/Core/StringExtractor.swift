@@ -81,10 +81,9 @@ package struct StringExtractor: StringExtractorProtocol {
         else { return nil }
 
         let bundleURL = Reflection.value("_bundleURL", on: resource) as? URL
-        let localeIdentifier = resource.locale.identifier
 
         let bundle = (bundleURL.flatMap(Bundle.init(url:)) ?? .main)
-            .localized(localeIdentifier: localeIdentifier)
+            .localized(localeIdentifier: resource.locale.identifier)
 
         return LocalizedString(
             value: String(localized: resource),
