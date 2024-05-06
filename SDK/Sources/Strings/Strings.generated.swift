@@ -51,12 +51,12 @@ public enum Strings {
             public static let placeholder = Strings.tr("Localizable", "inspection.suggestion_field.placeholder", fallback: "")
         }
 
-        public enum TextualPreview {
+        public enum TextPreview {
             /// Original %@ (%@) - Base Language
             public static func baseTitle(_ p1: Any, _ p2: Any) -> String {
                 Strings.tr(
                     "Localizable",
-                    "inspection.textual_preview.base_title",
+                    "inspection.text_preview.base_title",
                     String(describing: p1),
                     String(describing: p2),
                     fallback: "Original %@ (%@) - Base Language"
@@ -67,7 +67,7 @@ public enum Strings {
             public static func diffTitle(_ p1: Any, _ p2: Any) -> String {
                 Strings.tr(
                     "Localizable",
-                    "inspection.textual_preview.diff_title",
+                    "inspection.text_preview.diff_title",
                     String(describing: p1),
                     String(describing: p2),
                     fallback: "Changes from original %@ (%@)"
@@ -77,14 +77,14 @@ public enum Strings {
             /// Language
             public static let languageNameFallback = Strings.tr(
                 "Localizable",
-                "inspection.textual_preview.language_name_fallback",
+                "inspection.text_preview.language_name_fallback",
                 fallback: "Language"
             )
             /// Original %@ (%@)
             public static func originalTitle(_ p1: Any, _ p2: Any) -> String {
                 Strings.tr(
                     "Localizable",
-                    "inspection.textual_preview.original_title",
+                    "inspection.text_preview.original_title",
                     String(describing: p1),
                     String(describing: p2),
                     fallback: "Original %@ (%@)"
@@ -95,7 +95,7 @@ public enum Strings {
             public static func suggestionTitle(_ p1: Any, _ p2: Any) -> String {
                 Strings.tr(
                     "Localizable",
-                    "inspection.textual_preview.suggestion_title",
+                    "inspection.text_preview.suggestion_title",
                     String(describing: p1),
                     String(describing: p2),
                     fallback: "Suggested %@ (%@)"

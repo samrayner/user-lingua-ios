@@ -10,11 +10,12 @@ extension ModuleColors {
     var localePickerButtonBackground: ModuleColor { \.surface }
     var diffInsertion: ModuleColor { \.positive }
     var diffDeletion: ModuleColor { \.negative }
+    var textPreviewToggle: ModuleColor { \.primary }
 }
 
 extension ModuleFonts {
     var headerTitle: ModuleFont { \.headingMedium }
-    var textualPreviewHeading: ModuleFont { \.headingSmall }
-    var textualPreviewString: ModuleFont { \.bodySmall }
+    var textPreviewHeading: ModuleFont { \.headingSmall }
+    var textPreviewString: ModuleFont { \.bodySmall }
     var localizationDetails: ModuleFont { \.bodySmall }
 }

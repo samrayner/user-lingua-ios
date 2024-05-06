@@ -4,8 +4,6 @@ import ComposableArchitecture
 import Foundation
 
 public struct Configuration: Equatable {
-    package static var persistenceKey: InMemoryKey<Self> { .init("configuration") }
-
     public var automaticallyOptInTextViews: Bool
     public var appSupportsDynamicType: Bool
     public var appSupportsDarkMode: Bool

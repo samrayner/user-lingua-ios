@@ -67,7 +67,9 @@ struct StandardTheme: ThemeProtocol {
         enterFullScreen: .symbol(.arrowUpLeftAndArrowDownRight),
         exitFullScreen: .symbol(.arrowDownRightAndArrowUpLeft),
         doneSuggesting: .symbol(.chevronDown),
-        textualPreviewMode: .symbol(.paragraphsign),
-        visualPreviewMode: .symbol(.eye)
+        textPreviewMode: .symbol(.paragraphsign),
+        appPreviewMode: .symbol(.eye),
+        textPreviewExpand: .symbol(.chevronDown),
+        textPreviewCollapse: .symbol(.chevronUp)
     )
 }

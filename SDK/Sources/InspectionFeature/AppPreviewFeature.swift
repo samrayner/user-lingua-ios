@@ -1,4 +1,4 @@
-// VisualPreviewFeature.swift
+// AppPreviewFeature.swift
 
 import ComposableArchitecture
 import Core
@@ -7,13 +7,13 @@ import SwiftUI
 import Theme
 
 @Reducer
-package struct VisualPreviewFeature {
+package struct AppPreviewFeature {
     @Dependency(ContentSizeCategoryServiceDependency.self) var contentSizeCategoryService
     @Dependency(WindowServiceDependency.self) var windowService
 
     @ObservableState
     package struct State: Equatable {
-        @Shared(Configuration.persistenceKey) var configuration = .init()
+        @Shared(InMemoryKey.configuration) var configuration = .init()
         @Shared private(set) var isFullScreen: Bool
     }
 
@@ -48,12 +48,12 @@ package struct VisualPreviewFeature {
     }
 }
 
-struct VisualPreviewFeatureView: View {
-    private let store: StoreOf<VisualPreviewFeature>
+struct AppPreviewFeatureView: View {
+    private let store: StoreOf<AppPreviewFeature>
     @State private var isInDarkMode: Bool
 
     init(
-        store: StoreOf<VisualPreviewFeature>,
+        store: StoreOf<AppPreviewFeature>,
         isInDarkMode: Bool
     ) {
         self.store = store

@@ -29,34 +29,34 @@ package struct InspectionFeature {
             case suggestion
         }
 
-        enum PreviewMode: CaseIterable {
-            case textual
-            case visual
+        enum PreviewMode: String, CaseIterable {
+            case text
+            case app
 
             var icon: Image {
                 switch self {
-                case .textual:
-                    Image.theme(\.textualPreviewMode)
-                case .visual:
-                    Image.theme(\.visualPreviewMode)
+                case .text:
+                    Image.theme(\.textPreviewMode)
+                case .app:
+                    Image.theme(\.appPreviewMode)
                 }
             }
         }
 
-        package internal(set) var recognizedString: RecognizedString
+        @Shared package internal(set) var recognizedString: RecognizedString
+        @Shared var suggestionString: String
         @Shared var isFullScreen: Bool
-        @Shared(RecognitionFeature.State.persistenceKey) var recognition = .init()
-        @Shared(Configuration.persistenceKey) var configuration = .init()
+        @Shared var localeIdentifier: String
+        @Shared(InMemoryKey.recognitionState) var recognition = .init()
+        @Shared(InMemoryKey.configuration) var configuration = .init()
+        @Shared(AppStorageKey.previewMode) var previewMode: PreviewMode = .app
         package internal(set) var isTransitioning = true
         var focusedField: Field?
-        var suggestionString: String
-        var localeIdentifier = Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
         var keyboardHeight: CGFloat = 0
         var appFacade: UIImage?
         var viewportFrame: CGRect = .zero
-        var previewMode: PreviewMode = .visual
-        var visualPreview: VisualPreviewFeature.State
-        // TODO: var textualPreview: TextualPreviewFeature.State = .init()
+        var appPreview: AppPreviewFeature.State
+        var textPreview: TextPreviewFeature.State
 
         package var locale: Locale {
             Locale(identifier: localeIdentifier)
@@ -64,25 +64,6 @@ package struct InspectionFeature {
 
         var localizedValue: String {
             recognizedString.localizedValue(locale: locale)
-        }
-
-        var diff: AttributedString {
-            .init(
-                old: localizedValue,
-                new: suggestionString,
-                diffAttributes: .init(
-                    insert: [
-                        .foregroundColor: UIColor.theme(\.diffInsertion),
-                        .underlineColor: UIColor.theme(\.diffInsertion),
-                        .underlineStyle: NSUnderlineStyle.single.rawValue
-                    ],
-                    delete: [
-                        .foregroundColor: UIColor.theme(\.diffDeletion),
-                        .strikethroughColor: UIColor.theme(\.diffDeletion),
-                        .strikethroughStyle: NSUnderlineStyle.single.rawValue
-                    ]
-                )
-            )
         }
 
         func makeSuggestion() -> Suggestion {
@@ -97,14 +78,25 @@ package struct InspectionFeature {
             recognizedString: RecognizedString,
             appFacade: UIImage?
         ) {
-            self.recognizedString = recognizedString
             self.appFacade = appFacade
-            self.suggestionString = recognizedString.value
 
-            let isFullScreen = Shared<Bool>(false)
+            let sharedRecognizedString = Shared(recognizedString)
+            let suggestionString = Shared(recognizedString.value)
+            self._recognizedString = sharedRecognizedString
+            self._suggestionString = suggestionString
 
+            let isFullScreen = Shared(false)
             self._isFullScreen = isFullScreen
-            self.visualPreview = .init(isFullScreen: isFullScreen)
+            self.appPreview = .init(isFullScreen: isFullScreen)
+
+            let localeIdentifier = Shared(Locale.current.identifier(.bcp47))
+            self._localeIdentifier = localeIdentifier
+
+            self.textPreview = .init(
+                recognizedString: sharedRecognizedString,
+                suggestionString: suggestionString,
+                localeIdentifier: localeIdentifier
+            )
         }
     }
 
@@ -124,8 +116,8 @@ package struct InspectionFeature {
         case observeKeyboardWillChangeFrame
         case binding(BindingAction<State>)
         case recognition(RecognitionFeature.Action)
-        case visualPreview(VisualPreviewFeature.Action)
-        // TODO: case textualPreview(TextualPreviewFeature.Action)
+        case appPreview(AppPreviewFeature.Action)
+        case textPreview(TextPreviewFeature.Action)
     }
 
     enum CancelID {
@@ -139,14 +131,13 @@ package struct InspectionFeature {
             RecognitionFeature()
         }
 
-        Scope(state: \.visualPreview, action: \.visualPreview) {
-            VisualPreviewFeature()
+        Scope(state: \.appPreview, action: \.appPreview) {
+            AppPreviewFeature()
         }
 
-        // TODO:
-//        Scope(state: \.textualPreview, action: \.textualPreview) {
-//            TextualPreviewFeature()
-//        }
+        Scope(state: \.textPreview, action: \.textPreview) {
+            TextPreviewFeature()
+        }
 
         Reduce { state, action in
             switch action {
@@ -169,7 +160,6 @@ package struct InspectionFeature {
                 print("SUBMITTED \(state.makeSuggestion())")
                 return .none
             case .onAppear:
-                ThemeFont.scaleFactor = contentSizeCategoryService.systemContentSizeCategory.fontScaleFactor
                 return .run { send in
                     try await clock.sleep(for: .seconds(.AnimationDuration.screenTransition))
                     await send(.didAppear)
@@ -192,7 +182,7 @@ package struct InspectionFeature {
                 return .run { send in
                     await send(.recognition(.start))
                 }
-            case .visualPreview(.delegate(.didTapToggleFullScreen)):
+            case .appPreview(.delegate(.didTapToggleFullScreen)):
                 state.focusedField = nil
                 withAnimation(.linear) {
                     state.isFullScreen.toggle()
@@ -254,7 +244,7 @@ package struct InspectionFeature {
                 // debounce primarily to avoid SwiftUI bug:
                 // https://github.com/pointfreeco/swift-composable-architecture/discussions/1093
                 .debounce(id: CancelID.suggestionSaveDebounce, for: .seconds(0.1), scheduler: mainQueue)
-            case .recognition, .visualPreview, .binding: // TODO: .textualPreview
+            case .recognition, .appPreview, .textPreview, .binding:
                 return .none
             }
         }
@@ -262,9 +252,7 @@ package struct InspectionFeature {
 }
 
 package struct InspectionFeatureView: View {
-    @Environment(\.colorScheme) private var colorScheme
     @Dependency(WindowServiceDependency.self) private var windowService
-    @Dependency(\.locale) private var systemLocale
     @Perception.Bindable private var store: StoreOf<InspectionFeature>
     @FocusState private var focusedField: InspectionFeature.State.Field?
 
@@ -294,13 +282,15 @@ package struct InspectionFeatureView: View {
                 ZStack {
                     Group {
                         switch store.previewMode {
-                        case .visual:
-                            VisualPreviewFeatureView(
-                                store: store.scope(state: \.visualPreview, action: \.visualPreview),
+                        case .app:
+                            AppPreviewFeatureView(
+                                store: store.scope(state: \.appPreview, action: \.appPreview),
                                 isInDarkMode: windowService.appUIStyle == .dark
                             )
-                        case .textual:
-                            textualPreview()
+                        case .text:
+                            TextPreviewFeatureView(
+                                store: store.scope(state: \.textPreview, action: \.textPreview)
+                            )
                         }
                     }
 
@@ -358,71 +348,6 @@ package struct InspectionFeatureView: View {
             Color.theme(\.background)
                 .ignoresSafeArea(.all)
         }
-    }
-
-    @ViewBuilder
-    func textualPreview() -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                TextualPreviewRowView(
-                    isExpanded: .constant(true),
-                    title: Text(
-                        Strings.Inspection.TextualPreview.baseTitle(
-                            systemLocale.localizedString(forLanguageCode: store.configuration.baseLocale.identifier(.bcp47))
-                                ?? Strings.Inspection.TextualPreview.languageNameFallback,
-                            store.configuration.baseLocale.identifier(.bcp47)
-                        )
-                    ),
-                    content: Text(localizedValueWithHighlightedPlaceholders(locale: store.configuration.baseLocale))
-                )
-
-                if store.locale != store.configuration.baseLocale {
-                    HorizontalRule()
-
-                    TextualPreviewRowView(
-                        isExpanded: .constant(true),
-                        title: Text(
-                            Strings.Inspection.TextualPreview.originalTitle(
-                                systemLocale.localizedString(forLanguageCode: store.localeIdentifier)
-                                    ?? Strings.Inspection.TextualPreview.languageNameFallback,
-                                store.localeIdentifier
-                            )
-                        ),
-                        content: Text(localizedValueWithHighlightedPlaceholders(locale: store.locale))
-                    )
-                }
-
-                HorizontalRule()
-
-                TextualPreviewRowView(
-                    isExpanded: .constant(true),
-                    title: Text(
-                        Strings.Inspection.TextualPreview.diffTitle(
-                            systemLocale.localizedString(forLanguageCode: store.localeIdentifier)
-                                ?? store.localeIdentifier,
-                            store.localeIdentifier
-                        )
-                    ),
-                    content: Text(store.diff)
-                )
-
-                HorizontalRule()
-
-                TextualPreviewRowView(
-                    isExpanded: .constant(true),
-                    title: Text(
-                        Strings.Inspection.TextualPreview.suggestionTitle(
-                            systemLocale.localizedString(forLanguageCode: store.localeIdentifier)
-                                ?? store.localeIdentifier,
-                            store.localeIdentifier
-                        )
-                    ),
-                    content: Text(store.suggestionString)
-                )
-            }
-        }
-        .background(Color.theme(\.background))
-        .environment(\.colorScheme, colorScheme == .dark ? .light : .dark)
     }
 
     @ViewBuilder
@@ -538,16 +463,5 @@ package struct InspectionFeatureView: View {
         content
             .padding(.horizontal, .Space.s)
             .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func localizedValueWithHighlightedPlaceholders(locale: Locale) -> AttributedString {
-        store.recognizedString.localizedValue(
-            locale: locale,
-            placeholderAttributes: [
-                .backgroundColor: UIColor.theme(\.placeholderBackground),
-                .foregroundColor: UIColor.theme(\.placeholderText)
-            ],
-            placeholderTransform: { " \($0) " }
-        )
     }
 }

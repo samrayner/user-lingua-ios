@@ -34,7 +34,7 @@ package struct RootFeature {
 
     @ObservableState
     package struct State: Equatable {
-        @Shared(Configuration.persistenceKey) package var configuration = .init()
+        @Shared(InMemoryKey.configuration) package var configuration = .init()
         package var mode: Mode.State = .disabled
 
         package init() {}

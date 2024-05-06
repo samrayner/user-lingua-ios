@@ -11,6 +11,7 @@ import Theme
 
 @Reducer
 package struct SelectionFeature {
+    @Dependency(ContentSizeCategoryServiceDependency.self) var contentSizeCategoryService
     @Dependency(OrientationServiceDependency.self) var orientationService
     @Dependency(WindowServiceDependency.self) var windowService
 
@@ -18,7 +19,7 @@ package struct SelectionFeature {
 
     @ObservableState
     package struct State: Equatable {
-        @Shared(RecognitionFeature.State.persistenceKey) package var recognition = .init()
+        @Shared(InMemoryKey.recognitionState) package var recognition = .init()
         var recognizedStrings: [RecognizedString]?
 
         @Presents package var inspection: InspectionFeature.State?
@@ -58,6 +59,7 @@ package struct SelectionFeature {
         Reduce { state, action in
             switch action {
             case let .didSelectString(recognizedString):
+                ThemeFont.scaleFactor = contentSizeCategoryService.systemContentSizeCategory.fontScaleFactor
                 state.inspection = .init(
                     recognizedString: recognizedString,
                     appFacade: windowService.screenshotAppWindow()

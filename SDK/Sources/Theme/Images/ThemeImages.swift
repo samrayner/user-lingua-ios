@@ -10,6 +10,8 @@ package struct ThemeImages {
     package let enterFullScreen: ThemeImage
     package let exitFullScreen: ThemeImage
     package let doneSuggesting: ThemeImage
-    package let textualPreviewMode: ThemeImage
-    package let visualPreviewMode: ThemeImage
+    package let textPreviewMode: ThemeImage
+    package let appPreviewMode: ThemeImage
+    package let textPreviewExpand: ThemeImage
+    package let textPreviewCollapse: ThemeImage
 }
