@@ -26,7 +26,8 @@ let package = Package(
         .package(url: "https://github.com/Matejkob/swift-spyable", .upToNextMinor(from: "0.3.0")),
         .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols", .upToNextMinor(from: "5.2.0")),
         .package(url: "https://github.com/gohanlon/swift-memberwise-init-macro", .upToNextMinor(from: "0.3.0")),
-        .package(url: "https://github.com/apple/swift-async-algorithms", .upToNextMinor(from: "1.0.0"))
+        .package(url: "https://github.com/apple/swift-async-algorithms", .upToNextMinor(from: "1.0.0")),
+        .package(url: "https://github.com/samrayner/diff-match-patch", branch: "main")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -70,6 +71,12 @@ let package = Package(
             dependencies: []
         ),
         .target(
+            name: "Diff",
+            dependencies: [
+                .product(name: "DiffMatchPatch", package: "diff-match-patch")
+            ]
+        ),
+        .target(
             name: "RootFeature",
             dependencies: [
                 "Core",
@@ -99,7 +106,8 @@ let package = Package(
                 "Core",
                 "Strings",
                 "Theme",
-                "RecognitionFeature"
+                "RecognitionFeature",
+                "Diff"
             ]
         ),
         .testTarget(

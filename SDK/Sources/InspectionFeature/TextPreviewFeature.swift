@@ -2,6 +2,7 @@
 
 import ComposableArchitecture
 import Core
+import Diff
 import Foundation
 import Strings
 import SwiftUI

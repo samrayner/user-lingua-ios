@@ -1,5 +1,5 @@
 {
-  "originHash" : "1d6bca97279c1e3d207480eed4fdeccadf1cd5784c155b82d9e0fbdba5115ada",
+  "originHash" : "b2de3e6a91333e4904f40591400f0d2212acf37a3efd4fb8c665df3851324838",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "9dc9cbe4bc45c65164fa653a563d8d8db61b09bb",
         "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "diff-match-patch",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/samrayner/diff-match-patch",
+      "state" : {
+        "branch" : "main",
+        "revision" : "fdbb0e10dcc079f60da081682e2f4cffd6d5caa5"
       }
     },
     {
