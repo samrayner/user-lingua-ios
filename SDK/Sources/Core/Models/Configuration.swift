@@ -1,19 +1,20 @@
 // Configuration.swift
 
-import ComposableArchitecture
 import Foundation
+import HashableMacro
 
-public struct Configuration: Equatable {
-    public var automaticallyOptInTextViews: Bool
-    public var appSupportsDynamicType: Bool
-    public var appSupportsDarkMode: Bool
-    public var baseLocale: Locale
+@Hashable
+public final class Configuration: NSObject {
+    @Hashed public var automaticallyOptInTextViews: Bool
+    @Hashed public var appSupportsDynamicType: Bool
+    @Hashed public var appSupportsDarkMode: Bool
+    @Hashed public var baseLocale: Locale
 
     public init(
         automaticallyOptInTextViews: Bool = true,
         appSupportsDynamicType: Bool = true,
         appSupportsDarkMode: Bool = true,
-        baseLocale: Locale = Locale.current
+        baseLocale: Locale = .current
     ) {
         self.automaticallyOptInTextViews = automaticallyOptInTextViews
         self.appSupportsDynamicType = appSupportsDynamicType

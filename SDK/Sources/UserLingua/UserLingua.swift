@@ -8,7 +8,7 @@ import UIKit
 
 public typealias UserLinguaConfiguration = Core.Configuration
 
-public final class UserLingua {
+public final class UserLingua: NSObject {
     public static let shared = UserLingua()
 
     public let viewModel = UserLinguaObservable()
@@ -42,11 +42,12 @@ public final class UserLingua {
             || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 
-    private init() {
+    override private init() {
+        super.init()
         windowService.setRootView(RootFeatureView(store: store))
     }
 
-    public var configuration: Configuration {
+    @objc public var configuration: Configuration {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
             store.configuration
         }
@@ -90,17 +91,20 @@ public final class UserLingua {
         }
     }
 
+    @objc
     public func enable() {
         guard !inPreviewsOrTests else { return }
         swizzler.swizzleForBackground()
         store.send(.enable)
     }
 
+    @objc
     public func disable() {
         store.send(.disable)
         swizzler.unswizzleForBackground()
     }
 
+    @objc
     public func configure(_ configuration: Configuration) {
         store.send(.configure(configuration))
     }

@@ -1,5 +1,5 @@
 {
-  "originHash" : "b2de3e6a91333e4904f40591400f0d2212acf37a3efd4fb8c665df3851324838",
+  "originHash" : "0fdcb41e5801a5779f09406d0ffe7270e15761159b0b97ffcc43c420c07d6d94",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -17,6 +17,15 @@
       "state" : {
         "branch" : "main",
         "revision" : "fdbb0e10dcc079f60da081682e2f4cffd6d5caa5"
+      }
+    },
+    {
+      "identity" : "hashablemacro",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/JosephDuffy/HashableMacro",
+      "state" : {
+        "branch" : "main",
+        "revision" : "52eeb7e84276fdbc322bd89ff6d32aa681b32792"
       }
     },
     {
@@ -69,8 +78,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-composable-architecture",
       "state" : {
-        "revision" : "e6c0959044cbe2c934ac0ce9c3c4ead86350f44f",
-        "version" : "1.10.2"
+        "revision" : "024130da0e37121a6ab30f451da4bc462ee4a0ed",
+        "version" : "1.10.3"
       }
     },
     {
