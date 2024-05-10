@@ -23,7 +23,6 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-syntax", "509.0.0" ..< "511.0.0"),
         .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMinor(from: "1.10.2")),
-        .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols", .upToNextMinor(from: "5.2.0")),
         .package(url: "https://github.com/apple/swift-async-algorithms", .upToNextMinor(from: "1.0.0")),
         .package(url: "https://github.com/samrayner/diff-match-patch", branch: "main")
     ],
@@ -51,9 +50,7 @@ let package = Package(
         ),
         .target(
             name: "Theme",
-            dependencies: [
-                .product(name: "SFSafeSymbols", package: "SFSafeSymbols")
-            ],
+            dependencies: [],
             resources: [
                 .process("Resources/Assets.xcassets")
             ]

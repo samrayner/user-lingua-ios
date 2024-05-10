@@ -1,5 +1,5 @@
 {
-  "originHash" : "42777a5bd000851f62f3143dc9c9f11b32bfdba62304193b77a2cf743a8531ad",
+  "originHash" : "4be9292ae4401aa4b8aafbbf4bc05cdf471c809a49b57d444bae6005073e5e06",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -17,15 +17,6 @@
       "state" : {
         "branch" : "main",
         "revision" : "fdbb0e10dcc079f60da081682e2f4cffd6d5caa5"
-      }
-    },
-    {
-      "identity" : "sfsafesymbols",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/SFSafeSymbols/SFSafeSymbols",
-      "state" : {
-        "revision" : "afd0a1da4ed62bab1413caa6dd6b60a7a7089ed2",
-        "version" : "5.2.0"
       }
     },
     {

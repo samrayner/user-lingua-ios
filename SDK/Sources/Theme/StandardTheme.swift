@@ -1,7 +1,5 @@
 // StandardTheme.swift
 
-import SFSafeSymbols
-
 struct StandardTheme: ThemeProtocol {
     enum Palette {
         static let black = "#000000"
@@ -60,16 +58,16 @@ struct StandardTheme: ThemeProtocol {
     )
 
     let images = ThemeImages(
-        close: .symbol(.xmarkCircleFill),
-        increaseTextSize: .symbol(.textformatSizeLarger),
-        decreaseTextSize: .symbol(.textformatSizeSmaller),
-        toggleDarkMode: .symbol(.circleLefthalfFilled),
-        enterFullScreen: .symbol(.arrowUpLeftAndArrowDownRight),
-        exitFullScreen: .symbol(.arrowDownRightAndArrowUpLeft),
-        doneSuggesting: .symbol(.chevronDown),
-        textPreviewMode: .symbol(.paragraphsign),
-        appPreviewMode: .symbol(.eye),
-        textPreviewExpand: .symbol(.chevronDown),
-        textPreviewCollapse: .symbol(.chevronUp)
+        close: .symbol("xmark.circle.fill"),
+        increaseTextSize: .symbol("textformat.size.larger"),
+        decreaseTextSize: .symbol("textformat.size.smaller"),
+        toggleDarkMode: .symbol("circle.lefthalf.filled"),
+        enterFullScreen: .symbol("arrow.up.left.and.arrow.down.right"),
+        exitFullScreen: .symbol("arrow.down.right.and.arrow.up.left"),
+        doneSuggesting: .symbol("chevron.down"),
+        textPreviewMode: .symbol("paragraphsign"),
+        appPreviewMode: .symbol("eye"),
+        textPreviewExpand: .symbol("chevron.down"),
+        textPreviewCollapse: .symbol("chevron.up")
     )
 }
