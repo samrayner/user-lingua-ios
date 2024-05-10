@@ -1,10 +1,9 @@
 // StringExtractor.swift
 
 import Foundation
-import Spyable
 import SwiftUI
 
-@Spyable
+// sourcery: AutoMockable
 package protocol StringExtractorProtocol {
     func formattedString(
         localizedStringKey: LocalizedStringKey,

@@ -1,1 +1,2 @@
 ~/.mint/bin/mint run swiftgen config run --config SDK/Sources/Strings/swiftgen.yml
+~/.mint/bin/mint run sourcery

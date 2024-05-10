@@ -1,5 +1,5 @@
 {
-  "originHash" : "b2de3e6a91333e4904f40591400f0d2212acf37a3efd4fb8c665df3851324838",
+  "originHash" : "1d6bca97279c1e3d207480eed4fdeccadf1cd5784c155b82d9e0fbdba5115ada",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -125,15 +125,6 @@
       "state" : {
         "revision" : "8e8ca36c02abc7775a3ab81f9468c0df5fe22c2c",
         "version" : "1.1.7"
-      }
-    },
-    {
-      "identity" : "swift-spyable",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Matejkob/swift-spyable",
-      "state" : {
-        "revision" : "36617f2ffb22ad4499df796507d431f3b8d58b39",
-        "version" : "0.3.0"
       }
     },
     {

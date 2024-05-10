@@ -1,10 +1,9 @@
 // Swizzler.swift
 
 import Foundation
-import Spyable
 import UIKit
 
-@Spyable
+// sourcery: AutoMockable
 protocol SwizzlerProtocol {
     func swizzleForForeground()
     func unswizzleForForeground()

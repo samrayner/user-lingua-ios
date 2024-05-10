@@ -2,9 +2,8 @@
 
 import Dependencies
 import Foundation
-import Spyable
 
-@Spyable
+// sourcery: AutoMockable
 package protocol StringsRepositoryProtocol {
     func record(formatted: FormattedString)
     func record(localized: LocalizedString)
@@ -134,6 +133,6 @@ extension String {
 
 package enum StringsRepositoryDependency: DependencyKey {
     package static let liveValue: any StringsRepositoryProtocol = StringsRepository()
-    package static let previewValue: any StringsRepositoryProtocol = StringsRepositoryProtocolSpy()
-    package static let testValue: any StringsRepositoryProtocol = StringsRepositoryProtocolSpy()
+    package static let previewValue: any StringsRepositoryProtocol = StringsRepositoryProtocolMock()
+    package static let testValue: any StringsRepositoryProtocol = StringsRepositoryProtocolMock()
 }

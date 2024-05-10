@@ -4,6 +4,7 @@ import Dependencies
 import SwiftUI
 import UIKit
 
+// sourcery: AutoMockable
 package protocol WindowServiceProtocol {
     var userLinguaWindow: UIWindow { get }
     var appUIStyle: UIUserInterfaceStyle { get }
@@ -13,7 +14,7 @@ package protocol WindowServiceProtocol {
     func showWindow()
     func hideWindow()
     func toggleDarkMode()
-    func positionApp(focusing: CGPoint, in: CGRect, animationDuration: TimeInterval)
+    func positionApp(focusing: CGPoint, within: CGRect, animationDuration: TimeInterval)
     func positionApp(yOffset: CGFloat, animationDuration: TimeInterval)
     func resetAppPosition()
     func resetAppWindow()
@@ -94,7 +95,7 @@ package final class WindowService: WindowServiceProtocol {
         appWindow?.toggleDarkMode()
     }
 
-    package func positionApp(focusing focalPoint: CGPoint, in viewportFrame: CGRect, animationDuration: TimeInterval = 0) {
+    package func positionApp(focusing focalPoint: CGPoint, within viewportFrame: CGRect, animationDuration: TimeInterval = 0) {
         guard let appWindow else { return }
 
         let maxTranslateUp = viewportFrame.maxY - appWindow.bounds.maxY
@@ -148,6 +149,6 @@ extension UIApplication {
 
 package enum WindowServiceDependency: DependencyKey {
     package static let liveValue: any WindowServiceProtocol = WindowService()
-    package static let previewValue: any WindowServiceProtocol = WindowServiceProtocolSpy()
-    package static let testValue: any WindowServiceProtocol = WindowServiceProtocolSpy()
+    package static let previewValue: any WindowServiceProtocol = WindowServiceProtocolMock()
+    package static let testValue: any WindowServiceProtocol = WindowServiceProtocolMock()
 }

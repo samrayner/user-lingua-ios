@@ -3,7 +3,7 @@ strings:
     - Resources/Base.lproj/Localizable.strings
   outputs:
     - templateName: structured-swift5
-      output: Strings.generated.swift
+      output: SwiftGen/Strings.generated.swift
       params:
         enumName: "Strings"
         publicAccess: true

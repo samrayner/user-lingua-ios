@@ -3,11 +3,10 @@
 import Core
 import Dependencies
 import Foundation
-import Spyable
 import UIKit
 import Vision
 
-@Spyable
+// sourcery: AutoMockable
 package protocol StringRecognizerProtocol {
     func recognizeStrings(in image: UIImage) async throws -> [RecognizedString]
 }
@@ -285,6 +284,6 @@ package enum StringRecognizerDependency: DependencyKey {
         return StringRecognizer(stringsRepository: stringsRepository)
     }()
 
-    package static let previewValue: any StringRecognizerProtocol = StringRecognizerProtocolSpy()
-    package static let testValue: any StringRecognizerProtocol = StringRecognizerProtocolSpy()
+    package static let previewValue: any StringRecognizerProtocol = StringRecognizerProtocolMock()
+    package static let testValue: any StringRecognizerProtocol = StringRecognizerProtocolMock()
 }
