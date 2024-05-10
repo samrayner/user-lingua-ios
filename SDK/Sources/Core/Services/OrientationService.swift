@@ -1,6 +1,6 @@
 // OrientationService.swift
 
-import AsyncAlgorithms
+import Combine
 import Dependencies
 import Foundation
 import UIKit
@@ -13,19 +13,22 @@ package protocol OrientationServiceProtocol {
 package final class OrientationService: OrientationServiceProtocol {
     private var lastOrientation = UIDevice.current.orientation
 
+    @MainActor
     package func orientationDidChange() async -> AsyncStream<UIDeviceOrientation> {
-        await AsyncStream(
+        AsyncStream(
             NotificationCenter.default
-                .notifications(named: UIDevice.orientationDidChangeNotification)
-                .map { _ in await UIDevice.current.orientation }
+                .publisher(for: UIDevice.orientationDidChangeNotification)
+                .map { _ in UIDevice.current.orientation }
                 .filter { [weak self] in
                     [.landscapeLeft, .landscapeRight, .portrait, .portraitUpsideDown].contains($0)
                         && $0 != self?.lastOrientation
                 }
-                .map { [weak self] in
-                    self?.lastOrientation = $0
-                    return $0
-                }
+                .handleEvents(
+                    receiveOutput: { [weak self] in
+                        self?.lastOrientation = $0
+                    }
+                )
+                .values
         )
     }
 }

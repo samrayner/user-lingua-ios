@@ -23,7 +23,6 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-syntax", "509.0.0" ..< "511.0.0"),
         .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMinor(from: "1.10.2")),
-        .package(url: "https://github.com/apple/swift-async-algorithms", .upToNextMinor(from: "1.0.0")),
         .package(url: "https://github.com/samrayner/diff-match-patch", branch: "main")
     ],
     targets: [
@@ -44,8 +43,7 @@ let package = Package(
         .target(
             name: "Core",
             dependencies: [
-                .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
-                .product(name: "AsyncAlgorithms", package: "swift-async-algorithms")
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
             ]
         ),
         .target(
