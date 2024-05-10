@@ -1,7 +1,6 @@
 // ThemeImage.swift
 
 import Foundation
-import SFSafeSymbols
 import SwiftUI
 import UIKit
 

@@ -1,3 +1,5 @@
+--exclude **/*.generated.swift
+
 --commas inline
 --funcattributes prev-line
 --header "{file}"
