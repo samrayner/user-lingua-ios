@@ -2,9 +2,8 @@
 
 import Dependencies
 import Foundation
-import Spyable
 
-@Spyable
+// sourcery: AutoMockable
 package protocol SuggestionsRepositoryProtocol {
     func saveSuggestion(_ suggestion: Suggestion)
     func suggestion(for original: String, locale: Locale) -> Suggestion?
@@ -28,6 +27,6 @@ package final class SuggestionsRepository: SuggestionsRepositoryProtocol {
 
 package enum SuggestionsRepositoryDependency: DependencyKey {
     package static let liveValue: any SuggestionsRepositoryProtocol = SuggestionsRepository()
-    package static let previewValue: any SuggestionsRepositoryProtocol = SuggestionsRepositoryProtocolSpy()
-    package static let testValue: any SuggestionsRepositoryProtocol = SuggestionsRepositoryProtocolSpy()
+    package static let previewValue: any SuggestionsRepositoryProtocol = SuggestionsRepositoryProtocolMock()
+    package static let testValue: any SuggestionsRepositoryProtocol = SuggestionsRepositoryProtocolMock()
 }

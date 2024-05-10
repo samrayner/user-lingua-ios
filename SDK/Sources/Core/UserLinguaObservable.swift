@@ -2,9 +2,8 @@
 
 import Combine
 import Dependencies
-import Spyable
 
-@Spyable
+// sourcery: AutoMockable
 package protocol UserLinguaObservableProtocol: ObservableObject {
     func refresh()
     var refreshPublisher: AnyPublisher<Void, Never> { get }
@@ -26,6 +25,6 @@ public final class UserLinguaObservable: UserLinguaObservableProtocol {
 
 package enum UserLinguaObservableDependency: DependencyKey {
     package static let liveValue: any UserLinguaObservableProtocol = UserLinguaObservable()
-    package static let previewValue: any UserLinguaObservableProtocol = UserLinguaObservableProtocolSpy()
-    package static let testValue: any UserLinguaObservableProtocol = UserLinguaObservableProtocolSpy()
+    package static let previewValue: any UserLinguaObservableProtocol = UserLinguaObservableProtocolMock()
+    package static let testValue: any UserLinguaObservableProtocol = UserLinguaObservableProtocolMock()
 }

@@ -2,10 +2,9 @@
 
 import Combine
 import Dependencies
-import Spyable
 import UIKit
 
-@Spyable
+// sourcery: AutoMockable
 package protocol ContentSizeCategoryServiceProtocol {
     var systemContentSizeCategory: UIContentSizeCategory { get }
     var appContentSizeCategory: UIContentSizeCategory { get }
@@ -63,6 +62,6 @@ package final class ContentSizeCategoryService: ContentSizeCategoryServiceProtoc
 
 package enum ContentSizeCategoryServiceDependency: DependencyKey {
     package static let liveValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryService()
-    package static let previewValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryServiceProtocolSpy()
-    package static let testValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryServiceProtocolSpy()
+    package static let previewValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryServiceProtocolMock()
+    package static let testValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryServiceProtocolMock()
 }

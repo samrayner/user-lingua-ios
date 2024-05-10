@@ -209,7 +209,7 @@ package struct InspectionFeature {
 
                 windowService.positionApp(
                     focusing: state.recognizedString.boundingBoxCenter,
-                    in: state.viewportFrame,
+                    within: state.viewportFrame,
                     animationDuration: .AnimationDuration.quick
                 )
                 return .none

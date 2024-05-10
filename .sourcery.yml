@@ -1,0 +1,23 @@
+configurations:
+    - sources:
+        - SDK/Sources/Core
+      templates:
+        - SourceryTemplates/AutoMockable.stencil
+      output: SDK/Sources/Core/Sourcery
+      args:
+        autoMockableImports:
+          - Combine
+          - SwiftUI
+    - sources:
+        - SDK/Sources/RecognitionFeature
+      templates:
+        - SourceryTemplates/AutoMockable.stencil
+      output: SDK/Sources/RecognitionFeature/Sourcery
+      args:
+        autoMockableImports:
+          - Core
+    - sources:
+        - SDK/Sources/UserLingua
+      templates:
+        - SourceryTemplates/AutoMockable.stencil
+      output: SDK/Sources/UserLingua/Sourcery

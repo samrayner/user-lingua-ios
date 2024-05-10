@@ -3,10 +3,9 @@
 import AsyncAlgorithms
 import Dependencies
 import Foundation
-import Spyable
 import UIKit
 
-@Spyable
+// sourcery: AutoMockable
 package protocol OrientationServiceProtocol {
     func orientationDidChange() async -> AsyncStream<UIDeviceOrientation>
 }
@@ -33,6 +32,6 @@ package final class OrientationService: OrientationServiceProtocol {
 
 package enum OrientationServiceDependency: DependencyKey {
     package static let liveValue: any OrientationServiceProtocol = OrientationService()
-    package static let previewValue: any OrientationServiceProtocol = OrientationServiceProtocolSpy()
-    package static let testValue: any OrientationServiceProtocol = OrientationServiceProtocolSpy()
+    package static let previewValue: any OrientationServiceProtocol = OrientationServiceProtocolMock()
+    package static let testValue: any OrientationServiceProtocol = OrientationServiceProtocolMock()
 }
