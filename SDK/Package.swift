@@ -56,11 +56,33 @@ let package = Package(
         .target(
             name: "Diff",
             dependencies: [
-                "KSSDiff"
+                "Lib_KSSDiff"
             ]
         ),
         .target(
-            name: "KSSDiff",
+            name: "Lib_KSSDiff",
+            dependencies: []
+        ),
+        .target(
+            name: "Lib_CasePaths",
+            dependencies: [
+                "Lib_XCTestDynamicOverlay"
+            ]
+        ),
+        .target(
+            name: "Lib_CombineSchedulers",
+            dependencies: [
+                "Lib_XCTestDynamicOverlay"
+            ]
+        ),
+        .target(
+            name: "Lib_XCTestDynamicOverlay",
+            dependencies: [
+                "Lib_ConcurrencyExtras"
+            ]
+        ),
+        .target(
+            name: "Lib_ConcurrencyExtras",
             dependencies: []
         ),
         .target(
