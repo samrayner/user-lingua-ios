@@ -24,7 +24,6 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-syntax", "509.0.0" ..< "511.0.0"),
         .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMinor(from: "1.10.2")),
         .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols", .upToNextMinor(from: "5.2.0")),
-        .package(url: "https://github.com/gohanlon/swift-memberwise-init-macro", .upToNextMinor(from: "0.3.0")),
         .package(url: "https://github.com/apple/swift-async-algorithms", .upToNextMinor(from: "1.0.0")),
         .package(url: "https://github.com/samrayner/diff-match-patch", branch: "main")
     ],
@@ -47,7 +46,6 @@ let package = Package(
             name: "Core",
             dependencies: [
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
-                .product(name: "MemberwiseInit", package: "swift-memberwise-init-macro"),
                 .product(name: "AsyncAlgorithms", package: "swift-async-algorithms")
             ]
         ),
