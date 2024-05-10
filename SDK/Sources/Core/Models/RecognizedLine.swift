@@ -1,12 +1,15 @@
 // RecognizedLine.swift
 
 import Foundation
-import MemberwiseInit
 
-@MemberwiseInit(.package)
 package struct RecognizedLine: Equatable {
     package var string: String
     package var boundingBox: CGRect
+
+    package init(string: String, boundingBox: CGRect) {
+        self.string = string
+        self.boundingBox = boundingBox
+    }
 }
 
 extension RecognizedLine: Identifiable {

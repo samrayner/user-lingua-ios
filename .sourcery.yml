@@ -5,6 +5,7 @@ configurations:
         - SourceryTemplates/AutoMockable.stencil
       output: SDK/Sources/Core/Sourcery
       args:
+        hideVersionHeader: true
         autoMockableImports:
           - Combine
           - SwiftUI
@@ -14,6 +15,7 @@ configurations:
         - SourceryTemplates/AutoMockable.stencil
       output: SDK/Sources/RecognitionFeature/Sourcery
       args:
+        hideVersionHeader: true
         autoMockableImports:
           - Core
     - sources:
@@ -21,3 +23,5 @@ configurations:
       templates:
         - SourceryTemplates/AutoMockable.stencil
       output: SDK/Sources/UserLingua/Sourcery
+      args:
+        hideVersionHeader: true

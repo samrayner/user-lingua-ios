@@ -1,13 +1,17 @@
 // FormattedString.swift
 
 import Foundation
-import MemberwiseInit
 
-@MemberwiseInit(.package)
 package struct FormattedString {
     package var value: String
     package var format: StringFormat
     package var arguments: [FormattedStringArgument]
+
+    package init(value: String, format: StringFormat, arguments: [FormattedStringArgument]) {
+        self.value = value
+        self.format = format
+        self.arguments = arguments
+    }
 
     package var localization: Localization? {
         format.localization

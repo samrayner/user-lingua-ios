@@ -1,13 +1,19 @@
 // RecognizedString.swift
 
 import Foundation
-import MemberwiseInit
 
-@MemberwiseInit(.package)
 package struct RecognizedString: Equatable {
     package let id = UUID()
     package var recordedString: RecordedString
     package var lines: [RecognizedLine]
+
+    package init(
+        recordedString: RecordedString,
+        lines: [RecognizedLine]
+    ) {
+        self.recordedString = recordedString
+        self.lines = lines
+    }
 
     package var localization: Localization? {
         recordedString.localization

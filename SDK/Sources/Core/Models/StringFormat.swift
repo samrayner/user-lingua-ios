@@ -1,9 +1,7 @@
 // StringFormat.swift
 
 import Foundation
-import MemberwiseInit
 
-@MemberwiseInit(.package)
 package struct StringFormat: Equatable {
     static let placeholderRegex: NSRegularExpression = {
         let int = "(?:h|hh|l|ll|q|z|t|j)?([dioux])"
@@ -25,6 +23,11 @@ package struct StringFormat: Equatable {
 
     package var value: String
     package var localization: Localization?
+
+    package init(value: String, localization: Localization?) {
+        self.value = value
+        self.localization = localization
+    }
 
     package var localized: LocalizedString? {
         localization.map { LocalizedString(value: value, localization: $0) }
