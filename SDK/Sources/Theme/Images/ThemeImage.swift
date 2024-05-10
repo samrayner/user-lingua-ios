@@ -8,7 +8,7 @@ import UIKit
 package struct ThemeImage {
     enum Source {
         case resource(ImageResource)
-        case symbol(SFSymbol)
+        case symbol(String)
     }
 
     private let source: Source
@@ -17,7 +17,7 @@ package struct ThemeImage {
         self.init(source: .resource(resource))
     }
 
-    static func symbol(_ symbol: SFSymbol) -> Self {
+    static func symbol(_ symbol: String) -> Self {
         self.init(source: .symbol(symbol))
     }
 
@@ -26,7 +26,7 @@ package struct ThemeImage {
         case let .resource(resource):
             Image(resource)
         case let .symbol(symbol):
-            Image(systemSymbol: symbol)
+            Image(systemName: symbol)
         }
     }
 
@@ -35,7 +35,7 @@ package struct ThemeImage {
         case let .resource(resource):
             UIImage(resource: resource)
         case let .symbol(symbol):
-            UIImage(systemSymbol: symbol)
+            UIImage(systemName: symbol)!
         }
     }
 }
