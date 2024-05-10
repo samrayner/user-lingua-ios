@@ -10,20 +10,12 @@ let package = Package(
     platforms: [.iOS(.v16), .macOS(.v10_15)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
-        .library(name: "UserLingua", targets: ["UserLingua"]),
-        .library(name: "Core", targets: ["Core"]),
-        .library(name: "SystemAPIAliases", targets: ["SystemAPIAliases"]),
-        .library(name: "Theme", targets: ["Theme"]),
-        .library(name: "RootFeature", targets: ["RootFeature"]),
-        .library(name: "SelectionFeature", targets: ["SelectionFeature"]),
-        .library(name: "InspectionFeature", targets: ["InspectionFeature"]),
-        .library(name: "RecognitionFeature", targets: ["RecognitionFeature"])
+        .library(name: "UserLingua", targets: ["UserLingua"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-syntax", "509.0.0" ..< "511.0.0"),
-        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMinor(from: "1.10.2")),
-        .package(url: "https://github.com/samrayner/diff-match-patch", branch: "main")
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMinor(from: "1.10.2"))
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -64,8 +56,12 @@ let package = Package(
         .target(
             name: "Diff",
             dependencies: [
-                .product(name: "DiffMatchPatch", package: "diff-match-patch")
+                "KSSDiff"
             ]
+        ),
+        .target(
+            name: "KSSDiff",
+            dependencies: []
         ),
         .target(
             name: "RootFeature",

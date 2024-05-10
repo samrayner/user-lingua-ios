@@ -1,5 +1,3 @@
-// AutoMockable.generated.swift
-
 // Generated using Sourcery — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 // swiftlint:disable line_length
@@ -14,17 +12,42 @@ import AppKit
 
 import Core
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 package class StringRecognizerProtocolMock: StringRecognizerProtocol {
-    // MARK: - recognizeStrings
+
+
+
+
+    //MARK: - recognizeStrings
 
     package var recognizeStringsInImageUIImageRecognizedStringThrowableError: (any Error)?
     package var recognizeStringsInImageUIImageRecognizedStringCallsCount = 0
     package var recognizeStringsInImageUIImageRecognizedStringCalled: Bool {
-        recognizeStringsInImageUIImageRecognizedStringCallsCount > 0
+        return recognizeStringsInImageUIImageRecognizedStringCallsCount > 0
     }
-
-    package var recognizeStringsInImageUIImageRecognizedStringReceivedImage: UIImage?
-    package var recognizeStringsInImageUIImageRecognizedStringReceivedInvocations: [UIImage] = []
+    package var recognizeStringsInImageUIImageRecognizedStringReceivedImage: (UIImage)?
+    package var recognizeStringsInImageUIImageRecognizedStringReceivedInvocations: [(UIImage)] = []
     package var recognizeStringsInImageUIImageRecognizedStringReturnValue: [RecognizedString]!
     package var recognizeStringsInImageUIImageRecognizedStringClosure: ((UIImage) async throws -> [RecognizedString])?
 
@@ -35,10 +58,12 @@ package class StringRecognizerProtocolMock: StringRecognizerProtocol {
         if let error = recognizeStringsInImageUIImageRecognizedStringThrowableError {
             throw error
         }
-        if let recognizeStringsInImageUIImageRecognizedStringClosure {
+        if let recognizeStringsInImageUIImageRecognizedStringClosure = recognizeStringsInImageUIImageRecognizedStringClosure {
             return try await recognizeStringsInImageUIImageRecognizedStringClosure(image)
         } else {
             return recognizeStringsInImageUIImageRecognizedStringReturnValue
         }
     }
+
+
 }

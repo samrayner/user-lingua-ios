@@ -1,7 +1,7 @@
 // AttributedString+Diff.swift
 
-import DiffMatchPatch
 import Foundation
+import KSSDiff
 
 package struct DiffAttributes {
     let insert: [NSAttributedString.Key: Any]
@@ -21,27 +21,18 @@ package struct DiffAttributes {
 
 extension AttributedString {
     package init(old: String, new: String, diffAttributes: DiffAttributes) {
-        let diffMatchPatch = DiffMatchPatch()
-        diffMatchPatch.diff_Timeout = TimeInterval(1.0)
-
-        let nsArray = diffMatchPatch.diff_main(ofOldString: old, andNewString: new)
-        diffMatchPatch.diff_cleanupSemantic(nsArray)
-
-        guard let diffs = nsArray as? [Diff] else {
-            self = AttributedString(new)
-            return
-        }
+        let diffs = DiffMatchPatch(diffTimeout: 0)
+            .main(Substring(old), Substring(new))
 
         self = diffs
             .compactMap { diff in
-                switch diff.operation {
-                case DIFF_INSERT:
-                    AttributedString(diff.text, attributes: .init(diffAttributes.insert))
-                case DIFF_DELETE:
-                    AttributedString(diff.text, attributes: .init(diffAttributes.delete))
-                case DIFF_EQUAL:
-                    AttributedString(diff.text, attributes: .init(diffAttributes.same))
-                default:
+                if diff.isInsert, let text = diff.inNew {
+                    AttributedString(text, attributes: .init(diffAttributes.insert))
+                } else if diff.isDelete, let text = diff.inOriginal {
+                    AttributedString(text, attributes: .init(diffAttributes.delete))
+                } else if diff.isEqual, let text = diff.inNew {
+                    AttributedString(text, attributes: .init(diffAttributes.same))
+                } else {
                     nil
                 }
             }

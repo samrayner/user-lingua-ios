@@ -1,5 +1,3 @@
-// AutoMockable.generated.swift
-
 // Generated using Sourcery — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 // swiftlint:disable line_length
@@ -12,14 +10,40 @@ import UIKit
 import AppKit
 #endif
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class SwizzlerProtocolMock: SwizzlerProtocol {
-    // MARK: - swizzleForForeground
+
+
+
+
+    //MARK: - swizzleForForeground
 
     var swizzleForForegroundVoidCallsCount = 0
     var swizzleForForegroundVoidCalled: Bool {
-        swizzleForForegroundVoidCallsCount > 0
+        return swizzleForForegroundVoidCallsCount > 0
     }
-
     var swizzleForForegroundVoidClosure: (() -> Void)?
 
     func swizzleForForeground() {
@@ -27,13 +51,12 @@ class SwizzlerProtocolMock: SwizzlerProtocol {
         swizzleForForegroundVoidClosure?()
     }
 
-    // MARK: - unswizzleForForeground
+    //MARK: - unswizzleForForeground
 
     var unswizzleForForegroundVoidCallsCount = 0
     var unswizzleForForegroundVoidCalled: Bool {
-        unswizzleForForegroundVoidCallsCount > 0
+        return unswizzleForForegroundVoidCallsCount > 0
     }
-
     var unswizzleForForegroundVoidClosure: (() -> Void)?
 
     func unswizzleForForeground() {
@@ -41,13 +64,12 @@ class SwizzlerProtocolMock: SwizzlerProtocol {
         unswizzleForForegroundVoidClosure?()
     }
 
-    // MARK: - swizzleForBackground
+    //MARK: - swizzleForBackground
 
     var swizzleForBackgroundVoidCallsCount = 0
     var swizzleForBackgroundVoidCalled: Bool {
-        swizzleForBackgroundVoidCallsCount > 0
+        return swizzleForBackgroundVoidCallsCount > 0
     }
-
     var swizzleForBackgroundVoidClosure: (() -> Void)?
 
     func swizzleForBackground() {
@@ -55,17 +77,18 @@ class SwizzlerProtocolMock: SwizzlerProtocol {
         swizzleForBackgroundVoidClosure?()
     }
 
-    // MARK: - unswizzleForBackground
+    //MARK: - unswizzleForBackground
 
     var unswizzleForBackgroundVoidCallsCount = 0
     var unswizzleForBackgroundVoidCalled: Bool {
-        unswizzleForBackgroundVoidCallsCount > 0
+        return unswizzleForBackgroundVoidCallsCount > 0
     }
-
     var unswizzleForBackgroundVoidClosure: (() -> Void)?
 
     func unswizzleForBackground() {
         unswizzleForBackgroundVoidCallsCount += 1
         unswizzleForBackgroundVoidClosure?()
     }
+
+
 }
