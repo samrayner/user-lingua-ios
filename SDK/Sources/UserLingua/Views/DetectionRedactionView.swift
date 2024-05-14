@@ -1,6 +1,6 @@
 // DetectionRedactionView.swift
 
-import ComposableArchitecture
+import Lib_ComposableArchitecture
 import SwiftUI
 
 extension RedactionReasons {

@@ -1,7 +1,7 @@
 // UserLingua.swift
 
-import ComposableArchitecture
 import Core
+import Lib_ComposableArchitecture
 import RootFeature
 import SwiftUI
 import UIKit

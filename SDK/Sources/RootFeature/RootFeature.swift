@@ -1,9 +1,9 @@
 // RootFeature.swift
 
-import ComposableArchitecture
 import Core
 import Foundation
 import InspectionFeature
+import Lib_ComposableArchitecture
 import RecognitionFeature
 import SelectionFeature
 import SwiftUI

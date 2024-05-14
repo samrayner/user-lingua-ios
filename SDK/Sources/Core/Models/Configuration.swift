@@ -1,7 +1,7 @@
 // Configuration.swift
 
-import ComposableArchitecture
 import Foundation
+import Lib_ComposableArchitecture
 
 public struct Configuration: Equatable {
     public var automaticallyOptInTextViews: Bool

@@ -1,9 +1,15 @@
-// StringExtension.swift
+//
+//  StringExtension.swift
+//  
+//
+//  Created by Steven W. Klassen on 2020-06-23.
+//
 
 import Foundation
 
 @available(OSX 10.15, *)
-extension String {
+public extension String {
+
     /**
      Compute the differences in this string from another string. In the returned array, the `inNew` items will be
      substrings of this string while the `inOriginal` items will be substrings of `s`.
@@ -13,7 +19,7 @@ extension String {
      the deletions). If you wish more control over the difference parameters, or you wish to retain the equality
      "differences", then you will need to call `DiffMatchPatch.main` manually.
      */
-    public func differencesFrom(_ s: String) -> [Difference] {
+    func differencesFrom(_ s: String) -> [Difference] {
         let dmp = DiffMatchPatch(diffTimeout: 0)
         var diffs = dmp.main(Substring(s), Substring(self))
         if !diffs.isEmpty {

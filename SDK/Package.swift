@@ -15,7 +15,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-syntax", "509.0.0" ..< "511.0.0"),
-        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMinor(from: "1.10.2"))
+        .package(url: "https://github.com/apple/swift-collections", from: "1.0.2")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -35,7 +35,7 @@ let package = Package(
         .target(
             name: "Core",
             dependencies: [
-                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+                "Lib_ComposableArchitecture"
             ]
         ),
         .target(
@@ -58,32 +58,6 @@ let package = Package(
             dependencies: [
                 "Lib_KSSDiff"
             ]
-        ),
-        .target(
-            name: "Lib_KSSDiff",
-            dependencies: []
-        ),
-        .target(
-            name: "Lib_CasePaths",
-            dependencies: [
-                "Lib_XCTestDynamicOverlay"
-            ]
-        ),
-        .target(
-            name: "Lib_CombineSchedulers",
-            dependencies: [
-                "Lib_XCTestDynamicOverlay"
-            ]
-        ),
-        .target(
-            name: "Lib_XCTestDynamicOverlay",
-            dependencies: [
-                "Lib_ConcurrencyExtras"
-            ]
-        ),
-        .target(
-            name: "Lib_ConcurrencyExtras",
-            dependencies: []
         ),
         .target(
             name: "RootFeature",
@@ -135,6 +109,86 @@ let package = Package(
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
+            ]
+        ),
+        .target(
+            name: "Lib_KSSDiff",
+            dependencies: []
+        ),
+        .target(
+            name: "Lib_ComposableArchitecture",
+            dependencies: [
+                "Lib_CasePaths",
+                "Lib_CombineSchedulers",
+                "Lib_ConcurrencyExtras",
+                "Lib_CustomDump",
+                "Lib_Dependencies",
+                "Lib_IdentifiedCollections",
+                "Lib_SwiftUINavigationCore",
+                "Lib_XCTestDynamicOverlay",
+                .product(name: "OrderedCollections", package: "swift-collections")
+            ]
+        ),
+        .target(
+            name: "Lib_SwiftUINavigation",
+            dependencies: [
+                "Lib_CasePaths"
+            ]
+        ),
+        .target(
+            name: "Lib_SwiftUINavigationCore",
+            dependencies: [
+                "Lib_CustomDump",
+                "Lib_XCTestDynamicOverlay"
+            ]
+        ),
+        .target(
+            name: "Lib_CustomDump",
+            dependencies: [
+                "Lib_XCTestDynamicOverlay"
+            ]
+        ),
+        .target(
+            name: "Lib_Dependencies",
+            dependencies: [
+                "Lib_Clocks",
+                "Lib_CombineSchedulers",
+                "Lib_ConcurrencyExtras"
+            ]
+        ),
+        .target(
+            name: "Lib_Clocks",
+            dependencies: [
+                "Lib_XCTestDynamicOverlay",
+                "Lib_ConcurrencyExtras"
+            ]
+        ),
+        .target(
+            name: "Lib_CasePaths",
+            dependencies: [
+                "Lib_XCTestDynamicOverlay"
+            ]
+        ),
+        .target(
+            name: "Lib_CombineSchedulers",
+            dependencies: [
+                "Lib_XCTestDynamicOverlay"
+            ]
+        ),
+        .target(
+            name: "Lib_XCTestDynamicOverlay",
+            dependencies: [
+                "Lib_ConcurrencyExtras"
+            ]
+        ),
+        .target(
+            name: "Lib_ConcurrencyExtras",
+            dependencies: []
+        ),
+        .target(
+            name: "Lib_IdentifiedCollections",
+            dependencies: [
+                .product(name: "OrderedCollections", package: "swift-collections")
             ]
         )
     ]

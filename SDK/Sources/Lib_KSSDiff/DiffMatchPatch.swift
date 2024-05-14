@@ -1,21 +1,28 @@
-// DiffMatchPatch.swift
+//
+//  DiffMatchPatch.swift
+//  
+//
+//  Created by Steven W. Klassen on 2020-06-23.
+//
 
 import Foundation
+import KSSFoundation
+
 
 /**
  Engine for computing the difference between two strings. This is a Swift port of the Python3 version of the
  code found at https://github.com/google/diff-match-patch.
  */
 public struct DiffMatchPatch {
-    public init(
-        diffTimeout: TimeInterval = 1.0,
-        diffEditCost: Int = 4,
-        matchThreshold: Double = 0.5,
-        matchDistance: Int = 1000,
-        patchDeleteThreshold: Double = 0.5,
-        patchMargin: Int = 4,
-        matchMaxBits: Int = 32
-    ) {
+
+    public init(diffTimeout: TimeInterval = duration(1.0, .seconds),
+                diffEditCost: Int = 4,
+                matchThreshold: Double = 0.5,
+                matchDistance: Int = 1000,
+                patchDeleteThreshold: Double = 0.5,
+                patchMargin: Int = 4,
+                matchMaxBits: Int = 32)
+    {
         self.diffTimeout = diffTimeout
         self.diffEditCost = diffEditCost
         self.matchThreshold = matchThreshold
@@ -28,7 +35,7 @@ public struct DiffMatchPatch {
     // MARK: Configuration Parameters
 
     /// Number of seconds to map a diff before giving up (0 for infinity).
-    public var diffTimeout: TimeInterval = 1.0
+    public var diffTimeout: TimeInterval = duration(1.0, .seconds)
 
     /// Cost of an empty edit operation in terms of edit characters.
     public var diffEditCost = 4
@@ -37,22 +44,23 @@ public struct DiffMatchPatch {
     public var matchThreshold = 0.5
 
     /**
-     How far to search for a match (0 = exact location, 1000+ = broad match).
-     A match this many characters away from the expected location will add
-     1.0 to the score (0.0 is a perfect match).
-      */
+    How far to search for a match (0 = exact location, 1000+ = broad match).
+    A match this many characters away from the expected location will add
+    1.0 to the score (0.0 is a perfect match).
+     */
     public var matchDistance = 1000
 
     /**
-     When deleting a large block of text (over ~64 characters), how close do
-     the contents have to be to match the expected contents. (0.0 = perfection,
-     1.0 = very loose).  Note that Match_Threshold controls how closely the
-     end points of a delete need to match.
-      */
+    When deleting a large block of text (over ~64 characters), how close do
+    the contents have to be to match the expected contents. (0.0 = perfection,
+    1.0 = very loose).  Note that Match_Threshold controls how closely the
+    end points of a delete need to match.
+     */
     public var patchDeleteThreshold = 0.5
 
     /// Chunk size for context length.
     public var patchMargin = 4
+
 
     // The number of bits in an int.
     // Python has no maximum, thus to disable patch splitting set to 0.
@@ -62,6 +70,7 @@ public struct DiffMatchPatch {
     // KSS Note: we are using 64 bit hardware, but are going to leave this at 32 for
     // now until we better understand exactly what it does.
     var matchMaxBits = 32
+
 
     // MARK: Implementation
 
@@ -77,11 +86,10 @@ public struct DiffMatchPatch {
 
      - returns: An array of the difference descriptions.
      */
-    public func main(
-        _ text1in: Substring,
-        _ text2in: Substring,
-        _ deadline1: Date? = nil
-    ) -> [Difference] {
+    public func main(_ text1in: Substring,
+                     _ text2in: Substring,
+                     _ deadline1: Date? = nil) -> [Difference]
+    {
         var text1 = text1in
         var text2 = text2in
 
@@ -140,7 +148,7 @@ public struct DiffMatchPatch {
     //
     //    Returns:
     //      Array of changes.
-    func compute(_ text1: Substring, _ text2: Substring, /* _ checklines: Bool, */ _ deadline: Date) -> [Difference] {
+    func compute(_ text1: Substring, _ text2: Substring, /*_ checklines: Bool,*/ _ deadline: Date) -> [Difference] {
         if text1.isEmpty {
             // Just add some text (speedup).
             return [Difference(inNew: text2)]
@@ -165,18 +173,14 @@ public struct DiffMatchPatch {
             // Shorter text is inside the longer text (speedup).
             if shortTextIsPartOfOldString {
                 // the prefix and suffix of the long text have been inserted
-                return [
-                    Difference(inNew: longtext.prefix(upTo: index)),
-                    Difference(inOriginal: shorttext, inNew: longtext[index ..< index2]),
-                    Difference(inNew: longtext.suffix(from: index2))
-                ]
+                return [Difference(inNew: longtext.prefix(upTo: index)),
+                        Difference(inOriginal: shorttext, inNew: longtext[index ..< index2]),
+                        Difference(inNew: longtext.suffix(from: index2))]
             } else {
                 // the prefix and suffix of the long text have been deleted
-                return [
-                    Difference(inOriginal: longtext.prefix(upTo: index)),
-                    Difference(inOriginal: longtext[index ..< index2], inNew: shorttext),
-                    Difference(inOriginal: longtext.suffix(from: index2))
-                ]
+                return [Difference(inOriginal: longtext.prefix(upTo: index)),
+                        Difference(inOriginal: longtext[index ..< index2], inNew: shorttext),
+                        Difference(inOriginal: longtext.suffix(from: index2))]
             }
         }
 
@@ -197,8 +201,8 @@ public struct DiffMatchPatch {
             let text2_common = hm[5]
 
             // Send both pairs off for separate processing.
-            let diffs_a = main(text1_a, text2_a, /* checklines, */ deadline)
-            let diffs_b = main(text1_b, text2_b, /* checklines, */ deadline)
+            let diffs_a = main(text1_a, text2_a, /*checklines,*/ deadline)
+            let diffs_b = main(text1_b, text2_b, /*checklines,*/ deadline)
 
             // Merge the results
             var ret = diffs_a
@@ -209,6 +213,7 @@ public struct DiffMatchPatch {
 
         return bisect(text1, text2, deadline)
     }
+
 
     //    Find the 'middle snake' of a diff, split the problem in two
     //      and return the recursively constructed diff.
@@ -253,8 +258,8 @@ public struct DiffMatchPatch {
             }
 
             // Walk the front path one step.
-            var prevY: Int?
-            var prevYIdx: Substring.Index?
+            var prevY: Int? = nil
+            var prevYIdx: Substring.Index? = nil
             for k1 in stride(from: -d + k1start, to: d + 1 - k1end, by: 2) {
                 let k1_offset = v_offset + k1
                 var x1 = v1[k1_offset - 1]
@@ -311,8 +316,8 @@ public struct DiffMatchPatch {
             // Walk the reverse path one step.
             prevY = nil
             prevYIdx = nil
-            var prevX: Int?
-            var prevXIdx: Substring.Index?
+            var prevX: Int? = nil
+            var prevXIdx: Substring.Index? = nil
             for k2 in stride(from: -d + k2start, to: d + 1 - k2end, by: 2) {
                 let k2_offset = v_offset + k2
                 var x2 = v2[k2_offset - 1]
@@ -348,10 +353,10 @@ public struct DiffMatchPatch {
                 while x2 < text1_length && y2 < text2_length && text1[x2idx] == text2[y2idx] {
                     x2 += 1
                     y2 += 1
-                    if x2 < (text1_length - 1) {
+                    if x2 < (text1_length-1) {
                         x2idx = text1.index(x2idx, offsetBy: -1)
                     }
-                    if y2 < (text2_length - 1) {
+                    if y2 < (text2_length-1) {
                         y2idx = text2.index(y2idx, offsetBy: -1)
                     }
                 }
@@ -396,13 +401,12 @@ public struct DiffMatchPatch {
     //
     //    Returns:
     //      Array of diff tuples.
-    private func bisectSplit(
-        _ text1: Substring,
-        _ text2: Substring,
-        _ x: Substring.Index,
-        _ y: Substring.Index,
-        _ deadline: Date
-    ) -> [Difference] {
+    private func bisectSplit(_ text1: Substring,
+                             _ text2: Substring,
+                             _ x: Substring.Index,
+                             _ y: Substring.Index,
+                             _ deadline: Date) -> [Difference]
+    {
         // Compute both diffs serially.
         var diffs = main(text1.prefix(upTo: x), text2.prefix(upTo: y), deadline)
         diffs += main(text1.suffix(from: x), text2.suffix(from: y), deadline)
@@ -448,8 +452,7 @@ public struct DiffMatchPatch {
         var pointermid = pointermax
         var pointerend = 0
         while pointermin < pointermid {
-            if text1[text1length - pointermid ..< text1length - pointerend] ==
-                text2[text2length - pointermid ..< text2length - pointerend] {
+            if (text1[text1length - pointermid ..< text1length - pointerend] == text2[text2length - pointermid ..< text2length - pointerend]) {
                 pointermin = pointermid
                 pointerend = pointermin
             } else {
@@ -498,15 +501,19 @@ public struct DiffMatchPatch {
         let hm2 = halfMatchI(longtext, shorttext, floordiv(longtext.count + 1, 2))
         if hm1 == nil && hm2 == nil {
             return nil
-        } else if hm2 == nil {
+        }
+        else if hm2 == nil {
             hm = hm1!
-        } else if hm1 == nil {
+        }
+        else if hm1 == nil {
             hm = hm2!
-        } else {
+        }
+        else {
             // Both matched.  Select the longest.
             if hm1![4].count > hm2![4].count {
                 hm = hm1!
-            } else {
+            }
+            else {
                 hm = hm2!
             }
         }
@@ -551,7 +558,7 @@ public struct DiffMatchPatch {
                 best_longtext_a = longtext.prefix(i - suffixlength)
                 best_longtext_b = longtext.suffix(after: i + prefixlength)
                 bestcommon_longtext = longtext[i - suffixlength ..< i + prefixlength]
-                best_shorttext_a = shorttext.prefix(upTo: shorttext.index(j, offsetBy: -suffixlength))
+                best_shorttext_a = shorttext.prefix(upTo: shorttext.index(j, offsetBy:  -suffixlength))
                 best_shorttext_b = shorttext.suffix(from: shorttext.index(j, offsetBy: prefixlength))
             }
             jj = shorttext.find(seed, from: shorttext.index(j, offsetBy: 1))
@@ -569,12 +576,12 @@ public struct DiffMatchPatch {
     //    Args:
     //      diffs: Array of diff tuples.
     func cleanupMerge(_ diffs: inout [Difference]) {
-        diffs.append(Difference()) // Add a dummy entry at the end.
+        diffs.append(Difference())      // Add a dummy entry at the end.
         var pointer = 0
         var count_delete = 0
         var count_insert = 0
-        var text_delete: Substring?
-        var text_insert: Substring?
+        var text_delete: Substring? = nil
+        var text_insert: Substring? = nil
         while pointer < diffs.count {
             if diffs[pointer].isInsert {
                 count_insert += 1
@@ -682,38 +689,38 @@ public struct DiffMatchPatch {
                 if diffs[pointer].endswith(diffs[pointer - 1].inOriginal!) {
                     // Shift the edit over the previous equality.
                     if diffs[pointer].inOriginal != nil {
-                        (diffs[pointer].inOriginal, diffs[pointer + 1].inOriginal) = slideEditLeft(diffs[pointer - 1].inOriginal!,
-                                                                                                   diffs[pointer].inOriginal!,
-                                                                                                   diffs[pointer + 1].inOriginal!)
-                        diffs[pointer + 1].inNew = mergeConsecutive(diffs[pointer - 1].inNew,
-                                                                    appendWith: diffs[pointer + 1].inNew!)
+                        (diffs[pointer].inOriginal, diffs[pointer+1].inOriginal) = slideEditLeft(diffs[pointer-1].inOriginal!,
+                                                                                                 diffs[pointer].inOriginal!,
+                                                                                                 diffs[pointer+1].inOriginal!)
+                        diffs[pointer+1].inNew = mergeConsecutive(diffs[pointer-1].inNew,
+                                                                  appendWith: diffs[pointer+1].inNew!)
                     } else if diffs[pointer].inNew != nil {
-                        (diffs[pointer].inNew, diffs[pointer + 1].inNew) = slideEditLeft(diffs[pointer - 1].inNew!,
-                                                                                         diffs[pointer].inNew!,
-                                                                                         diffs[pointer + 1].inNew!)
-                        diffs[pointer + 1].inOriginal = mergeConsecutive(diffs[pointer - 1].inOriginal,
-                                                                         appendWith: diffs[pointer + 1].inOriginal!)
+                        (diffs[pointer].inNew, diffs[pointer+1].inNew) = slideEditLeft(diffs[pointer-1].inNew!,
+                                                                                       diffs[pointer].inNew!,
+                                                                                       diffs[pointer+1].inNew!)
+                        diffs[pointer+1].inOriginal = mergeConsecutive(diffs[pointer-1].inOriginal,
+                                                                       appendWith: diffs[pointer+1].inOriginal!)
                     } else {
-                        assertionFailure() // should never get here
+                        assert(false)   // should never get here
                     }
                     diffs.remove(at: pointer - 1)
                     changes = true
                 } else if diffs[pointer].startswith(diffs[pointer + 1].inOriginal!) {
                     // Shift the edit over the next equality.
                     if diffs[pointer].inOriginal != nil {
-                        (diffs[pointer - 1].inOriginal, diffs[pointer].inOriginal) = slideEditRight(diffs[pointer - 1].inOriginal!,
-                                                                                                    diffs[pointer].inOriginal!,
-                                                                                                    diffs[pointer + 1].inOriginal!)
-                        diffs[pointer - 1].inNew = mergeConsecutive(diffs[pointer - 1].inNew,
-                                                                    appendWith: diffs[pointer + 1].inNew!)
+                        (diffs[pointer-1].inOriginal, diffs[pointer].inOriginal) = slideEditRight(diffs[pointer-1].inOriginal!,
+                                                                                                  diffs[pointer].inOriginal!,
+                                                                                                  diffs[pointer+1].inOriginal!)
+                        diffs[pointer-1].inNew = mergeConsecutive(diffs[pointer-1].inNew,
+                                                                  appendWith: diffs[pointer+1].inNew!)
                     } else if diffs[pointer].inNew != nil {
-                        (diffs[pointer - 1].inNew, diffs[pointer].inNew) = slideEditRight(diffs[pointer - 1].inNew!,
-                                                                                          diffs[pointer].inNew!,
-                                                                                          diffs[pointer + 1].inNew!)
-                        diffs[pointer - 1].inOriginal = mergeConsecutive(diffs[pointer - 1].inOriginal,
-                                                                         appendWith: diffs[pointer + 1].inOriginal!)
+                        (diffs[pointer-1].inNew, diffs[pointer].inNew) = slideEditRight(diffs[pointer-1].inNew!,
+                                                                                        diffs[pointer].inNew!,
+                                                                                        diffs[pointer+1].inNew!)
+                        diffs[pointer-1].inOriginal = mergeConsecutive(diffs[pointer-1].inOriginal,
+                                                                       appendWith: diffs[pointer+1].inOriginal!)
                     } else {
-                        assertionFailure() // should never get here
+                        assert(false)   // should never get here
                     }
                     diffs.remove(at: pointer + 1)
                     changes = true
@@ -745,31 +752,31 @@ public struct DiffMatchPatch {
 
 /// :nodoc:
 extension Difference {
-    var isEmpty: Bool { inOriginal == nil && inNew == nil }
+    var isEmpty: Bool { get { return inOriginal == nil && inNew == nil }}
 
     // Determine if suffix (which should from be an equal) is a suffix of this difference
     // (which should be an edit).
     func endswith(_ suffix: Substring) -> Bool {
-        precondition(isDelete || isInsert) // Only works for edits.
+        precondition(isDelete || isInsert)      // Only works for edits.
         if let s = inOriginal {
             return s.hasSuffix(suffix)
         }
         if let s = inNew {
             return s.hasSuffix(suffix)
         }
-        assertionFailure() // Should never reach here
+        assert(false)   // Should never reach here
         return false
     }
 
     func startswith(_ prefix: Substring) -> Bool {
-        precondition(isDelete || isInsert) // Only works for edits.
+        precondition(isDelete || isInsert)      // Only works for edits.
         if let s = inOriginal {
             return s.hasPrefix(prefix)
         }
         if let s = inNew {
             return s.hasPrefix(prefix)
         }
-        assertionFailure() // Should never reach here
+        assert(false)   // Should never reach here
         return false
     }
 }

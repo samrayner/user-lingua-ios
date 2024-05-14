@@ -1,8 +1,8 @@
 // AppPreviewFeature.swift
 
-import ComposableArchitecture
 import Core
 import Foundation
+import Lib_ComposableArchitecture
 import SwiftUI
 import Theme
 

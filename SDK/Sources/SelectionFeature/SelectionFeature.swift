@@ -1,9 +1,9 @@
 // SelectionFeature.swift
 
-import ComposableArchitecture
 import Core
 import Foundation
 import InspectionFeature
+import Lib_ComposableArchitecture
 import RecognitionFeature
 import SwiftUI
 import Theme
