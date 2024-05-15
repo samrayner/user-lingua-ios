@@ -7,17 +7,16 @@ import Zip
 private let libraries: Set<Library> = [
     .package(url: "https://github.com/pointfreeco/combine-schedulers", exact: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.10.4"),
-    .package(url: "https://github.com/pointfreeco/swift-case-paths", exact: "1.3.0"),
+    .package(url: "https://github.com/pointfreeco/swift-case-paths", exact: "1.3.3"),
     .package(url: "https://github.com/pointfreeco/swift-clocks", exact: "1.0.2"),
     .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", exact: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", exact: "1.3.0"),
-    .package(url: "https://github.com/pointfreeco/swift-dependencies", exact: "1.0.0"),
-    .package(url: "https://github.com/pointfreeco/swift-identified-collections", exact: "1.0.0"),
+    .package(url: "https://github.com/pointfreeco/swift-dependencies", exact: "1.3.0"),
+    .package(url: "https://github.com/pointfreeco/swift-identified-collections", exact: "1.0.1"),
     .package(url: "https://github.com/pointfreeco/swift-perception", exact: "1.1.7"),
-    .package(url: "https://github.com/pointfreeco/swiftui-navigation", exact: "1.1.0"),
+    .package(url: "https://github.com/pointfreeco/swiftui-navigation", exact: "1.3.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", exact: "1.1.0")
-    // Made manual edits to KSSDiff so probably don't update it
-    // .package(url: "https://github.com/klassen-software-solutions/KSSDiff", exact: "3.0.1")
+//    .package(url: "https://github.com/klassen-software-solutions/KSSDiff", exact: "3.0.1")
 ]
 
 private struct Library: Hashable {
@@ -36,6 +35,7 @@ private struct Library: Hashable {
 
     var zipURL: URL {
         URL(string: "\(repoURL)/archive/refs/tags/\(version).zip")!
+        // URL(string: "\(repoURL)/archive/refs/heads/main.zip")!
     }
 }
 
@@ -90,73 +90,37 @@ struct UpdateLibs: AsyncParsableCommand {
             try await unzippedDirs.append(downloadLibrary(library))
         }
 
-        let sourceDirs = try unzippedDirs.flatMap(targetDirs)
         let currentDir = URL(fileURLWithPath: fileManager.currentDirectoryPath)
 
+        let sourceDirs = try unzippedDirs
+            .flatMap(targetDirs)
+            .filter {
+                ![
+                    "DependenciesMacros",
+                    "DependenciesMacrosPlugin",
+                    "DependenciesTestObserver"
+                ].contains($0.lastPathComponent)
+            }
+
         for source in sourceDirs {
-            let oldTargetName = source.lastPathComponent
-            let newTargetName = oldTargetName
+            let targetName = source.lastPathComponent
 
             try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
 
-            let fileURLs = fileManager.enumerator(at: source, includingPropertiesForKeys: nil)!
-                .compactMap { $0 as? URL }
-                .filter { !$0.hasDirectoryPath && $0.pathExtension == "swift" }
-
-            for url in fileURLs {
-                let encoding = String.Encoding.utf8
-                var contents = try String(contentsOf: url, encoding: encoding)
-
-                for source in sourceDirs {
-                    let oldTargetName = source.lastPathComponent
-                    let newTargetName = oldTargetName
-
-//                    contents = contents.replacingOccurrences(
-//                        of: "import \(oldTargetName)",
-//                        with: "import \(newTargetName)"
-//                    )
+//            let fileURLs = fileManager.enumerator(at: source, includingPropertiesForKeys: nil)!
+//                .compactMap { $0 as? URL }
+//                .filter { !$0.hasDirectoryPath && $0.pathExtension == "swift" }
 //
-//                    contents = contents.replacingOccurrences(
-//                        of: "canImport(\(oldTargetName))",
-//                        with: "canImport(\(newTargetName))"
-//                    )
+//            for url in fileURLs {
+//                let encoding = String.Encoding.utf8
+//                var contents = try String(contentsOf: url, encoding: encoding)
 //
-//                    contents = contents.replacingOccurrences(
-//                        of: "module: \"\(oldTargetName)\"",
-//                        with: "module: \"\(newTargetName)\""
-//                    )
-                }
+//                //modify contents as needed
+//
+//                try contents.write(to: url, atomically: false, encoding: encoding)
+//            }
 
-//                if oldTargetName == "Perception" {
-//                    contents = contents.replacingOccurrences(
-//                        of: "Perception.isPerceptionCheckingEnabled",
-//                        with: "Lib_Perception.isPerceptionCheckingEnabled"
-//                    )
-//                }
-//
-//                if oldTargetName == "CasePaths" {
-//                    contents = contents.replacingOccurrences(
-//                        of: "CasePaths.extract(",
-//                        with: "Lib_CasePaths.extract("
-//                    )
-//                }
-//
-//                if oldTargetName == "ComposableArchitecture" {
-//                    contents = contents.replacingOccurrences(
-//                        of: "Perception.Bindable",
-//                        with: "Lib_Perception.Bindable"
-//                    )
-//
-//                    contents = contents.replacingOccurrences(
-//                        of: "CustomDump.customDump(",
-//                        with: "Lib_CustomDump.customDump("
-//                    )
-//                }
-
-                try contents.write(to: url, atomically: false, encoding: encoding)
-            }
-
-            let destination = currentDir.appendingPathComponent("../SDK/Sources/\(newTargetName)")
+            let destination = currentDir.appendingPathComponent("../SDK/Sources/\(targetName)")
             try? fileManager.removeItem(at: destination)
             try fileManager.copyItem(
                 at: source,

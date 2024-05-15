@@ -4,6 +4,41 @@
 import SwiftUI
 @_spi(RuntimeWarn) import SwiftUINavigationCore
 
+// NB: Deprecated after 1.2.1
+
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+extension View {
+    @available(*, deprecated, renamed: "alert(item:title:actions:message:)")
+    public func alert<Value>(
+        title: (Value) -> Text,
+        unwrapping value: Binding<Value?>,
+        @ViewBuilder actions: (Value) -> some View,
+        @ViewBuilder message: (Value) -> some View
+    ) -> some View {
+        alert(item: value, title: title, actions: actions, message: message)
+    }
+
+    @available(
+        *, deprecated, renamed: "confirmationDialog(item:textVisibility:title:actions:message:)"
+    )
+    public func confirmationDialog<Value>(
+        title: (Value) -> Text,
+        titleVisibility: Visibility = .automatic,
+        unwrapping value: Binding<Value?>,
+        @ViewBuilder actions: (Value) -> some View,
+        @ViewBuilder message: (Value) -> some View
+    ) -> some View {
+        confirmationDialog(
+            value.wrappedValue.map(title) ?? Text(verbatim: ""),
+            isPresented: value.isPresent(),
+            titleVisibility: titleVisibility,
+            presenting: value.wrappedValue,
+            actions: actions,
+            message: message
+        )
+    }
+}
+
 // NB: Deprecated after 1.0.2
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
@@ -112,8 +147,8 @@ extension View {
         @ViewBuilder message: (Case) -> some View
     ) -> some View {
         alert(
+            item: `enum`.case(casePath),
             title: title,
-            unwrapping: `enum`.case(casePath),
             actions: actions,
             message: message
         )
@@ -204,9 +239,9 @@ extension View {
         @ViewBuilder message: (Case) -> some View
     ) -> some View {
         confirmationDialog(
-            title: title,
+            item: `enum`.case(casePath),
             titleVisibility: titleVisibility,
-            unwrapping: `enum`.case(casePath),
+            title: title,
             actions: actions,
             message: message
         )

@@ -154,10 +154,18 @@ extension Binding {
     /// - Returns: A binding of an optional child store.
     public func scope<State: ObservableState, Action, ChildState, ChildAction>(
         state: KeyPath<State, ChildState?>,
-        action: CaseKeyPath<Action, PresentationAction<ChildAction>>
+        action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+        fileID: StaticString = #fileID,
+        line: UInt = #line
     ) -> Binding<Store<ChildState, ChildAction>?>
         where Value == Store<State, Action> {
-        self[state: state, action: action]
+        self[
+            state: state,
+            action: action,
+            isInViewBody: _isInPerceptionTracking,
+            fileID: "\(fileID)",
+            line: line
+        ]
     }
 }
 
@@ -211,10 +219,18 @@ extension SwiftUI.Bindable {
     /// - Returns: A binding of an optional child store.
     public func scope<State: ObservableState, Action, ChildState, ChildAction>(
         state: KeyPath<State, ChildState?>,
-        action: CaseKeyPath<Action, PresentationAction<ChildAction>>
+        action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+        fileID: StaticString = #fileID,
+        line: UInt = #line
     ) -> Binding<Store<ChildState, ChildAction>?>
         where Value == Store<State, Action> {
-        self[state: state, action: action]
+        self[
+            state: state,
+            action: action,
+            isInViewBody: _isInPerceptionTracking,
+            fileID: "\(fileID)",
+            line: line
+        ]
     }
 }
 
@@ -271,18 +287,29 @@ extension Perception.Bindable {
     /// - Returns: A binding of an optional child store.
     public func scope<State: ObservableState, Action, ChildState, ChildAction>(
         state: KeyPath<State, ChildState?>,
-        action: CaseKeyPath<Action, PresentationAction<ChildAction>>
+        action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+        fileID: StaticString = #fileID,
+        line: UInt = #line
     ) -> Binding<Store<ChildState, ChildAction>?>
         where Value == Store<State, Action> {
-        self[state: state, action: action]
+        self[
+            state: state,
+            action: action,
+            isInViewBody: _isInPerceptionTracking,
+            fileID: "\(fileID)",
+            line: line
+        ]
     }
 }
 
 extension Store where State: ObservableState {
-    fileprivate subscript<ChildState, ChildAction>(
+    @_spi(Internals)
+    public subscript<ChildState, ChildAction>(
         state state: KeyPath<State, ChildState?>,
         action action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
-        isInViewBody isInViewBody: Bool = _isInPerceptionTracking
+        isInViewBody isInViewBody: Bool,
+        fileID fileID: String,
+        line line: UInt
     ) -> Store<ChildState, ChildAction>? {
         get {
             #if DEBUG && !os(visionOS)
@@ -296,6 +323,30 @@ extension Store where State: ObservableState {
         set {
             if newValue == nil, self.state[keyPath: state] != nil, !_isInvalidated() {
                 send(action(.dismiss))
+                if self.state[keyPath: state] != nil {
+                    runtimeWarn(
+                        """
+                        SwiftUI dismissed a view through a binding at "\(fileID):\(line)", but the store \
+                        destination wasn't set to "nil".
+
+                        This usually means an "ifLet" has not been integrated with the reducer powering the \
+                        store, and this reducer is responsible for handling presentation actions.
+
+                        To fix this, ensure that "ifLet" is invoked from the reducer's "body":
+
+                            Reduce { state, action in
+                              // ...
+                            }
+                            .ifLet(\\.destination, action: \\.destination) {
+                              Destination()
+                            }
+
+                        And ensure that every parent reducer is integrated into the root reducer that powers \
+                        the store.
+                        """
+                    )
+                    return
+                }
             }
         }
     }

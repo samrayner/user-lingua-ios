@@ -72,16 +72,23 @@ public func XCTFail(_ message: String = "") {
 public func XCTFail(_ message: String = "", file: StaticString, line: UInt) {
     var message = message
     attachHostApplicationWarningIfNeeded(&message)
-    _XCTFailureHandler(nil, true, "\(file)", line, "\(message.isEmpty ? "failed" : message)", nil)
+    guard let handler = _XCTFailureHandler
+    else {
+        runtimeWarn(message)
+        return
+    }
+    handler(nil, true, "\(file)", line, "\(message.isEmpty ? "failed" : message)", nil)
 }
 
 private typealias XCTFailureHandler = @convention(c) (
     AnyObject?, Bool, UnsafePointer<CChar>, UInt, String, String?
 ) -> Void
-private let _XCTFailureHandler = unsafeBitCast(
-    dlsym(dlopen(nil, RTLD_LAZY), "_XCTFailureHandler"),
-    to: XCTFailureHandler.self
-)
+private let _XCTFailureHandler: XCTFailureHandler? = dlsym(dlopen(nil, RTLD_LAZY), "_XCTFailureHandler").map { pointer in
+    unsafeBitCast(
+        pointer,
+        to: XCTFailureHandler.self
+    )
+}
 
 private func attachHostApplicationWarningIfNeeded(_ message: inout String) {
     guard
@@ -165,7 +172,21 @@ private func unsafeCastToXCTFailType(_ pXCTFail: UnsafeRawPointer) -> XCTFailTyp
     }
 }
 
-#if os(Windows)
+#if canImport(Glibc)
+import Glibc
+
+private func ResolveXCTFail() -> XCTFailType? {
+    var hXCTest = dlopen("libXCTest.so", RTLD_NOW)
+    if hXCTest == nil { hXCTest = dlopen(nil, RTLD_NOW) }
+
+    if let pXCTFail = dlsym(hXCTest, "$s6XCTest7XCTFail_4file4lineySS_s12StaticStringVSutF") {
+        return unsafeCastToXCTFailType(pXCTFail)
+    }
+
+    return nil
+}
+
+#elseif canImport(WinSDK)
 import WinSDK
 
 private func ResolveXCTFail() -> XCTFailType? {
@@ -181,18 +202,16 @@ private func ResolveXCTFail() -> XCTFailType? {
 
     return nil
 }
-#else
-import Glibc
+
+#elseif canImport(XCTest)
+import XCTest
 
 private func ResolveXCTFail() -> XCTFailType? {
-    var hXCTest = dlopen("libXCTest.so", RTLD_NOW)
-    if hXCTest == nil { hXCTest = dlopen(nil, RTLD_NOW) }
-
-    if let pXCTFail = dlsym(hXCTest, "$s6XCTest7XCTFail_4file4lineySS_s12StaticStringVSutF") {
-        return unsafeCastToXCTFailType(pXCTFail)
-    }
-
-    return nil
+    XCTFail
+}
+#else
+private func ResolveXCTFail() -> XCTFailType? {
+    nil
 }
 #endif
 

@@ -112,6 +112,7 @@ let package = Package(
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
             ]
         ),
+        // BEGIN COPIED THIRD PARTY DEPENDENCIES
         .target(
             name: "KSSDiff",
             dependencies: []
@@ -223,6 +224,7 @@ let package = Package(
                 .product(name: "OrderedCollections", package: "swift-collections")
             ]
         )
+        // END COPIED THIRD PARTY DEPENDENCIES
     ]
 )
 

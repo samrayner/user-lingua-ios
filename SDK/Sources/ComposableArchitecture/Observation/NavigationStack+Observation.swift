@@ -7,8 +7,8 @@ extension Binding {
     /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
     ///
     /// This operator is most used in conjunction with `NavigationStack`, and in particular
-    /// the initializer ``SwiftUI/NavigationStack/init(path:root:destination:)`` that ships with
-    /// this library.
+    /// the initializer ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)`` that
+    /// ships with this library.
     ///
     /// For example, suppose you have a feature that holds onto ``StackState`` in its state in order
     /// to represent all the screens that can be pushed onto a navigation stack:
@@ -43,7 +43,7 @@ extension Binding {
     /// more information.
     ///
     /// Then in the view you can use this operator, with
-    /// `NavigationStack` ``SwiftUI/NavigationStack/init(path:root:destination:)``, to
+    /// `NavigationStack` ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)``, to
     /// derive a store for each element in the stack:
     ///
     /// ```swift
@@ -72,7 +72,7 @@ extension Binding {
 extension SwiftUI.Bindable {
     /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
     ///
-    /// See ``SwiftUI/Binding/scope(state:action:)-4mj4d`` defined on `Binding` for more
+    /// See ``SwiftUI/Binding/scope(state:action:fileID:line:)`` defined on `Binding` for more
     /// information.
     public func scope<State: ObservableState, Action, ElementState, ElementAction>(
         state: KeyPath<State, StackState<ElementState>>,
@@ -90,7 +90,7 @@ extension SwiftUI.Bindable {
 extension Perception.Bindable {
     /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
     ///
-    /// See ``SwiftUI/Binding/scope(state:action:)-4mj4d`` defined on `Binding` for more
+    /// See ``SwiftUI/Binding/scope(state:action:fileID:line:)`` defined on `Binding` for more
     /// information.
     public func scope<State: ObservableState, Action, ElementState, ElementAction>(
         state: KeyPath<State, StackState<ElementState>>,
