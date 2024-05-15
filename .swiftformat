@@ -1,5 +1,4 @@
 --exclude **/*.generated.swift
---exclude **/Lib_*
 
 --commas inline
 --funcattributes prev-line

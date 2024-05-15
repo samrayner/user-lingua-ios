@@ -63,11 +63,7 @@ extension CasePathableMacro: MemberMacro {
         }
         let enumName = enumDecl.name.trimmed
 
-        let rewriter = SelfRewriter(selfEquivalent: enumName)
-        let memberBlock = rewriter.rewrite(enumDecl.memberBlock).cast(MemberBlockSyntax.self)
-
-        let enumCaseDecls = memberBlock
-            .members
+        let enumCaseDecls = enumDecl.memberBlock.members
             .flatMap { $0.decl.as(EnumCaseDeclSyntax.self)?.elements ?? [] }
 
         var seenCaseNames: Set<String> = []
@@ -85,8 +81,9 @@ extension CasePathableMacro: MemberMacro {
             seenCaseNames.insert(name)
         }
 
+        let rewriter = SelfRewriter(selfEquivalent: enumName)
+        let memberBlock = rewriter.rewrite(enumDecl.memberBlock).cast(MemberBlockSyntax.self)
         let casePaths = generateDeclSyntax(from: memberBlock.members, enumName: enumName)
-
         return [
             """
             public struct AllCasePaths {
@@ -102,8 +99,8 @@ extension CasePathableMacro: MemberMacro {
         enumName: TokenSyntax
     ) -> [DeclSyntax] {
         elements.flatMap {
-            if let elements = $0.decl.as(EnumCaseDeclSyntax.self)?.elements {
-                return generateDeclSyntax(from: elements, enumName: enumName)
+            if let decl = $0.decl.as(EnumCaseDeclSyntax.self) {
+                return generateDeclSyntax(from: decl, enumName: enumName)
             }
             if let ifConfigDecl = $0.decl.as(IfConfigDeclSyntax.self) {
                 let ifClauses = ifConfigDecl.clauses.flatMap { decl -> [DeclSyntax] in
@@ -121,10 +118,10 @@ extension CasePathableMacro: MemberMacro {
     }
 
     static func generateDeclSyntax(
-        from enumCaseDecls: EnumCaseElementListSyntax,
+        from decl: EnumCaseDeclSyntax,
         enumName: TokenSyntax
     ) -> [DeclSyntax] {
-        enumCaseDecls.map {
+        decl.elements.map {
             let caseName = $0.name.trimmed
             let associatedValueName = $0.trimmedTypeDescription
             let hasPayload = $0.parameterClause.map { !$0.parameters.isEmpty } ?? false
@@ -140,9 +137,21 @@ extension CasePathableMacro: MemberMacro {
                 bindingNames = ""
                 returnName = "()"
             }
-
+            let leadingTriviaLines = decl.leadingTrivia.description
+                .drop(while: \.isNewline)
+                .split(separator: "\n", omittingEmptySubsequences: false)
+            let indent =
+                leadingTriviaLines
+                    .compactMap { $0.isEmpty ? nil : $0.prefix(while: \.isWhitespace).count }
+                    .min(by: { (lhs: Int, rhs: Int) -> Bool in lhs < rhs })
+                    ?? 0
+            let leadingTrivia =
+                leadingTriviaLines
+                    .map { String($0.dropFirst(indent)) }
+                    .joined(separator: "\n")
+                    .trimmingSuffix(while: { $0.isWhitespace && !$0.isNewline })
             return """
-            public var \(caseName): \
+            \(raw: leadingTrivia)public var \(caseName): \
             \(raw: qualifiedCasePathTypeName)<\(enumName), \(raw: associatedValueName)> {
             \(raw: qualifiedCasePathTypeName)<\(enumName), \(raw: associatedValueName)>(
             embed: \(raw: hasPayload ? "\(enumName).\(caseName)" : "{ \(enumName).\(caseName) }"),
@@ -411,5 +420,18 @@ final class SelfRewriter: SyntaxRewriter {
         guard node.name.text == "Self"
         else { return super.visit(node) }
         return super.visit(node.with(\.name, selfEquivalent))
+    }
+}
+
+extension StringProtocol {
+    @inline(__always)
+    func trimmingSuffix(while condition: (Element) throws -> Bool) rethrows -> Self.SubSequence {
+        var view = self[...]
+
+        while let character = view.last, try condition(character) {
+            view = view.dropLast()
+        }
+
+        return view
     }
 }

@@ -442,12 +442,7 @@ extension CasePathable {
     /// userActions.filter { $0.is(\.home) }      // [UserAction.home(.onAppear)]
     /// userActions.filter { $0.is(\.settings) }  // [UserAction.settings(.subscribeButtonTapped)]
     /// ```
-    @_disfavoredOverload
     public func `is`(_ keyPath: PartialCaseKeyPath<Self>) -> Bool {
-        self[case: keyPath] != nil
-    }
-
-    public func `is`(_ keyPath: CaseKeyPath<Self, (some Any)?>) -> Bool {
         self[case: keyPath] != nil
     }
 

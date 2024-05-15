@@ -46,7 +46,7 @@ public final class UserLingua {
         windowService.setRootView(RootFeatureView(store: store))
     }
 
-    public var configuration: Configuration {
+    public var configuration: UserLinguaConfiguration {
         _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
             store.configuration
         }

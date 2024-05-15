@@ -34,8 +34,8 @@ private struct Library: Hashable {
     }
 
     var zipURL: URL {
-        URL(string: "\(repoURL)/archive/refs/tags/\(version).zip")!
-        // URL(string: "\(repoURL)/archive/refs/heads/main.zip")!
+        // URL(string: "\(repoURL)/archive/refs/tags/\(version).zip")!
+        URL(string: "\(repoURL)/archive/refs/heads/main.zip")!
     }
 }
 
