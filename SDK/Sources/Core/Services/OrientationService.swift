@@ -6,15 +6,15 @@ import Foundation
 import UIKit
 
 // sourcery: AutoMockable
-package protocol OrientationServiceProtocol {
+public protocol OrientationServiceProtocol {
     func orientationDidChange() async -> AsyncStream<UIDeviceOrientation>
 }
 
-package final class OrientationService: OrientationServiceProtocol {
+public final class OrientationService: OrientationServiceProtocol {
     private var lastOrientation = UIDevice.current.orientation
 
     @MainActor
-    package func orientationDidChange() async -> AsyncStream<UIDeviceOrientation> {
+    public func orientationDidChange() async -> AsyncStream<UIDeviceOrientation> {
         AsyncStream(
             NotificationCenter.default
                 .publisher(for: UIDevice.orientationDidChangeNotification)
@@ -33,8 +33,8 @@ package final class OrientationService: OrientationServiceProtocol {
     }
 }
 
-package enum OrientationServiceDependency: DependencyKey {
-    package static let liveValue: any OrientationServiceProtocol = OrientationService()
-    package static let previewValue: any OrientationServiceProtocol = OrientationServiceProtocolMock()
-    package static let testValue: any OrientationServiceProtocol = OrientationServiceProtocolMock()
+public enum OrientationServiceDependency: DependencyKey {
+    public static let liveValue: any OrientationServiceProtocol = OrientationService()
+    public static let previewValue: any OrientationServiceProtocol = OrientationServiceProtocolMock()
+    public static let testValue: any OrientationServiceProtocol = OrientationServiceProtocolMock()
 }

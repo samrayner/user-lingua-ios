@@ -7,24 +7,24 @@ import SwiftUI
 import UIKit
 
 @Reducer
-package struct RecognitionFeature {
+public struct RecognitionFeature {
     @Dependency(StringRecognizerDependency.self) var stringRecognizer
     @Dependency(WindowServiceDependency.self) var windowService
     @Dependency(UserLinguaObservableDependency.self) var appViewModel
 
-    package init() {}
+    public init() {}
 
     @ObservableState
-    package struct State: Equatable {
-        package var isRecognizingStrings = false
-        package var isTakingScreenshot = false
+    public struct State: Equatable {
+        public var isRecognizingStrings = false
+        public var isTakingScreenshot = false
         var appFacade: UIImage?
         var appYOffset: CGFloat = 0
 
-        package init() {}
+        public init() {}
     }
 
-    package enum Action {
+    public enum Action {
         case start
         case prepareApp
         case recognizeStrings
@@ -33,12 +33,12 @@ package struct RecognitionFeature {
         case delegate(Delegate)
 
         @CasePathable
-        package enum Delegate {
+        public enum Delegate {
             case didRecognizeStrings([RecognizedString])
         }
     }
 
-    package var body: some ReducerOf<Self> {
+    public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .start:
@@ -85,14 +85,14 @@ package struct RecognitionFeature {
     }
 }
 
-package struct RecognitionFeatureView: View {
-    package let store: StoreOf<RecognitionFeature>
+public struct RecognitionFeatureView: View {
+    public let store: StoreOf<RecognitionFeature>
 
-    package init(store: StoreOf<RecognitionFeature>) {
+    public init(store: StoreOf<RecognitionFeature>) {
         self.store = store
     }
 
-    package var body: some View {
+    public var body: some View {
         WithPerceptionTracking {
             if let appFacade = store.appFacade {
                 Image(uiImage: appFacade)

@@ -7,7 +7,7 @@ extension String {
     /// - Maximise string uniqueness
     /// - Maintain exact wrapping of the original string (i.e. exact "word" widths)
     /// - Do not decrease OCR accuracy (increase it if possible)
-    package func tokenized() -> String {
+    public func tokenized() -> String {
         // strip diacritics to improve OCR
         let utf16 = folding(options: .diacriticInsensitive, locale: .current).utf16
         var utf16Chars = Array(utf16)

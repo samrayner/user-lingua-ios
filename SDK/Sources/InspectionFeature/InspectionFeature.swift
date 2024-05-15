@@ -9,7 +9,7 @@ import SwiftUI
 import Theme
 
 @Reducer
-package struct InspectionFeature {
+public struct InspectionFeature {
     @Dependency(\.continuousClock) var clock
     @Dependency(\.mainQueue) var mainQueue
     @Dependency(\.dismiss) var dismiss
@@ -20,10 +20,10 @@ package struct InspectionFeature {
     @Dependency(NotificationServiceDependency.self) var notificationService
     @Dependency(OrientationServiceDependency.self) var orientationService
 
-    package init() {}
+    public init() {}
 
     @ObservableState
-    package struct State: Equatable {
+    public struct State: Equatable {
         enum Field: String, Hashable {
             case suggestion
         }
@@ -42,14 +42,14 @@ package struct InspectionFeature {
             }
         }
 
-        @Shared package internal(set) var recognizedString: RecognizedString
+        @Shared public internal(set) var recognizedString: RecognizedString
         @Shared var suggestionString: String
         @Shared var isFullScreen: Bool
         @Shared var localeIdentifier: String
         @Shared(InMemoryKey.recognitionState) var recognition = .init()
         @Shared(InMemoryKey.configuration) var configuration = .init()
         @Shared(AppStorageKey.previewMode) var previewMode: PreviewMode = .app
-        package internal(set) var isTransitioning = true
+        public internal(set) var isTransitioning = true
         var focusedField: Field?
         var keyboardHeight: CGFloat = 0
         var appFacade: UIImage?
@@ -57,7 +57,7 @@ package struct InspectionFeature {
         var appPreview: AppPreviewFeature.State
         var textPreview: TextPreviewFeature.State
 
-        package var locale: Locale {
+        public var locale: Locale {
             Locale(identifier: localeIdentifier)
         }
 
@@ -73,7 +73,7 @@ package struct InspectionFeature {
             )
         }
 
-        package init(
+        public init(
             recognizedString: RecognizedString,
             appFacade: UIImage?
         ) {
@@ -99,7 +99,7 @@ package struct InspectionFeature {
         }
     }
 
-    package enum Action: BindableAction {
+    public enum Action: BindableAction {
         case didTapSuggestionPreview
         case didTapClose
         case didTapDoneSuggesting
@@ -123,7 +123,7 @@ package struct InspectionFeature {
         case suggestionSaveDebounce
     }
 
-    package var body: some ReducerOf<Self> {
+    public var body: some ReducerOf<Self> {
         BindingReducer()
 
         Scope(state: \.recognition, action: \.recognition) {
@@ -250,12 +250,12 @@ package struct InspectionFeature {
     }
 }
 
-package struct InspectionFeatureView: View {
+public struct InspectionFeatureView: View {
     @Dependency(WindowServiceDependency.self) private var windowService
     @Perception.Bindable private var store: StoreOf<InspectionFeature>
     @FocusState private var focusedField: InspectionFeature.State.Field?
 
-    package init(store: StoreOf<InspectionFeature>) {
+    public init(store: StoreOf<InspectionFeature>) {
         self.store = store
     }
 
@@ -269,7 +269,7 @@ package struct InspectionFeatureView: View {
         }
     }
 
-    package var body: some View {
+    public var body: some View {
         WithPerceptionTracking {
             VStack(spacing: 0) {
                 if !store.isFullScreen {

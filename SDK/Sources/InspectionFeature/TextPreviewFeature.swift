@@ -9,9 +9,9 @@ import SwiftUI
 import Theme
 
 @Reducer
-package struct TextPreviewFeature {
+public struct TextPreviewFeature {
     @ObservableState
-    package struct State: Equatable {
+    public struct State: Equatable {
         @Shared(InMemoryKey.configuration) var configuration = .init()
         @Shared(AppStorageKey.textPreviewBaseIsExpanded) var baseIsExpanded = true
         @Shared(AppStorageKey.textPreviewOriginalIsExpanded) var originalIsExpanded = true
@@ -49,11 +49,11 @@ package struct TextPreviewFeature {
         }
     }
 
-    package enum Action: BindableAction {
+    public enum Action: BindableAction {
         case binding(BindingAction<State>)
     }
 
-    package var body: some ReducerOf<Self> {
+    public var body: some ReducerOf<Self> {
         BindingReducer()
 
         Reduce { _, action in

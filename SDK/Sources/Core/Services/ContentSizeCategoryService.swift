@@ -5,7 +5,7 @@ import Dependencies
 import UIKit
 
 // sourcery: AutoMockable
-package protocol ContentSizeCategoryServiceProtocol {
+public protocol ContentSizeCategoryServiceProtocol {
     var systemContentSizeCategory: UIContentSizeCategory { get }
     var appContentSizeCategory: UIContentSizeCategory { get }
     func incrementAppContentSizeCategory()
@@ -13,12 +13,12 @@ package protocol ContentSizeCategoryServiceProtocol {
     func resetAppContentSizeCategory()
 }
 
-package final class ContentSizeCategoryService: ContentSizeCategoryServiceProtocol {
-    package private(set) var systemContentSizeCategory = UITraitCollection.current.preferredContentSizeCategory
-    package private(set) var appContentSizeCategory = UITraitCollection.current.preferredContentSizeCategory
+public final class ContentSizeCategoryService: ContentSizeCategoryServiceProtocol {
+    public private(set) var systemContentSizeCategory = UITraitCollection.current.preferredContentSizeCategory
+    public private(set) var appContentSizeCategory = UITraitCollection.current.preferredContentSizeCategory
     private var cancellables = Set<AnyCancellable>()
 
-    package init() {
+    public init() {
         NotificationCenter.default
             .publisher(for: UIContentSizeCategory.didChangeNotification)
             .sink { [weak self] in
@@ -47,21 +47,21 @@ package final class ContentSizeCategoryService: ContentSizeCategoryServiceProtoc
         )
     }
 
-    package func incrementAppContentSizeCategory() {
+    public func incrementAppContentSizeCategory() {
         notifyDidChange(newValue: appContentSizeCategory.incremented())
     }
 
-    package func decrementAppContentSizeCategory() {
+    public func decrementAppContentSizeCategory() {
         notifyDidChange(newValue: appContentSizeCategory.decremented())
     }
 
-    package func resetAppContentSizeCategory() {
+    public func resetAppContentSizeCategory() {
         notifyDidChange(newValue: systemContentSizeCategory)
     }
 }
 
-package enum ContentSizeCategoryServiceDependency: DependencyKey {
-    package static let liveValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryService()
-    package static let previewValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryServiceProtocolMock()
-    package static let testValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryServiceProtocolMock()
+public enum ContentSizeCategoryServiceDependency: DependencyKey {
+    public static let liveValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryService()
+    public static let previewValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryServiceProtocolMock()
+    public static let testValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryServiceProtocolMock()
 }

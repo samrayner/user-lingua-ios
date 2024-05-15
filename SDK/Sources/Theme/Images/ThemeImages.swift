@@ -2,16 +2,16 @@
 
 import Foundation
 
-package struct ThemeImages {
-    package let close: ThemeImage
-    package let increaseTextSize: ThemeImage
-    package let decreaseTextSize: ThemeImage
-    package let toggleDarkMode: ThemeImage
-    package let enterFullScreen: ThemeImage
-    package let exitFullScreen: ThemeImage
-    package let doneSuggesting: ThemeImage
-    package let textPreviewMode: ThemeImage
-    package let appPreviewMode: ThemeImage
-    package let textPreviewExpand: ThemeImage
-    package let textPreviewCollapse: ThemeImage
+public struct ThemeImages {
+    public let close: ThemeImage
+    public let increaseTextSize: ThemeImage
+    public let decreaseTextSize: ThemeImage
+    public let toggleDarkMode: ThemeImage
+    public let enterFullScreen: ThemeImage
+    public let exitFullScreen: ThemeImage
+    public let doneSuggesting: ThemeImage
+    public let textPreviewMode: ThemeImage
+    public let appPreviewMode: ThemeImage
+    public let textPreviewExpand: ThemeImage
+    public let textPreviewCollapse: ThemeImage
 }

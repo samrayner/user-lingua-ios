@@ -2,14 +2,14 @@
 
 import SwiftUI
 
-package struct HorizontalRule: View {
-    package let color: Color
+public struct HorizontalRule: View {
+    public let color: Color
 
-    package init(color: Color = .theme(\.horizontalRule)) {
+    public init(color: Color = .theme(\.horizontalRule)) {
         self.color = color
     }
 
-    package var body: some View {
+    public var body: some View {
         Rectangle()
             .fill(color)
             .frame(height: 1)

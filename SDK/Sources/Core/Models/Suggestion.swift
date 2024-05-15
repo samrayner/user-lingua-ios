@@ -3,16 +3,16 @@
 import Foundation
 import UIKit
 
-package struct Suggestion: Equatable {
-    package var recordedString: RecordedString
-    package var newValue: String
-    package var locale: Locale
-    package var createdAt: Date
-    package var modifiedAt: Date
-    package var isSubmitted: Bool
-    package var screenshot: UIImage?
+public struct Suggestion: Equatable {
+    public var recordedString: RecordedString
+    public var newValue: String
+    public var locale: Locale
+    public var createdAt: Date
+    public var modifiedAt: Date
+    public var isSubmitted: Bool
+    public var screenshot: UIImage?
 
-    package init(
+    public init(
         recordedString: RecordedString,
         newValue: String,
         locale: Locale,

@@ -7,7 +7,7 @@ import UIKit
 import Vision
 
 // sourcery: AutoMockable
-package protocol StringRecognizerProtocol {
+public protocol StringRecognizerProtocol {
     func recognizeStrings(in image: UIImage) async throws -> [RecognizedString]
 }
 
@@ -19,11 +19,11 @@ final class StringRecognizer: StringRecognizerProtocol {
 
     let stringsRepository: StringsRepositoryProtocol
 
-    package init(stringsRepository: StringsRepositoryProtocol) {
+    public init(stringsRepository: StringsRepositoryProtocol) {
         self.stringsRepository = stringsRepository
     }
 
-    package func recognizeStrings(in image: UIImage) async throws -> [RecognizedString] {
+    public func recognizeStrings(in image: UIImage) async throws -> [RecognizedString] {
         try await identifyRecognizedLines(recognizeLines(in: image))
     }
 
@@ -278,12 +278,12 @@ extension RecognizedLine {
     }
 }
 
-package enum StringRecognizerDependency: DependencyKey {
-    package static let liveValue: any StringRecognizerProtocol = {
+public enum StringRecognizerDependency: DependencyKey {
+    public static let liveValue: any StringRecognizerProtocol = {
         @Dependency(StringsRepositoryDependency.self) var stringsRepository
         return StringRecognizer(stringsRepository: stringsRepository)
     }()
 
-    package static let previewValue: any StringRecognizerProtocol = StringRecognizerProtocolMock()
-    package static let testValue: any StringRecognizerProtocol = StringRecognizerProtocolMock()
+    public static let previewValue: any StringRecognizerProtocol = StringRecognizerProtocolMock()
+    public static let testValue: any StringRecognizerProtocol = StringRecognizerProtocolMock()
 }

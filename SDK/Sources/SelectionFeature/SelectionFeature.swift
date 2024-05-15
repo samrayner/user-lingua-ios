@@ -9,24 +9,24 @@ import SwiftUI
 import Theme
 
 @Reducer
-package struct SelectionFeature {
+public struct SelectionFeature {
     @Dependency(ContentSizeCategoryServiceDependency.self) var contentSizeCategoryService
     @Dependency(OrientationServiceDependency.self) var orientationService
     @Dependency(WindowServiceDependency.self) var windowService
 
-    package init() {}
+    public init() {}
 
     @ObservableState
-    package struct State: Equatable {
-        @Shared(InMemoryKey.recognitionState) package var recognition = .init()
+    public struct State: Equatable {
+        @Shared(InMemoryKey.recognitionState) public var recognition = .init()
         var recognizedStrings: [RecognizedString]?
 
-        @Presents package var inspection: InspectionFeature.State?
+        @Presents public var inspection: InspectionFeature.State?
 
-        package init() {}
+        public init() {}
     }
 
-    package enum Action: BindableAction {
+    public enum Action: BindableAction {
         case didSelectString(RecognizedString)
         case didTapOverlay
         case inspectionDidDismiss
@@ -40,7 +40,7 @@ package struct SelectionFeature {
     }
 
     @CasePathable
-    package enum Delegate {
+    public enum Delegate {
         case dismiss
     }
 
@@ -48,7 +48,7 @@ package struct SelectionFeature {
         case deviceOrientationObservation
     }
 
-    package var body: some ReducerOf<Self> {
+    public var body: some ReducerOf<Self> {
         BindingReducer()
 
         Scope(state: \.recognition, action: \.recognition) {
@@ -100,16 +100,16 @@ package struct SelectionFeature {
     }
 }
 
-package struct SelectionFeatureView: View {
+public struct SelectionFeatureView: View {
     @Environment(\.colorScheme) private var colorScheme
-    @Perception.Bindable package var store: StoreOf<SelectionFeature>
+    @Perception.Bindable public var store: StoreOf<SelectionFeature>
     @State private var isVisible = false
 
-    package init(store: StoreOf<SelectionFeature>) {
+    public init(store: StoreOf<SelectionFeature>) {
         self.store = store
     }
 
-    package var body: some View {
+    public var body: some View {
         WithPerceptionTracking {
             ZStack(alignment: .topLeading) {
                 if store.recognizedStrings != nil {

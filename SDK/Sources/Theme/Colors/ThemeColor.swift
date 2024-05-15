@@ -6,7 +6,7 @@ import UIKit
 
 typealias Hexadecimal = String
 
-package struct ThemeColor {
+public struct ThemeColor {
     let light: RGBA
     let dark: RGBA
 
@@ -27,13 +27,13 @@ extension ThemeColor {
         self.dark = .init(hexadecimal: dark)
     }
 
-    package init(_ moduleColor: ModuleColor) {
+    public init(_ moduleColor: ModuleColor) {
         self = Theme.current.theme.colors[keyPath: moduleColor]
     }
 }
 
 extension UIColor {
-    package func adjust(
+    public func adjust(
         hue: CGFloat = 0,
         saturation: CGFloat = 0,
         brightness: CGFloat = 0
@@ -63,7 +63,7 @@ extension UIColor {
 }
 
 extension Color {
-    package func adjust(
+    public func adjust(
         hue: CGFloat = 0,
         saturation: CGFloat = 0,
         brightness: CGFloat = 0

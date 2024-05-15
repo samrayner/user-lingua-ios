@@ -4,7 +4,7 @@ import Foundation
 import SwiftUI
 
 // sourcery: AutoMockable
-package protocol StringExtractorProtocol {
+public protocol StringExtractorProtocol {
     func formattedString(
         localizedStringKey: LocalizedStringKey,
         tableName: String?,
@@ -13,10 +13,10 @@ package protocol StringExtractorProtocol {
     ) -> FormattedString
 }
 
-package struct StringExtractor: StringExtractorProtocol {
-    package init() {}
+public struct StringExtractor: StringExtractorProtocol {
+    public init() {}
 
-    package func formattedString(
+    public func formattedString(
         localizedStringKey: LocalizedStringKey,
         tableName: String?,
         bundle: Bundle?,

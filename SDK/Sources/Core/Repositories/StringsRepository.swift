@@ -4,7 +4,7 @@ import Dependencies
 import Foundation
 
 // sourcery: AutoMockable
-package protocol StringsRepositoryProtocol {
+public protocol StringsRepositoryProtocol {
     func record(formatted: FormattedString)
     func record(localized: LocalizedString)
     func record(string: String)
@@ -14,14 +14,14 @@ package protocol StringsRepositoryProtocol {
     func recordedString(string: String) -> RecordedString?
 }
 
-package final class StringsRepository: StringsRepositoryProtocol {
+public final class StringsRepository: StringsRepositoryProtocol {
     private var stringRecord: [String: [RecordedString]]
 
-    package init(stringRecord: [String: [RecordedString]] = [:]) {
+    public init(stringRecord: [String: [RecordedString]] = [:]) {
         self.stringRecord = stringRecord
     }
 
-    package func record(formatted formattedString: FormattedString) {
+    public func record(formatted formattedString: FormattedString) {
         guard formattedString.localization?.isInApp != false else { return }
 
         var formattedString = formattedString
@@ -74,7 +74,7 @@ package final class StringsRepository: StringsRepositoryProtocol {
         print("Recorded formatted: \(formattedString.value)")
     }
 
-    package func record(localized localizedString: LocalizedString) {
+    public func record(localized localizedString: LocalizedString) {
         guard localizedString.localization.isInApp != false else { return }
 
         stringRecord[localizedString.value, default: []].append(
@@ -84,7 +84,7 @@ package final class StringsRepository: StringsRepositoryProtocol {
         print("Recorded localized: \(localizedString.value)")
     }
 
-    package func record(string: String) {
+    public func record(string: String) {
         stringRecord[string, default: []].append(
             RecordedString(string)
         )
@@ -92,7 +92,7 @@ package final class StringsRepository: StringsRepositoryProtocol {
         print("Recorded string: \(string)")
     }
 
-    package func recordedStrings() -> [RecordedString] {
+    public func recordedStrings() -> [RecordedString] {
         stringRecord
             .flatMap { $0.value }
             .sorted { $0.recordedAt > $1.recordedAt }
@@ -102,7 +102,7 @@ package final class StringsRepository: StringsRepositoryProtocol {
         stringRecord[string] ?? []
     }
 
-    package func recordedString(formatted formattedString: FormattedString) -> RecordedString? {
+    public func recordedString(formatted formattedString: FormattedString) -> RecordedString? {
         if let localizedString = formattedString.format.localized {
             recordedString(localized: localizedString)
         } else {
@@ -110,14 +110,14 @@ package final class StringsRepository: StringsRepositoryProtocol {
         }
     }
 
-    package func recordedString(localized localizedString: LocalizedString) -> RecordedString? {
+    public func recordedString(localized localizedString: LocalizedString) -> RecordedString? {
         let matchingValues = recordedStrings(string: localizedString.value)
         return matchingValues.last {
             $0.localization == localizedString.localization
         } ?? matchingValues.last
     }
 
-    package func recordedString(string: String) -> RecordedString? {
+    public func recordedString(string: String) -> RecordedString? {
         let recorded = recordedStrings(string: string)
         return recorded.last { $0.localization != nil } ?? recorded.last
     }
@@ -131,8 +131,8 @@ extension String {
     }
 }
 
-package enum StringsRepositoryDependency: DependencyKey {
-    package static let liveValue: any StringsRepositoryProtocol = StringsRepository()
-    package static let previewValue: any StringsRepositoryProtocol = StringsRepositoryProtocolMock()
-    package static let testValue: any StringsRepositoryProtocol = StringsRepositoryProtocolMock()
+public enum StringsRepositoryDependency: DependencyKey {
+    public static let liveValue: any StringsRepositoryProtocol = StringsRepository()
+    public static let previewValue: any StringsRepositoryProtocol = StringsRepositoryProtocolMock()
+    public static let testValue: any StringsRepositoryProtocol = StringsRepositoryProtocolMock()
 }

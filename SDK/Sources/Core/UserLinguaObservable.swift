@@ -4,27 +4,27 @@ import Combine
 import Dependencies
 
 // sourcery: AutoMockable
-package protocol UserLinguaObservableProtocol: ObservableObject {
+public protocol UserLinguaObservableProtocol: ObservableObject {
     func refresh()
     var refreshPublisher: AnyPublisher<Void, Never> { get }
 }
 
 public final class UserLinguaObservable: UserLinguaObservableProtocol {
-    package init() {}
+    public init() {}
 
-    package func refresh() {
+    public func refresh() {
         Task { @MainActor in
             objectWillChange.send()
         }
     }
 
-    package var refreshPublisher: AnyPublisher<Void, Never> {
+    public var refreshPublisher: AnyPublisher<Void, Never> {
         objectWillChange.eraseToAnyPublisher()
     }
 }
 
-package enum UserLinguaObservableDependency: DependencyKey {
-    package static let liveValue: any UserLinguaObservableProtocol = UserLinguaObservable()
-    package static let previewValue: any UserLinguaObservableProtocol = UserLinguaObservableProtocolMock()
-    package static let testValue: any UserLinguaObservableProtocol = UserLinguaObservableProtocolMock()
+public enum UserLinguaObservableDependency: DependencyKey {
+    public static let liveValue: any UserLinguaObservableProtocol = UserLinguaObservable()
+    public static let previewValue: any UserLinguaObservableProtocol = UserLinguaObservableProtocolMock()
+    public static let testValue: any UserLinguaObservableProtocol = UserLinguaObservableProtocolMock()
 }

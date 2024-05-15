@@ -4,29 +4,29 @@ import Dependencies
 import Foundation
 
 // sourcery: AutoMockable
-package protocol SuggestionsRepositoryProtocol {
+public protocol SuggestionsRepositoryProtocol {
     func saveSuggestion(_ suggestion: Suggestion)
     func suggestion(for original: String, locale: Locale) -> Suggestion?
 }
 
-package final class SuggestionsRepository: SuggestionsRepositoryProtocol {
+public final class SuggestionsRepository: SuggestionsRepositoryProtocol {
     private var suggestions: [String: [Locale: Suggestion]]
 
-    package init(suggestions: [String: [Locale: Suggestion]] = [:]) {
+    public init(suggestions: [String: [Locale: Suggestion]] = [:]) {
         self.suggestions = suggestions
     }
 
-    package func saveSuggestion(_ suggestion: Suggestion) {
+    public func saveSuggestion(_ suggestion: Suggestion) {
         suggestions[suggestion.recordedString.value, default: [:]][suggestion.locale] = suggestion
     }
 
-    package func suggestion(for original: String, locale: Locale) -> Suggestion? {
+    public func suggestion(for original: String, locale: Locale) -> Suggestion? {
         suggestions[original, default: [:]][locale]
     }
 }
 
-package enum SuggestionsRepositoryDependency: DependencyKey {
-    package static let liveValue: any SuggestionsRepositoryProtocol = SuggestionsRepository()
-    package static let previewValue: any SuggestionsRepositoryProtocol = SuggestionsRepositoryProtocolMock()
-    package static let testValue: any SuggestionsRepositoryProtocol = SuggestionsRepositoryProtocolMock()
+public enum SuggestionsRepositoryDependency: DependencyKey {
+    public static let liveValue: any SuggestionsRepositoryProtocol = SuggestionsRepository()
+    public static let previewValue: any SuggestionsRepositoryProtocol = SuggestionsRepositoryProtocolMock()
+    public static let testValue: any SuggestionsRepositoryProtocol = SuggestionsRepositoryProtocolMock()
 }

@@ -7,17 +7,17 @@ import SwiftUI
 import Theme
 
 @Reducer
-package struct AppPreviewFeature {
+public struct AppPreviewFeature {
     @Dependency(ContentSizeCategoryServiceDependency.self) var contentSizeCategoryService
     @Dependency(WindowServiceDependency.self) var windowService
 
     @ObservableState
-    package struct State: Equatable {
+    public struct State: Equatable {
         @Shared(InMemoryKey.configuration) var configuration = .init()
         @Shared private(set) var isFullScreen: Bool
     }
 
-    package enum Action {
+    public enum Action {
         case didTapIncreaseTextSize
         case didTapDecreaseTextSize
         case didTapToggleDarkMode
@@ -25,11 +25,11 @@ package struct AppPreviewFeature {
     }
 
     @CasePathable
-    package enum Delegate {
+    public enum Delegate {
         case didTapToggleFullScreen
     }
 
-    package var body: some ReducerOf<Self> {
+    public var body: some ReducerOf<Self> {
         Reduce { _, action in
             switch action {
             case .didTapIncreaseTextSize:

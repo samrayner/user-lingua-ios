@@ -4,7 +4,7 @@ import Foundation
 import SwiftUI
 import UIKit
 
-package struct ThemeImage {
+public struct ThemeImage {
     enum Source {
         case resource(ImageResource)
         case symbol(String)
@@ -40,13 +40,13 @@ package struct ThemeImage {
 }
 
 extension UIImage {
-    package static func theme(_ keyPath: KeyPath<ThemeImages, ThemeImage>) -> UIImage {
+    public static func theme(_ keyPath: KeyPath<ThemeImages, ThemeImage>) -> UIImage {
         Theme.current.theme.images[keyPath: keyPath].uiImage
     }
 }
 
 extension Image {
-    package static func theme(_ keyPath: KeyPath<ThemeImages, ThemeImage>) -> Image {
+    public static func theme(_ keyPath: KeyPath<ThemeImages, ThemeImage>) -> Image {
         Theme.current.theme.images[keyPath: keyPath].image
     }
 }

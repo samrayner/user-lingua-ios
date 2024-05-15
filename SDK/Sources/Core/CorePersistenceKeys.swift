@@ -3,5 +3,5 @@
 import ComposableArchitecture
 
 extension InMemoryKey where Value == Configuration {
-    package static var configuration: Self { .init(#function) }
+    public static var configuration: Self { .init(#function) }
 }

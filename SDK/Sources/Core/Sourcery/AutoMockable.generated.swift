@@ -35,79 +35,79 @@ import SwiftUI
 
 
 
-package class ContentSizeCategoryServiceProtocolMock: ContentSizeCategoryServiceProtocol {
+public class ContentSizeCategoryServiceProtocolMock: ContentSizeCategoryServiceProtocol {
 
 
-    package var systemContentSizeCategory: UIContentSizeCategory {
+    public var systemContentSizeCategory: UIContentSizeCategory {
         get { return underlyingSystemContentSizeCategory }
         set(value) { underlyingSystemContentSizeCategory = value }
     }
-    package var underlyingSystemContentSizeCategory: (UIContentSizeCategory)!
-    package var appContentSizeCategory: UIContentSizeCategory {
+    public var underlyingSystemContentSizeCategory: (UIContentSizeCategory)!
+    public var appContentSizeCategory: UIContentSizeCategory {
         get { return underlyingAppContentSizeCategory }
         set(value) { underlyingAppContentSizeCategory = value }
     }
-    package var underlyingAppContentSizeCategory: (UIContentSizeCategory)!
+    public var underlyingAppContentSizeCategory: (UIContentSizeCategory)!
 
 
     //MARK: - incrementAppContentSizeCategory
 
-    package var incrementAppContentSizeCategoryVoidCallsCount = 0
-    package var incrementAppContentSizeCategoryVoidCalled: Bool {
+    public var incrementAppContentSizeCategoryVoidCallsCount = 0
+    public var incrementAppContentSizeCategoryVoidCalled: Bool {
         return incrementAppContentSizeCategoryVoidCallsCount > 0
     }
-    package var incrementAppContentSizeCategoryVoidClosure: (() -> Void)?
+    public var incrementAppContentSizeCategoryVoidClosure: (() -> Void)?
 
-    package func incrementAppContentSizeCategory() {
+    public func incrementAppContentSizeCategory() {
         incrementAppContentSizeCategoryVoidCallsCount += 1
         incrementAppContentSizeCategoryVoidClosure?()
     }
 
     //MARK: - decrementAppContentSizeCategory
 
-    package var decrementAppContentSizeCategoryVoidCallsCount = 0
-    package var decrementAppContentSizeCategoryVoidCalled: Bool {
+    public var decrementAppContentSizeCategoryVoidCallsCount = 0
+    public var decrementAppContentSizeCategoryVoidCalled: Bool {
         return decrementAppContentSizeCategoryVoidCallsCount > 0
     }
-    package var decrementAppContentSizeCategoryVoidClosure: (() -> Void)?
+    public var decrementAppContentSizeCategoryVoidClosure: (() -> Void)?
 
-    package func decrementAppContentSizeCategory() {
+    public func decrementAppContentSizeCategory() {
         decrementAppContentSizeCategoryVoidCallsCount += 1
         decrementAppContentSizeCategoryVoidClosure?()
     }
 
     //MARK: - resetAppContentSizeCategory
 
-    package var resetAppContentSizeCategoryVoidCallsCount = 0
-    package var resetAppContentSizeCategoryVoidCalled: Bool {
+    public var resetAppContentSizeCategoryVoidCallsCount = 0
+    public var resetAppContentSizeCategoryVoidCalled: Bool {
         return resetAppContentSizeCategoryVoidCallsCount > 0
     }
-    package var resetAppContentSizeCategoryVoidClosure: (() -> Void)?
+    public var resetAppContentSizeCategoryVoidClosure: (() -> Void)?
 
-    package func resetAppContentSizeCategory() {
+    public func resetAppContentSizeCategory() {
         resetAppContentSizeCategoryVoidCallsCount += 1
         resetAppContentSizeCategoryVoidClosure?()
     }
 
 
 }
-package class NotificationServiceProtocolMock: NotificationServiceProtocol {
+public class NotificationServiceProtocolMock: NotificationServiceProtocol {
 
 
 
 
     //MARK: - observe
 
-    package var observeNameNotificationNameAsyncStreamNotificationCallsCount = 0
-    package var observeNameNotificationNameAsyncStreamNotificationCalled: Bool {
+    public var observeNameNotificationNameAsyncStreamNotificationCallsCount = 0
+    public var observeNameNotificationNameAsyncStreamNotificationCalled: Bool {
         return observeNameNotificationNameAsyncStreamNotificationCallsCount > 0
     }
-    package var observeNameNotificationNameAsyncStreamNotificationReceivedName: (Notification.Name)?
-    package var observeNameNotificationNameAsyncStreamNotificationReceivedInvocations: [(Notification.Name)] = []
-    package var observeNameNotificationNameAsyncStreamNotificationReturnValue: AsyncStream<Notification>!
-    package var observeNameNotificationNameAsyncStreamNotificationClosure: ((Notification.Name) async -> AsyncStream<Notification>)?
+    public var observeNameNotificationNameAsyncStreamNotificationReceivedName: (Notification.Name)?
+    public var observeNameNotificationNameAsyncStreamNotificationReceivedInvocations: [(Notification.Name)] = []
+    public var observeNameNotificationNameAsyncStreamNotificationReturnValue: AsyncStream<Notification>!
+    public var observeNameNotificationNameAsyncStreamNotificationClosure: ((Notification.Name) async -> AsyncStream<Notification>)?
 
-    package func observe(name: Notification.Name) async -> AsyncStream<Notification> {
+    public func observe(name: Notification.Name) async -> AsyncStream<Notification> {
         observeNameNotificationNameAsyncStreamNotificationCallsCount += 1
         observeNameNotificationNameAsyncStreamNotificationReceivedName = name
         observeNameNotificationNameAsyncStreamNotificationReceivedInvocations.append(name)
@@ -120,16 +120,16 @@ package class NotificationServiceProtocolMock: NotificationServiceProtocol {
 
     //MARK: - observe
 
-    package var observeNamesNotificationNameAsyncStreamNotificationCallsCount = 0
-    package var observeNamesNotificationNameAsyncStreamNotificationCalled: Bool {
+    public var observeNamesNotificationNameAsyncStreamNotificationCallsCount = 0
+    public var observeNamesNotificationNameAsyncStreamNotificationCalled: Bool {
         return observeNamesNotificationNameAsyncStreamNotificationCallsCount > 0
     }
-    package var observeNamesNotificationNameAsyncStreamNotificationReceivedNames: ([Notification.Name])?
-    package var observeNamesNotificationNameAsyncStreamNotificationReceivedInvocations: [([Notification.Name])] = []
-    package var observeNamesNotificationNameAsyncStreamNotificationReturnValue: AsyncStream<Notification>!
-    package var observeNamesNotificationNameAsyncStreamNotificationClosure: (([Notification.Name]) async -> AsyncStream<Notification>)?
+    public var observeNamesNotificationNameAsyncStreamNotificationReceivedNames: ([Notification.Name])?
+    public var observeNamesNotificationNameAsyncStreamNotificationReceivedInvocations: [([Notification.Name])] = []
+    public var observeNamesNotificationNameAsyncStreamNotificationReturnValue: AsyncStream<Notification>!
+    public var observeNamesNotificationNameAsyncStreamNotificationClosure: (([Notification.Name]) async -> AsyncStream<Notification>)?
 
-    package func observe(names: [Notification.Name]) async -> AsyncStream<Notification> {
+    public func observe(names: [Notification.Name]) async -> AsyncStream<Notification> {
         observeNamesNotificationNameAsyncStreamNotificationCallsCount += 1
         observeNamesNotificationNameAsyncStreamNotificationReceivedNames = names
         observeNamesNotificationNameAsyncStreamNotificationReceivedInvocations.append(names)
@@ -142,21 +142,21 @@ package class NotificationServiceProtocolMock: NotificationServiceProtocol {
 
 
 }
-package class OrientationServiceProtocolMock: OrientationServiceProtocol {
+public class OrientationServiceProtocolMock: OrientationServiceProtocol {
 
 
 
 
     //MARK: - orientationDidChange
 
-    package var orientationDidChangeAsyncStreamUIDeviceOrientationCallsCount = 0
-    package var orientationDidChangeAsyncStreamUIDeviceOrientationCalled: Bool {
+    public var orientationDidChangeAsyncStreamUIDeviceOrientationCallsCount = 0
+    public var orientationDidChangeAsyncStreamUIDeviceOrientationCalled: Bool {
         return orientationDidChangeAsyncStreamUIDeviceOrientationCallsCount > 0
     }
-    package var orientationDidChangeAsyncStreamUIDeviceOrientationReturnValue: AsyncStream<UIDeviceOrientation>!
-    package var orientationDidChangeAsyncStreamUIDeviceOrientationClosure: (() async -> AsyncStream<UIDeviceOrientation>)?
+    public var orientationDidChangeAsyncStreamUIDeviceOrientationReturnValue: AsyncStream<UIDeviceOrientation>!
+    public var orientationDidChangeAsyncStreamUIDeviceOrientationClosure: (() async -> AsyncStream<UIDeviceOrientation>)?
 
-    package func orientationDidChange() async -> AsyncStream<UIDeviceOrientation> {
+    public func orientationDidChange() async -> AsyncStream<UIDeviceOrientation> {
         orientationDidChangeAsyncStreamUIDeviceOrientationCallsCount += 1
         if let orientationDidChangeAsyncStreamUIDeviceOrientationClosure = orientationDidChangeAsyncStreamUIDeviceOrientationClosure {
             return await orientationDidChangeAsyncStreamUIDeviceOrientationClosure()
@@ -167,23 +167,23 @@ package class OrientationServiceProtocolMock: OrientationServiceProtocol {
 
 
 }
-package class StringExtractorProtocolMock: StringExtractorProtocol {
+public class StringExtractorProtocolMock: StringExtractorProtocol {
 
 
 
 
     //MARK: - formattedString
 
-    package var formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringCallsCount = 0
-    package var formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringCalled: Bool {
+    public var formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringCallsCount = 0
+    public var formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringCalled: Bool {
         return formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringCallsCount > 0
     }
-    package var formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringReceivedArguments: (localizedStringKey: LocalizedStringKey, tableName: String?, bundle: Bundle?, comment: String?)?
-    package var formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringReceivedInvocations: [(localizedStringKey: LocalizedStringKey, tableName: String?, bundle: Bundle?, comment: String?)] = []
-    package var formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringReturnValue: FormattedString!
-    package var formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringClosure: ((LocalizedStringKey, String?, Bundle?, String?) -> FormattedString)?
+    public var formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringReceivedArguments: (localizedStringKey: LocalizedStringKey, tableName: String?, bundle: Bundle?, comment: String?)?
+    public var formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringReceivedInvocations: [(localizedStringKey: LocalizedStringKey, tableName: String?, bundle: Bundle?, comment: String?)] = []
+    public var formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringReturnValue: FormattedString!
+    public var formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringClosure: ((LocalizedStringKey, String?, Bundle?, String?) -> FormattedString)?
 
-    package func formattedString(localizedStringKey: LocalizedStringKey, tableName: String?, bundle: Bundle?, comment: String?) -> FormattedString {
+    public func formattedString(localizedStringKey: LocalizedStringKey, tableName: String?, bundle: Bundle?, comment: String?) -> FormattedString {
         formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringCallsCount += 1
         formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringReceivedArguments = (localizedStringKey: localizedStringKey, tableName: tableName, bundle: bundle, comment: comment)
         formattedStringLocalizedStringKeyLocalizedStringKeyTableNameStringBundleBundleCommentStringFormattedStringReceivedInvocations.append((localizedStringKey: localizedStringKey, tableName: tableName, bundle: bundle, comment: comment))
@@ -196,22 +196,22 @@ package class StringExtractorProtocolMock: StringExtractorProtocol {
 
 
 }
-package class StringsRepositoryProtocolMock: StringsRepositoryProtocol {
+public class StringsRepositoryProtocolMock: StringsRepositoryProtocol {
 
 
 
 
     //MARK: - record
 
-    package var recordFormattedFormattedStringVoidCallsCount = 0
-    package var recordFormattedFormattedStringVoidCalled: Bool {
+    public var recordFormattedFormattedStringVoidCallsCount = 0
+    public var recordFormattedFormattedStringVoidCalled: Bool {
         return recordFormattedFormattedStringVoidCallsCount > 0
     }
-    package var recordFormattedFormattedStringVoidReceivedFormatted: (FormattedString)?
-    package var recordFormattedFormattedStringVoidReceivedInvocations: [(FormattedString)] = []
-    package var recordFormattedFormattedStringVoidClosure: ((FormattedString) -> Void)?
+    public var recordFormattedFormattedStringVoidReceivedFormatted: (FormattedString)?
+    public var recordFormattedFormattedStringVoidReceivedInvocations: [(FormattedString)] = []
+    public var recordFormattedFormattedStringVoidClosure: ((FormattedString) -> Void)?
 
-    package func record(formatted: FormattedString) {
+    public func record(formatted: FormattedString) {
         recordFormattedFormattedStringVoidCallsCount += 1
         recordFormattedFormattedStringVoidReceivedFormatted = formatted
         recordFormattedFormattedStringVoidReceivedInvocations.append(formatted)
@@ -220,15 +220,15 @@ package class StringsRepositoryProtocolMock: StringsRepositoryProtocol {
 
     //MARK: - record
 
-    package var recordLocalizedLocalizedStringVoidCallsCount = 0
-    package var recordLocalizedLocalizedStringVoidCalled: Bool {
+    public var recordLocalizedLocalizedStringVoidCallsCount = 0
+    public var recordLocalizedLocalizedStringVoidCalled: Bool {
         return recordLocalizedLocalizedStringVoidCallsCount > 0
     }
-    package var recordLocalizedLocalizedStringVoidReceivedLocalized: (LocalizedString)?
-    package var recordLocalizedLocalizedStringVoidReceivedInvocations: [(LocalizedString)] = []
-    package var recordLocalizedLocalizedStringVoidClosure: ((LocalizedString) -> Void)?
+    public var recordLocalizedLocalizedStringVoidReceivedLocalized: (LocalizedString)?
+    public var recordLocalizedLocalizedStringVoidReceivedInvocations: [(LocalizedString)] = []
+    public var recordLocalizedLocalizedStringVoidClosure: ((LocalizedString) -> Void)?
 
-    package func record(localized: LocalizedString) {
+    public func record(localized: LocalizedString) {
         recordLocalizedLocalizedStringVoidCallsCount += 1
         recordLocalizedLocalizedStringVoidReceivedLocalized = localized
         recordLocalizedLocalizedStringVoidReceivedInvocations.append(localized)
@@ -237,15 +237,15 @@ package class StringsRepositoryProtocolMock: StringsRepositoryProtocol {
 
     //MARK: - record
 
-    package var recordStringStringVoidCallsCount = 0
-    package var recordStringStringVoidCalled: Bool {
+    public var recordStringStringVoidCallsCount = 0
+    public var recordStringStringVoidCalled: Bool {
         return recordStringStringVoidCallsCount > 0
     }
-    package var recordStringStringVoidReceivedString: (String)?
-    package var recordStringStringVoidReceivedInvocations: [(String)] = []
-    package var recordStringStringVoidClosure: ((String) -> Void)?
+    public var recordStringStringVoidReceivedString: (String)?
+    public var recordStringStringVoidReceivedInvocations: [(String)] = []
+    public var recordStringStringVoidClosure: ((String) -> Void)?
 
-    package func record(string: String) {
+    public func record(string: String) {
         recordStringStringVoidCallsCount += 1
         recordStringStringVoidReceivedString = string
         recordStringStringVoidReceivedInvocations.append(string)
@@ -254,14 +254,14 @@ package class StringsRepositoryProtocolMock: StringsRepositoryProtocol {
 
     //MARK: - recordedStrings
 
-    package var recordedStringsRecordedStringCallsCount = 0
-    package var recordedStringsRecordedStringCalled: Bool {
+    public var recordedStringsRecordedStringCallsCount = 0
+    public var recordedStringsRecordedStringCalled: Bool {
         return recordedStringsRecordedStringCallsCount > 0
     }
-    package var recordedStringsRecordedStringReturnValue: [RecordedString]!
-    package var recordedStringsRecordedStringClosure: (() -> [RecordedString])?
+    public var recordedStringsRecordedStringReturnValue: [RecordedString]!
+    public var recordedStringsRecordedStringClosure: (() -> [RecordedString])?
 
-    package func recordedStrings() -> [RecordedString] {
+    public func recordedStrings() -> [RecordedString] {
         recordedStringsRecordedStringCallsCount += 1
         if let recordedStringsRecordedStringClosure = recordedStringsRecordedStringClosure {
             return recordedStringsRecordedStringClosure()
@@ -272,16 +272,16 @@ package class StringsRepositoryProtocolMock: StringsRepositoryProtocol {
 
     //MARK: - recordedString
 
-    package var recordedStringFormattedFormattedStringRecordedStringCallsCount = 0
-    package var recordedStringFormattedFormattedStringRecordedStringCalled: Bool {
+    public var recordedStringFormattedFormattedStringRecordedStringCallsCount = 0
+    public var recordedStringFormattedFormattedStringRecordedStringCalled: Bool {
         return recordedStringFormattedFormattedStringRecordedStringCallsCount > 0
     }
-    package var recordedStringFormattedFormattedStringRecordedStringReceivedFormatted: (FormattedString)?
-    package var recordedStringFormattedFormattedStringRecordedStringReceivedInvocations: [(FormattedString)] = []
-    package var recordedStringFormattedFormattedStringRecordedStringReturnValue: RecordedString?
-    package var recordedStringFormattedFormattedStringRecordedStringClosure: ((FormattedString) -> RecordedString?)?
+    public var recordedStringFormattedFormattedStringRecordedStringReceivedFormatted: (FormattedString)?
+    public var recordedStringFormattedFormattedStringRecordedStringReceivedInvocations: [(FormattedString)] = []
+    public var recordedStringFormattedFormattedStringRecordedStringReturnValue: RecordedString?
+    public var recordedStringFormattedFormattedStringRecordedStringClosure: ((FormattedString) -> RecordedString?)?
 
-    package func recordedString(formatted: FormattedString) -> RecordedString? {
+    public func recordedString(formatted: FormattedString) -> RecordedString? {
         recordedStringFormattedFormattedStringRecordedStringCallsCount += 1
         recordedStringFormattedFormattedStringRecordedStringReceivedFormatted = formatted
         recordedStringFormattedFormattedStringRecordedStringReceivedInvocations.append(formatted)
@@ -294,16 +294,16 @@ package class StringsRepositoryProtocolMock: StringsRepositoryProtocol {
 
     //MARK: - recordedString
 
-    package var recordedStringLocalizedLocalizedStringRecordedStringCallsCount = 0
-    package var recordedStringLocalizedLocalizedStringRecordedStringCalled: Bool {
+    public var recordedStringLocalizedLocalizedStringRecordedStringCallsCount = 0
+    public var recordedStringLocalizedLocalizedStringRecordedStringCalled: Bool {
         return recordedStringLocalizedLocalizedStringRecordedStringCallsCount > 0
     }
-    package var recordedStringLocalizedLocalizedStringRecordedStringReceivedLocalized: (LocalizedString)?
-    package var recordedStringLocalizedLocalizedStringRecordedStringReceivedInvocations: [(LocalizedString)] = []
-    package var recordedStringLocalizedLocalizedStringRecordedStringReturnValue: RecordedString?
-    package var recordedStringLocalizedLocalizedStringRecordedStringClosure: ((LocalizedString) -> RecordedString?)?
+    public var recordedStringLocalizedLocalizedStringRecordedStringReceivedLocalized: (LocalizedString)?
+    public var recordedStringLocalizedLocalizedStringRecordedStringReceivedInvocations: [(LocalizedString)] = []
+    public var recordedStringLocalizedLocalizedStringRecordedStringReturnValue: RecordedString?
+    public var recordedStringLocalizedLocalizedStringRecordedStringClosure: ((LocalizedString) -> RecordedString?)?
 
-    package func recordedString(localized: LocalizedString) -> RecordedString? {
+    public func recordedString(localized: LocalizedString) -> RecordedString? {
         recordedStringLocalizedLocalizedStringRecordedStringCallsCount += 1
         recordedStringLocalizedLocalizedStringRecordedStringReceivedLocalized = localized
         recordedStringLocalizedLocalizedStringRecordedStringReceivedInvocations.append(localized)
@@ -316,16 +316,16 @@ package class StringsRepositoryProtocolMock: StringsRepositoryProtocol {
 
     //MARK: - recordedString
 
-    package var recordedStringStringStringRecordedStringCallsCount = 0
-    package var recordedStringStringStringRecordedStringCalled: Bool {
+    public var recordedStringStringStringRecordedStringCallsCount = 0
+    public var recordedStringStringStringRecordedStringCalled: Bool {
         return recordedStringStringStringRecordedStringCallsCount > 0
     }
-    package var recordedStringStringStringRecordedStringReceivedString: (String)?
-    package var recordedStringStringStringRecordedStringReceivedInvocations: [(String)] = []
-    package var recordedStringStringStringRecordedStringReturnValue: RecordedString?
-    package var recordedStringStringStringRecordedStringClosure: ((String) -> RecordedString?)?
+    public var recordedStringStringStringRecordedStringReceivedString: (String)?
+    public var recordedStringStringStringRecordedStringReceivedInvocations: [(String)] = []
+    public var recordedStringStringStringRecordedStringReturnValue: RecordedString?
+    public var recordedStringStringStringRecordedStringClosure: ((String) -> RecordedString?)?
 
-    package func recordedString(string: String) -> RecordedString? {
+    public func recordedString(string: String) -> RecordedString? {
         recordedStringStringStringRecordedStringCallsCount += 1
         recordedStringStringStringRecordedStringReceivedString = string
         recordedStringStringStringRecordedStringReceivedInvocations.append(string)
@@ -338,22 +338,22 @@ package class StringsRepositoryProtocolMock: StringsRepositoryProtocol {
 
 
 }
-package class SuggestionsRepositoryProtocolMock: SuggestionsRepositoryProtocol {
+public class SuggestionsRepositoryProtocolMock: SuggestionsRepositoryProtocol {
 
 
 
 
     //MARK: - saveSuggestion
 
-    package var saveSuggestionSuggestionSuggestionVoidCallsCount = 0
-    package var saveSuggestionSuggestionSuggestionVoidCalled: Bool {
+    public var saveSuggestionSuggestionSuggestionVoidCallsCount = 0
+    public var saveSuggestionSuggestionSuggestionVoidCalled: Bool {
         return saveSuggestionSuggestionSuggestionVoidCallsCount > 0
     }
-    package var saveSuggestionSuggestionSuggestionVoidReceivedSuggestion: (Suggestion)?
-    package var saveSuggestionSuggestionSuggestionVoidReceivedInvocations: [(Suggestion)] = []
-    package var saveSuggestionSuggestionSuggestionVoidClosure: ((Suggestion) -> Void)?
+    public var saveSuggestionSuggestionSuggestionVoidReceivedSuggestion: (Suggestion)?
+    public var saveSuggestionSuggestionSuggestionVoidReceivedInvocations: [(Suggestion)] = []
+    public var saveSuggestionSuggestionSuggestionVoidClosure: ((Suggestion) -> Void)?
 
-    package func saveSuggestion(_ suggestion: Suggestion) {
+    public func saveSuggestion(_ suggestion: Suggestion) {
         saveSuggestionSuggestionSuggestionVoidCallsCount += 1
         saveSuggestionSuggestionSuggestionVoidReceivedSuggestion = suggestion
         saveSuggestionSuggestionSuggestionVoidReceivedInvocations.append(suggestion)
@@ -362,16 +362,16 @@ package class SuggestionsRepositoryProtocolMock: SuggestionsRepositoryProtocol {
 
     //MARK: - suggestion
 
-    package var suggestionForOriginalStringLocaleLocaleSuggestionCallsCount = 0
-    package var suggestionForOriginalStringLocaleLocaleSuggestionCalled: Bool {
+    public var suggestionForOriginalStringLocaleLocaleSuggestionCallsCount = 0
+    public var suggestionForOriginalStringLocaleLocaleSuggestionCalled: Bool {
         return suggestionForOriginalStringLocaleLocaleSuggestionCallsCount > 0
     }
-    package var suggestionForOriginalStringLocaleLocaleSuggestionReceivedArguments: (original: String, locale: Locale)?
-    package var suggestionForOriginalStringLocaleLocaleSuggestionReceivedInvocations: [(original: String, locale: Locale)] = []
-    package var suggestionForOriginalStringLocaleLocaleSuggestionReturnValue: Suggestion?
-    package var suggestionForOriginalStringLocaleLocaleSuggestionClosure: ((String, Locale) -> Suggestion?)?
+    public var suggestionForOriginalStringLocaleLocaleSuggestionReceivedArguments: (original: String, locale: Locale)?
+    public var suggestionForOriginalStringLocaleLocaleSuggestionReceivedInvocations: [(original: String, locale: Locale)] = []
+    public var suggestionForOriginalStringLocaleLocaleSuggestionReturnValue: Suggestion?
+    public var suggestionForOriginalStringLocaleLocaleSuggestionClosure: ((String, Locale) -> Suggestion?)?
 
-    package func suggestion(for original: String, locale: Locale) -> Suggestion? {
+    public func suggestion(for original: String, locale: Locale) -> Suggestion? {
         suggestionForOriginalStringLocaleLocaleSuggestionCallsCount += 1
         suggestionForOriginalStringLocaleLocaleSuggestionReceivedArguments = (original: original, locale: locale)
         suggestionForOriginalStringLocaleLocaleSuggestionReceivedInvocations.append((original: original, locale: locale))
@@ -384,62 +384,62 @@ package class SuggestionsRepositoryProtocolMock: SuggestionsRepositoryProtocol {
 
 
 }
-package class UserLinguaObservableProtocolMock: UserLinguaObservableProtocol {
+public class UserLinguaObservableProtocolMock: UserLinguaObservableProtocol {
 
 
-    package var refreshPublisher: AnyPublisher<Void, Never> {
+    public var refreshPublisher: AnyPublisher<Void, Never> {
         get { return underlyingRefreshPublisher }
         set(value) { underlyingRefreshPublisher = value }
     }
-    package var underlyingRefreshPublisher: (AnyPublisher<Void, Never>)!
+    public var underlyingRefreshPublisher: (AnyPublisher<Void, Never>)!
 
 
     //MARK: - refresh
 
-    package var refreshVoidCallsCount = 0
-    package var refreshVoidCalled: Bool {
+    public var refreshVoidCallsCount = 0
+    public var refreshVoidCalled: Bool {
         return refreshVoidCallsCount > 0
     }
-    package var refreshVoidClosure: (() -> Void)?
+    public var refreshVoidClosure: (() -> Void)?
 
-    package func refresh() {
+    public func refresh() {
         refreshVoidCallsCount += 1
         refreshVoidClosure?()
     }
 
 
 }
-package class WindowServiceProtocolMock: WindowServiceProtocol {
+public class WindowServiceProtocolMock: WindowServiceProtocol {
 
 
-    package var userLinguaWindow: UIWindow {
+    public var userLinguaWindow: UIWindow {
         get { return underlyingUserLinguaWindow }
         set(value) { underlyingUserLinguaWindow = value }
     }
-    package var underlyingUserLinguaWindow: (UIWindow)!
-    package var appUIStyle: UIUserInterfaceStyle {
+    public var underlyingUserLinguaWindow: (UIWindow)!
+    public var appUIStyle: UIUserInterfaceStyle {
         get { return underlyingAppUIStyle }
         set(value) { underlyingAppUIStyle = value }
     }
-    package var underlyingAppUIStyle: (UIUserInterfaceStyle)!
-    package var appYOffset: CGFloat {
+    public var underlyingAppUIStyle: (UIUserInterfaceStyle)!
+    public var appYOffset: CGFloat {
         get { return underlyingAppYOffset }
         set(value) { underlyingAppYOffset = value }
     }
-    package var underlyingAppYOffset: (CGFloat)!
+    public var underlyingAppYOffset: (CGFloat)!
 
 
     //MARK: - setRootView
 
-    package var setRootViewSomeViewVoidCallsCount = 0
-    package var setRootViewSomeViewVoidCalled: Bool {
+    public var setRootViewSomeViewVoidCallsCount = 0
+    public var setRootViewSomeViewVoidCalled: Bool {
         return setRootViewSomeViewVoidCallsCount > 0
     }
-    package var setRootViewSomeViewVoidReceived: (any View)?
-    package var setRootViewSomeViewVoidReceivedInvocations: [(any View)] = []
-    package var setRootViewSomeViewVoidClosure: ((any View) -> Void)?
+    public var setRootViewSomeViewVoidReceived: (any View)?
+    public var setRootViewSomeViewVoidReceivedInvocations: [(any View)] = []
+    public var setRootViewSomeViewVoidClosure: ((any View) -> Void)?
 
-    package func setRootView(_ arg0: some View) {
+    public func setRootView(_ arg0: some View) {
         setRootViewSomeViewVoidCallsCount += 1
         setRootViewSomeViewVoidReceived = arg0
         setRootViewSomeViewVoidReceivedInvocations.append(arg0)
@@ -448,14 +448,14 @@ package class WindowServiceProtocolMock: WindowServiceProtocol {
 
     //MARK: - screenshotAppWindow
 
-    package var screenshotAppWindowUIImageCallsCount = 0
-    package var screenshotAppWindowUIImageCalled: Bool {
+    public var screenshotAppWindowUIImageCallsCount = 0
+    public var screenshotAppWindowUIImageCalled: Bool {
         return screenshotAppWindowUIImageCallsCount > 0
     }
-    package var screenshotAppWindowUIImageReturnValue: UIImage?
-    package var screenshotAppWindowUIImageClosure: (() -> UIImage?)?
+    public var screenshotAppWindowUIImageReturnValue: UIImage?
+    public var screenshotAppWindowUIImageClosure: (() -> UIImage?)?
 
-    package func screenshotAppWindow() -> UIImage? {
+    public func screenshotAppWindow() -> UIImage? {
         screenshotAppWindowUIImageCallsCount += 1
         if let screenshotAppWindowUIImageClosure = screenshotAppWindowUIImageClosure {
             return screenshotAppWindowUIImageClosure()
@@ -466,54 +466,54 @@ package class WindowServiceProtocolMock: WindowServiceProtocol {
 
     //MARK: - showWindow
 
-    package var showWindowVoidCallsCount = 0
-    package var showWindowVoidCalled: Bool {
+    public var showWindowVoidCallsCount = 0
+    public var showWindowVoidCalled: Bool {
         return showWindowVoidCallsCount > 0
     }
-    package var showWindowVoidClosure: (() -> Void)?
+    public var showWindowVoidClosure: (() -> Void)?
 
-    package func showWindow() {
+    public func showWindow() {
         showWindowVoidCallsCount += 1
         showWindowVoidClosure?()
     }
 
     //MARK: - hideWindow
 
-    package var hideWindowVoidCallsCount = 0
-    package var hideWindowVoidCalled: Bool {
+    public var hideWindowVoidCallsCount = 0
+    public var hideWindowVoidCalled: Bool {
         return hideWindowVoidCallsCount > 0
     }
-    package var hideWindowVoidClosure: (() -> Void)?
+    public var hideWindowVoidClosure: (() -> Void)?
 
-    package func hideWindow() {
+    public func hideWindow() {
         hideWindowVoidCallsCount += 1
         hideWindowVoidClosure?()
     }
 
     //MARK: - toggleDarkMode
 
-    package var toggleDarkModeVoidCallsCount = 0
-    package var toggleDarkModeVoidCalled: Bool {
+    public var toggleDarkModeVoidCallsCount = 0
+    public var toggleDarkModeVoidCalled: Bool {
         return toggleDarkModeVoidCallsCount > 0
     }
-    package var toggleDarkModeVoidClosure: (() -> Void)?
+    public var toggleDarkModeVoidClosure: (() -> Void)?
 
-    package func toggleDarkMode() {
+    public func toggleDarkMode() {
         toggleDarkModeVoidCallsCount += 1
         toggleDarkModeVoidClosure?()
     }
 
     //MARK: - positionApp
 
-    package var positionAppFocusingCGPointWithinCGRectAnimationDurationTimeIntervalVoidCallsCount = 0
-    package var positionAppFocusingCGPointWithinCGRectAnimationDurationTimeIntervalVoidCalled: Bool {
+    public var positionAppFocusingCGPointWithinCGRectAnimationDurationTimeIntervalVoidCallsCount = 0
+    public var positionAppFocusingCGPointWithinCGRectAnimationDurationTimeIntervalVoidCalled: Bool {
         return positionAppFocusingCGPointWithinCGRectAnimationDurationTimeIntervalVoidCallsCount > 0
     }
-    package var positionAppFocusingCGPointWithinCGRectAnimationDurationTimeIntervalVoidReceivedArguments: (focusing: CGPoint, within: CGRect, animationDuration: TimeInterval)?
-    package var positionAppFocusingCGPointWithinCGRectAnimationDurationTimeIntervalVoidReceivedInvocations: [(focusing: CGPoint, within: CGRect, animationDuration: TimeInterval)] = []
-    package var positionAppFocusingCGPointWithinCGRectAnimationDurationTimeIntervalVoidClosure: ((CGPoint, CGRect, TimeInterval) -> Void)?
+    public var positionAppFocusingCGPointWithinCGRectAnimationDurationTimeIntervalVoidReceivedArguments: (focusing: CGPoint, within: CGRect, animationDuration: TimeInterval)?
+    public var positionAppFocusingCGPointWithinCGRectAnimationDurationTimeIntervalVoidReceivedInvocations: [(focusing: CGPoint, within: CGRect, animationDuration: TimeInterval)] = []
+    public var positionAppFocusingCGPointWithinCGRectAnimationDurationTimeIntervalVoidClosure: ((CGPoint, CGRect, TimeInterval) -> Void)?
 
-    package func positionApp(focusing: CGPoint, within: CGRect, animationDuration: TimeInterval) {
+    public func positionApp(focusing: CGPoint, within: CGRect, animationDuration: TimeInterval) {
         positionAppFocusingCGPointWithinCGRectAnimationDurationTimeIntervalVoidCallsCount += 1
         positionAppFocusingCGPointWithinCGRectAnimationDurationTimeIntervalVoidReceivedArguments = (focusing: focusing, within: within, animationDuration: animationDuration)
         positionAppFocusingCGPointWithinCGRectAnimationDurationTimeIntervalVoidReceivedInvocations.append((focusing: focusing, within: within, animationDuration: animationDuration))
@@ -522,15 +522,15 @@ package class WindowServiceProtocolMock: WindowServiceProtocol {
 
     //MARK: - positionApp
 
-    package var positionAppYOffsetCGFloatAnimationDurationTimeIntervalVoidCallsCount = 0
-    package var positionAppYOffsetCGFloatAnimationDurationTimeIntervalVoidCalled: Bool {
+    public var positionAppYOffsetCGFloatAnimationDurationTimeIntervalVoidCallsCount = 0
+    public var positionAppYOffsetCGFloatAnimationDurationTimeIntervalVoidCalled: Bool {
         return positionAppYOffsetCGFloatAnimationDurationTimeIntervalVoidCallsCount > 0
     }
-    package var positionAppYOffsetCGFloatAnimationDurationTimeIntervalVoidReceivedArguments: (yOffset: CGFloat, animationDuration: TimeInterval)?
-    package var positionAppYOffsetCGFloatAnimationDurationTimeIntervalVoidReceivedInvocations: [(yOffset: CGFloat, animationDuration: TimeInterval)] = []
-    package var positionAppYOffsetCGFloatAnimationDurationTimeIntervalVoidClosure: ((CGFloat, TimeInterval) -> Void)?
+    public var positionAppYOffsetCGFloatAnimationDurationTimeIntervalVoidReceivedArguments: (yOffset: CGFloat, animationDuration: TimeInterval)?
+    public var positionAppYOffsetCGFloatAnimationDurationTimeIntervalVoidReceivedInvocations: [(yOffset: CGFloat, animationDuration: TimeInterval)] = []
+    public var positionAppYOffsetCGFloatAnimationDurationTimeIntervalVoidClosure: ((CGFloat, TimeInterval) -> Void)?
 
-    package func positionApp(yOffset: CGFloat, animationDuration: TimeInterval) {
+    public func positionApp(yOffset: CGFloat, animationDuration: TimeInterval) {
         positionAppYOffsetCGFloatAnimationDurationTimeIntervalVoidCallsCount += 1
         positionAppYOffsetCGFloatAnimationDurationTimeIntervalVoidReceivedArguments = (yOffset: yOffset, animationDuration: animationDuration)
         positionAppYOffsetCGFloatAnimationDurationTimeIntervalVoidReceivedInvocations.append((yOffset: yOffset, animationDuration: animationDuration))
@@ -539,26 +539,26 @@ package class WindowServiceProtocolMock: WindowServiceProtocol {
 
     //MARK: - resetAppPosition
 
-    package var resetAppPositionVoidCallsCount = 0
-    package var resetAppPositionVoidCalled: Bool {
+    public var resetAppPositionVoidCallsCount = 0
+    public var resetAppPositionVoidCalled: Bool {
         return resetAppPositionVoidCallsCount > 0
     }
-    package var resetAppPositionVoidClosure: (() -> Void)?
+    public var resetAppPositionVoidClosure: (() -> Void)?
 
-    package func resetAppPosition() {
+    public func resetAppPosition() {
         resetAppPositionVoidCallsCount += 1
         resetAppPositionVoidClosure?()
     }
 
     //MARK: - resetAppWindow
 
-    package var resetAppWindowVoidCallsCount = 0
-    package var resetAppWindowVoidCalled: Bool {
+    public var resetAppWindowVoidCallsCount = 0
+    public var resetAppWindowVoidCalled: Bool {
         return resetAppWindowVoidCallsCount > 0
     }
-    package var resetAppWindowVoidClosure: (() -> Void)?
+    public var resetAppWindowVoidClosure: (() -> Void)?
 
-    package func resetAppWindow() {
+    public func resetAppWindow() {
         resetAppWindowVoidCallsCount += 1
         resetAppWindowVoidClosure?()
     }

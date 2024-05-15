@@ -3,7 +3,7 @@
 import Foundation
 
 extension UTF16Char {
-    package var unicodeScalar: Unicode.Scalar? {
+    public var unicodeScalar: Unicode.Scalar? {
         Unicode.Scalar(UInt32(self))
     }
 }

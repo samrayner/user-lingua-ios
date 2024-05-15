@@ -10,14 +10,14 @@ import SwiftUI
 import Theme
 
 @Reducer
-package struct RootFeature {
+public struct RootFeature {
     @Dependency(WindowServiceDependency.self) var windowService
     @Dependency(NotificationServiceDependency.self) var notificationService
 
     let onForeground: () -> Void
     let onBackground: () -> Void
 
-    package init(
+    public init(
         onForeground: @escaping () -> Void = {},
         onBackground: @escaping () -> Void = {}
     ) {
@@ -26,21 +26,21 @@ package struct RootFeature {
     }
 
     @Reducer(state: .equatable)
-    package enum Mode {
+    public enum Mode {
         case disabled
         case recording
         case visible(SelectionFeature)
     }
 
     @ObservableState
-    package struct State: Equatable {
-        @Shared(InMemoryKey.configuration) package var configuration = .init()
-        package var mode: Mode.State = .disabled
+    public struct State: Equatable {
+        @Shared(InMemoryKey.configuration) public var configuration = .init()
+        public var mode: Mode.State = .disabled
 
-        package init() {}
+        public init() {}
     }
 
-    package enum Action {
+    public enum Action {
         case enable
         case disable
         case configure(Configuration)
@@ -52,7 +52,7 @@ package struct RootFeature {
         case deviceShakeObservation
     }
 
-    package var body: some ReducerOf<Self> {
+    public var body: some ReducerOf<Self> {
         Scope(state: \.mode, action: \.mode) {
             EmptyReducer()
                 .ifCaseLet(\.visible, action: \.visible) {
@@ -94,14 +94,14 @@ package struct RootFeature {
     }
 }
 
-package struct RootFeatureView: View {
+public struct RootFeatureView: View {
     let store: StoreOf<RootFeature>
 
-    package init(store: StoreOf<RootFeature>) {
+    public init(store: StoreOf<RootFeature>) {
         self.store = store
     }
 
-    package var body: some View {
+    public var body: some View {
         WithPerceptionTracking {
             ZStack {
                 if let store = store.scope(state: \.mode.visible, action: \.mode.visible) {

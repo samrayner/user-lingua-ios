@@ -5,7 +5,7 @@ import Dependencies
 import Foundation
 
 // sourcery: AutoMockable
-package protocol NotificationServiceProtocol {
+public protocol NotificationServiceProtocol {
     func observe(name: Notification.Name) async -> AsyncStream<Notification>
     func observe(names: [Notification.Name]) async -> AsyncStream<Notification>
 }
@@ -28,8 +28,8 @@ struct NotificationService: NotificationServiceProtocol {
     }
 }
 
-package enum NotificationServiceDependency: DependencyKey {
-    package static let liveValue: any NotificationServiceProtocol = NotificationService()
-    package static let previewValue: any NotificationServiceProtocol = NotificationServiceProtocolMock()
-    package static let testValue: any NotificationServiceProtocol = NotificationServiceProtocolMock()
+public enum NotificationServiceDependency: DependencyKey {
+    public static let liveValue: any NotificationServiceProtocol = NotificationService()
+    public static let previewValue: any NotificationServiceProtocol = NotificationServiceProtocolMock()
+    public static let testValue: any NotificationServiceProtocol = NotificationServiceProtocolMock()
 }

@@ -4,22 +4,22 @@ import Foundation
 
 extension CGFloat {
     /// Radius constants for use with corner radius and shadow blur radius.
-    package enum Radius {
+    public enum Radius {
         // swiftlint:disable identifier_name
         /// 2px
-        package static let xxs: CGFloat = 2
+        public static let xxs: CGFloat = 2
 
         /// 4px
-        package static let xs: CGFloat = 4
+        public static let xs: CGFloat = 4
 
         /// 6px
-        package static let s: CGFloat = 6
+        public static let s: CGFloat = 6
 
         /// 8px
-        package static let m: CGFloat = 8
+        public static let m: CGFloat = 8
 
         /// 10px
-        package static let l: CGFloat = 10
+        public static let l: CGFloat = 10
         // swiftlint:enable identifier_name
     }
 }

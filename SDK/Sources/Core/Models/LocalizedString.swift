@@ -2,22 +2,22 @@
 
 import Foundation
 
-package struct LocalizedString {
-    package var value: String
-    package var localization: Localization
+public struct LocalizedString {
+    public var value: String
+    public var localization: Localization
 
-    package init(value: String, localization: Localization) {
+    public init(value: String, localization: Localization) {
         self.value = value
         self.localization = localization
     }
 
-    package func localizedValue(locale: Locale) -> String? {
+    public func localizedValue(locale: Locale) -> String? {
         localization.value(locale: locale)
     }
 }
 
 extension LocalizedString {
-    package init(
+    public init(
         _ key: String,
         tableName: String? = nil,
         bundle: Bundle? = nil,

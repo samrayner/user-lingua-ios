@@ -5,7 +5,7 @@ import SwiftUI
 import UIKit
 
 // sourcery: AutoMockable
-package protocol WindowServiceProtocol {
+public protocol WindowServiceProtocol {
     var userLinguaWindow: UIWindow { get }
     var appUIStyle: UIUserInterfaceStyle { get }
     var appYOffset: CGFloat { get }
@@ -20,13 +20,13 @@ package protocol WindowServiceProtocol {
     func resetAppWindow()
 }
 
-package final class WindowService: WindowServiceProtocol {
-    package init() {}
+public final class WindowService: WindowServiceProtocol {
+    public init() {}
 
     var appWindow: UIWindow?
     var originalAppWindowUIStyleOverride: UIUserInterfaceStyle = .unspecified
 
-    package var appUIStyle: UIUserInterfaceStyle {
+    public var appUIStyle: UIUserInterfaceStyle {
         guard let appWindow, appWindow.overrideUserInterfaceStyle != .unspecified else {
             return UIScreen.main.traitCollection.userInterfaceStyle
         }
@@ -34,11 +34,11 @@ package final class WindowService: WindowServiceProtocol {
         return appWindow.overrideUserInterfaceStyle
     }
 
-    package var appYOffset: CGFloat {
+    public var appYOffset: CGFloat {
         appWindow?.layer.translationIn2D.y ?? 0
     }
 
-    package let userLinguaWindow: UIWindow = {
+    public let userLinguaWindow: UIWindow = {
         let window = UIApplication.shared.windowScene.map(UIWindow.init) ?? UIWindow(frame: UIScreen.main.bounds)
         window.isHidden = true
         window.backgroundColor = .clear
@@ -46,7 +46,7 @@ package final class WindowService: WindowServiceProtocol {
         return window
     }()
 
-    package func setRootView(_ rootView: some View) {
+    public func setRootView(_ rootView: some View) {
         userLinguaWindow.rootViewController = UIHostingController(rootView: rootView)
         userLinguaWindow.rootViewController?.view.backgroundColor = .clear
     }
@@ -66,11 +66,11 @@ package final class WindowService: WindowServiceProtocol {
         return screenshot
     }
 
-    package func screenshotAppWindow() -> UIImage? {
+    public func screenshotAppWindow() -> UIImage? {
         appWindow.flatMap(screenshot)
     }
 
-    package func showWindow() {
+    public func showWindow() {
         if appWindow == nil {
             let windows = UIApplication.shared.windowScene?.windows
             appWindow = windows?.first(where: \.isKeyWindow) ?? windows?.first(where: \.isOpaque)
@@ -84,18 +84,18 @@ package final class WindowService: WindowServiceProtocol {
         userLinguaWindow.makeKeyAndVisible()
     }
 
-    package func hideWindow() {
+    public func hideWindow() {
         appWindow?.makeKeyAndVisible()
         appWindow = nil
         originalAppWindowUIStyleOverride = .unspecified
         userLinguaWindow.isHidden = true
     }
 
-    package func toggleDarkMode() {
+    public func toggleDarkMode() {
         appWindow?.toggleDarkMode()
     }
 
-    package func positionApp(focusing focalPoint: CGPoint, within viewportFrame: CGRect, animationDuration: TimeInterval = 0) {
+    public func positionApp(focusing focalPoint: CGPoint, within viewportFrame: CGRect, animationDuration: TimeInterval = 0) {
         guard let appWindow else { return }
 
         let maxTranslateUp = viewportFrame.maxY - appWindow.bounds.maxY
@@ -108,7 +108,7 @@ package final class WindowService: WindowServiceProtocol {
         )
     }
 
-    package func positionApp(yOffset: CGFloat, animationDuration: TimeInterval = 0) {
+    public func positionApp(yOffset: CGFloat, animationDuration: TimeInterval = 0) {
         guard let appWindow else { return }
 
         if animationDuration > 0 {
@@ -123,14 +123,14 @@ package final class WindowService: WindowServiceProtocol {
         }
     }
 
-    package func resetAppPosition() {
+    public func resetAppPosition() {
         positionApp(yOffset: 0)
         // hack sometimes required to force the window to redraw
         appWindow?.isHidden.toggle()
         appWindow?.isHidden.toggle()
     }
 
-    package func resetAppWindow() {
+    public func resetAppWindow() {
         resetAppPosition()
         appWindow?.overrideUserInterfaceStyle = originalAppWindowUIStyleOverride
     }
@@ -147,8 +147,8 @@ extension UIApplication {
     }
 }
 
-package enum WindowServiceDependency: DependencyKey {
-    package static let liveValue: any WindowServiceProtocol = WindowService()
-    package static let previewValue: any WindowServiceProtocol = WindowServiceProtocolMock()
-    package static let testValue: any WindowServiceProtocol = WindowServiceProtocolMock()
+public enum WindowServiceDependency: DependencyKey {
+    public static let liveValue: any WindowServiceProtocol = WindowService()
+    public static let previewValue: any WindowServiceProtocol = WindowServiceProtocolMock()
+    public static let testValue: any WindowServiceProtocol = WindowServiceProtocolMock()
 }

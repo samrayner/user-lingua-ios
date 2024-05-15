@@ -34,24 +34,24 @@ import Core
 
 
 
-package class StringRecognizerProtocolMock: StringRecognizerProtocol {
+public class StringRecognizerProtocolMock: StringRecognizerProtocol {
 
 
 
 
     //MARK: - recognizeStrings
 
-    package var recognizeStringsInImageUIImageRecognizedStringThrowableError: (any Error)?
-    package var recognizeStringsInImageUIImageRecognizedStringCallsCount = 0
-    package var recognizeStringsInImageUIImageRecognizedStringCalled: Bool {
+    public var recognizeStringsInImageUIImageRecognizedStringThrowableError: (any Error)?
+    public var recognizeStringsInImageUIImageRecognizedStringCallsCount = 0
+    public var recognizeStringsInImageUIImageRecognizedStringCalled: Bool {
         return recognizeStringsInImageUIImageRecognizedStringCallsCount > 0
     }
-    package var recognizeStringsInImageUIImageRecognizedStringReceivedImage: (UIImage)?
-    package var recognizeStringsInImageUIImageRecognizedStringReceivedInvocations: [(UIImage)] = []
-    package var recognizeStringsInImageUIImageRecognizedStringReturnValue: [RecognizedString]!
-    package var recognizeStringsInImageUIImageRecognizedStringClosure: ((UIImage) async throws -> [RecognizedString])?
+    public var recognizeStringsInImageUIImageRecognizedStringReceivedImage: (UIImage)?
+    public var recognizeStringsInImageUIImageRecognizedStringReceivedInvocations: [(UIImage)] = []
+    public var recognizeStringsInImageUIImageRecognizedStringReturnValue: [RecognizedString]!
+    public var recognizeStringsInImageUIImageRecognizedStringClosure: ((UIImage) async throws -> [RecognizedString])?
 
-    package func recognizeStrings(in image: UIImage) async throws -> [RecognizedString] {
+    public func recognizeStrings(in image: UIImage) async throws -> [RecognizedString] {
         recognizeStringsInImageUIImageRecognizedStringCallsCount += 1
         recognizeStringsInImageUIImageRecognizedStringReceivedImage = image
         recognizeStringsInImageUIImageRecognizedStringReceivedInvocations.append(image)
