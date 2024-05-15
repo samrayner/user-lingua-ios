@@ -5,7 +5,6 @@ import Foundation
 import Zip
 
 private let libraries: Set<Library> = [
-    .package(url: "https://github.com/klassen-software-solutions/KSSDiff", exact: "3.0.1"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", exact: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.10.4"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", exact: "1.3.0"),
@@ -14,8 +13,11 @@ private let libraries: Set<Library> = [
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", exact: "1.3.0"),
     .package(url: "https://github.com/pointfreeco/swift-dependencies", exact: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", exact: "1.0.0"),
+    .package(url: "https://github.com/pointfreeco/swift-perception", exact: "1.1.7"),
     .package(url: "https://github.com/pointfreeco/swiftui-navigation", exact: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", exact: "1.1.0")
+    // Made manual edits to KSSDiff so probably don't update it
+    // .package(url: "https://github.com/klassen-software-solutions/KSSDiff", exact: "3.0.1")
 ]
 
 private struct Library: Hashable {
@@ -72,8 +74,7 @@ struct UpdateLibs: AsyncParsableCommand {
         for case let url as URL in enumerator where enumerator.level < 4 {
             if url.hasDirectoryPath,
                url.deletingLastPathComponent().lastPathComponent == "Sources",
-               !url.lastPathComponent.hasSuffix("benchmark"),
-               !url.lastPathComponent.hasSuffix("Macros") {
+               !url.lastPathComponent.hasSuffix("benchmark") {
                 targetDirs.append(url)
             }
         }
@@ -93,6 +94,9 @@ struct UpdateLibs: AsyncParsableCommand {
         let currentDir = URL(fileURLWithPath: fileManager.currentDirectoryPath)
 
         for source in sourceDirs {
+            let oldTargetName = source.lastPathComponent
+            let newTargetName = oldTargetName
+
             try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
 
             let fileURLs = fileManager.enumerator(at: source, includingPropertiesForKeys: nil)!
@@ -105,18 +109,54 @@ struct UpdateLibs: AsyncParsableCommand {
 
                 for source in sourceDirs {
                     let oldTargetName = source.lastPathComponent
-                    let newTargetName = "Lib_\(source.lastPathComponent)"
+                    let newTargetName = oldTargetName
 
-                    contents = contents.replacingOccurrences(
-                        of: "import \(oldTargetName)",
-                        with: "import \(newTargetName)"
-                    )
+//                    contents = contents.replacingOccurrences(
+//                        of: "import \(oldTargetName)",
+//                        with: "import \(newTargetName)"
+//                    )
+//
+//                    contents = contents.replacingOccurrences(
+//                        of: "canImport(\(oldTargetName))",
+//                        with: "canImport(\(newTargetName))"
+//                    )
+//
+//                    contents = contents.replacingOccurrences(
+//                        of: "module: \"\(oldTargetName)\"",
+//                        with: "module: \"\(newTargetName)\""
+//                    )
                 }
+
+//                if oldTargetName == "Perception" {
+//                    contents = contents.replacingOccurrences(
+//                        of: "Perception.isPerceptionCheckingEnabled",
+//                        with: "Lib_Perception.isPerceptionCheckingEnabled"
+//                    )
+//                }
+//
+//                if oldTargetName == "CasePaths" {
+//                    contents = contents.replacingOccurrences(
+//                        of: "CasePaths.extract(",
+//                        with: "Lib_CasePaths.extract("
+//                    )
+//                }
+//
+//                if oldTargetName == "ComposableArchitecture" {
+//                    contents = contents.replacingOccurrences(
+//                        of: "Perception.Bindable",
+//                        with: "Lib_Perception.Bindable"
+//                    )
+//
+//                    contents = contents.replacingOccurrences(
+//                        of: "CustomDump.customDump(",
+//                        with: "Lib_CustomDump.customDump("
+//                    )
+//                }
 
                 try contents.write(to: url, atomically: false, encoding: encoding)
             }
 
-            let destination = currentDir.appendingPathComponent("../SDK/Sources/Lib_\(source.lastPathComponent)")
+            let destination = currentDir.appendingPathComponent("../SDK/Sources/\(newTargetName)")
             try? fileManager.removeItem(at: destination)
             try fileManager.copyItem(
                 at: source,

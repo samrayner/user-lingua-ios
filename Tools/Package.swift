@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "tools",
-    platforms: [.macOS(.v10_15)],
+    platforms: [.macOS(.v13)],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
         .package(url: "https://github.com/marmelroy/Zip", from: "2.1.2")

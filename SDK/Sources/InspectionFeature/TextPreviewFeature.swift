@@ -1,9 +1,9 @@
 // TextPreviewFeature.swift
 
+import ComposableArchitecture
 import Core
 import Diff
 import Foundation
-import Lib_ComposableArchitecture
 import Strings
 import SwiftUI
 import Theme

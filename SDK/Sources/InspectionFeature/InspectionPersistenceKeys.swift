@@ -1,6 +1,6 @@
 // InspectionPersistenceKeys.swift
 
-import Lib_ComposableArchitecture
+import ComposableArchitecture
 
 extension AppStorageKey where Value == InspectionFeature.State.PreviewMode {
     static var previewMode: Self { .init("com.userLingua.\(#function)") }

@@ -1,7 +1,7 @@
 // AttributedString+Diff.swift
 
 import Foundation
-import Lib_KSSDiff
+import KSSDiff
 
 package struct DiffAttributes {
     let insert: [NSAttributedString.Key: Any]

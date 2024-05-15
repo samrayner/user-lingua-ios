@@ -35,7 +35,8 @@ let package = Package(
         .target(
             name: "Core",
             dependencies: [
-                "Lib_ComposableArchitecture"
+                "ComposableArchitecture",
+                "ComposableArchitectureMacros"
             ]
         ),
         .target(
@@ -56,7 +57,7 @@ let package = Package(
         .target(
             name: "Diff",
             dependencies: [
-                "Lib_KSSDiff"
+                "KSSDiff"
             ]
         ),
         .target(
@@ -112,81 +113,112 @@ let package = Package(
             ]
         ),
         .target(
-            name: "Lib_KSSDiff",
+            name: "KSSDiff",
             dependencies: []
         ),
         .target(
-            name: "Lib_ComposableArchitecture",
+            name: "ComposableArchitecture",
             dependencies: [
-                "Lib_CasePaths",
-                "Lib_CombineSchedulers",
-                "Lib_ConcurrencyExtras",
-                "Lib_CustomDump",
-                "Lib_Dependencies",
-                "Lib_IdentifiedCollections",
-                "Lib_SwiftUINavigationCore",
-                "Lib_XCTestDynamicOverlay",
+                "ComposableArchitectureMacros",
+                "CasePaths",
+                "CombineSchedulers",
+                "ConcurrencyExtras",
+                "CustomDump",
+                "Dependencies",
+                "IdentifiedCollections",
+                "Perception",
+                "SwiftUINavigationCore",
+                "XCTestDynamicOverlay",
                 .product(name: "OrderedCollections", package: "swift-collections")
             ]
         ),
-        .target(
-            name: "Lib_SwiftUINavigation",
+        .macro(
+            name: "ComposableArchitectureMacros",
             dependencies: [
-                "Lib_CasePaths"
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
             ]
         ),
         .target(
-            name: "Lib_SwiftUINavigationCore",
+            name: "Perception",
             dependencies: [
-                "Lib_CustomDump",
-                "Lib_XCTestDynamicOverlay"
+                "PerceptionMacros",
+                "XCTestDynamicOverlay"
+            ]
+        ),
+        .macro(
+            name: "PerceptionMacros",
+            dependencies: [
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
             ]
         ),
         .target(
-            name: "Lib_CustomDump",
+            name: "SwiftUINavigation",
             dependencies: [
-                "Lib_XCTestDynamicOverlay"
+                "CasePaths"
             ]
         ),
         .target(
-            name: "Lib_Dependencies",
+            name: "SwiftUINavigationCore",
             dependencies: [
-                "Lib_Clocks",
-                "Lib_CombineSchedulers",
-                "Lib_ConcurrencyExtras"
+                "CustomDump",
+                "XCTestDynamicOverlay"
             ]
         ),
         .target(
-            name: "Lib_Clocks",
+            name: "CustomDump",
             dependencies: [
-                "Lib_XCTestDynamicOverlay",
-                "Lib_ConcurrencyExtras"
+                "XCTestDynamicOverlay"
             ]
         ),
         .target(
-            name: "Lib_CasePaths",
+            name: "Dependencies",
             dependencies: [
-                "Lib_XCTestDynamicOverlay"
+                "Clocks",
+                "CombineSchedulers",
+                "ConcurrencyExtras"
             ]
         ),
         .target(
-            name: "Lib_CombineSchedulers",
+            name: "Clocks",
             dependencies: [
-                "Lib_XCTestDynamicOverlay"
+                "XCTestDynamicOverlay",
+                "ConcurrencyExtras"
             ]
         ),
         .target(
-            name: "Lib_XCTestDynamicOverlay",
+            name: "CasePaths",
             dependencies: [
-                "Lib_ConcurrencyExtras"
+                "CasePathsMacros",
+                "XCTestDynamicOverlay"
+            ]
+        ),
+        .macro(
+            name: "CasePathsMacros",
+            dependencies: [
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
             ]
         ),
         .target(
-            name: "Lib_ConcurrencyExtras",
+            name: "CombineSchedulers",
+            dependencies: [
+                "XCTestDynamicOverlay"
+            ]
+        ),
+        .target(
+            name: "XCTestDynamicOverlay",
+            dependencies: [
+                "ConcurrencyExtras"
+            ]
+        ),
+        .target(
+            name: "ConcurrencyExtras",
             dependencies: []
         ),
         .target(
-            name: "Lib_IdentifiedCollections",
+            name: "IdentifiedCollections",
             dependencies: [
                 .product(name: "OrderedCollections", package: "swift-collections")
             ]
