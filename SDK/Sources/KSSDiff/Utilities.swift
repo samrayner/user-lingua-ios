@@ -1,13 +1,21 @@
-// Utilities.swift
+//
+//  Utilities.swift
+//  
+//
+//  Created by Steven W. Klassen on 2020-06-25.
+//
 
 import Foundation
+
 
 // Utilities internal to this package. They are primarily used to ease the translation
 // from Python to Swift.
 
+
 func floordiv(_ numerator: Int, _ denominator: Int) -> Int {
-    Int(floor(Double(numerator) / Double(denominator)))
+    return Int(floor(Double(numerator) / Double(denominator)))
 }
+
 
 // Adapted from https://stackoverflow.com/questions/24092884/get-nth-character-of-a-string-in-swift-programming-language
 // This was added to make the translation from Python a little easier
@@ -15,11 +23,11 @@ func floordiv(_ numerator: Int, _ denominator: Int) -> Int {
 extension Substring {
     // Return a single character by integer index. Note that we interpret a negative index
     // as a character starting from the end in order to match the Python indexing.
-    subscript(i: Int) -> Character {
-        self[toIndex(i)]
+    subscript (i: Int) -> Character {
+        return self[toIndex(i)]
     }
 
-    subscript(r: Range<Int>) -> Substring {
+    subscript (r: Range<Int>) -> Substring {
         let range = Range(uncheckedBounds: (lower: Swift.max(0, Swift.min(count, r.lowerBound)),
                                             upper: Swift.min(count, Swift.max(0, r.upperBound))))
         let start = index(startIndex, offsetBy: range.lowerBound)
@@ -29,11 +37,11 @@ extension Substring {
 
     func toIndex(_ i: Int) -> Substring.Index {
         if i == 0 {
-            startIndex
+            return startIndex
         } else if i > 0 {
-            index(startIndex, offsetBy: i)
+            return index(startIndex, offsetBy: i)
         } else {
-            index(endIndex, offsetBy: i)
+            return index(endIndex, offsetBy: i)
         }
     }
 
@@ -52,12 +60,12 @@ extension Substring {
     // then it is an offset from the end of each string.
     func partition(after i: Int) -> (prefix: Substring, suffix: Substring) {
         precondition(abs(i) <= count, "Index must refer to a position in the string.")
-        let idx = index(i >= 0 ? startIndex : endIndex, offsetBy: i)
+        let idx = index((i >= 0 ? startIndex : endIndex), offsetBy: i)
         return (prefix(upTo: idx), suffix(from: idx))
     }
 
     func find(_ str: Substring) -> Substring.Index? {
-        range(of: str)?.lowerBound
+        return range(of: str)?.lowerBound
     }
 
     func find(_ str: Substring, from idx: Substring.Index) -> Substring.Index? {
@@ -77,7 +85,7 @@ extension Substring {
 }
 
 func mergeConsecutive(_ s1: Substring?, appendWith s2: Substring) -> Substring {
-    if let s1 {
+    if let s1 = s1 {
         precondition(s1.base == s2.base, "Can only merge substrings of the same string")
         precondition(s1.endIndex == s2.startIndex, "Substrings to merge must be consecutive")
         return s1.base[s1.startIndex ..< s2.endIndex]

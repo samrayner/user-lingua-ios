@@ -4,21 +4,6 @@ import ArgumentParser
 import Foundation
 import Zip
 
-private let libraries: Set<Library> = [
-    .package(url: "https://github.com/pointfreeco/combine-schedulers", exact: "1.0.0"),
-    .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.10.4"),
-    .package(url: "https://github.com/pointfreeco/swift-case-paths", exact: "1.3.3"),
-    .package(url: "https://github.com/pointfreeco/swift-clocks", exact: "1.0.2"),
-    .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", exact: "1.1.0"),
-    .package(url: "https://github.com/pointfreeco/swift-custom-dump", exact: "1.3.0"),
-    .package(url: "https://github.com/pointfreeco/swift-dependencies", exact: "1.3.0"),
-    .package(url: "https://github.com/pointfreeco/swift-identified-collections", exact: "1.0.1"),
-    .package(url: "https://github.com/pointfreeco/swift-perception", exact: "1.1.7"),
-    .package(url: "https://github.com/pointfreeco/swiftui-navigation", exact: "1.3.0"),
-    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", exact: "1.1.0")
-//    .package(url: "https://github.com/klassen-software-solutions/KSSDiff", exact: "3.0.1")
-]
-
 private struct Library: Hashable {
     let repoURL: URL
     let version: String
@@ -34,8 +19,7 @@ private struct Library: Hashable {
     }
 
     var zipURL: URL {
-        // URL(string: "\(repoURL)/archive/refs/tags/\(version).zip")!
-        URL(string: "\(repoURL)/archive/refs/heads/main.zip")!
+        URL(string: "\(repoURL)/archive/refs/tags/\(version).zip")!
     }
 }
 
@@ -44,6 +28,7 @@ struct UpdateLibs: AsyncParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Download, move and rename SDK dependencies.")
 
     var fileManager: FileManager { FileManager.default }
+    var currentDir: URL { URL(fileURLWithPath: fileManager.currentDirectoryPath) }
 
     private func downloadLibrary(_ library: Library) async throws -> URL {
         let (data, _) = try await URLSession.shared.data(from: library.zipURL)
@@ -54,7 +39,7 @@ struct UpdateLibs: AsyncParsableCommand {
 
         try data.write(to: zipFile)
 
-        let unzippedDir = tempDir.appendingPathComponent("\(library.repoURL.lastPathComponent)-\(library.version)")
+        let unzippedDir = tempDir.appendingPathComponent(UUID().uuidString)
 
         try Zip.unzipFile(
             zipFile,
@@ -66,66 +51,94 @@ struct UpdateLibs: AsyncParsableCommand {
         return unzippedDir
     }
 
-    private func targetDirs(of unzippedDir: URL) throws -> [URL] {
-        let enumerator = fileManager.enumerator(at: unzippedDir, includingPropertiesForKeys: nil)!
+    private func editSwiftFiles(at url: URL, edit: (inout String) -> Void) throws {
+        let fileURLs = fileManager
+            .enumerator(at: url, includingPropertiesForKeys: nil)!
+            .compactMap { $0 as? URL }
+            .filter { !$0.hasDirectoryPath && $0.pathExtension == "swift" }
 
-        var targetDirs: [URL] = []
+        for url in fileURLs {
+            let encoding = String.Encoding.utf8
+            var contents = try String(contentsOf: url, encoding: encoding)
 
-        for case let url as URL in enumerator where enumerator.level < 4 {
-            if url.hasDirectoryPath,
-               url.deletingLastPathComponent().lastPathComponent == "Sources",
-               !url.lastPathComponent.hasSuffix("benchmark") {
-                targetDirs.append(url)
-            }
+            edit(&contents)
+
+            try contents.write(to: url, atomically: false, encoding: encoding)
+        }
+    }
+
+    private func installKSSDiff(version: String) async throws {
+        let kssDiffSource = try await downloadLibrary(
+            .package(url: "https://github.com/klassen-software-solutions/KSSDiff", exact: version)
+        )
+        let kssDiff = kssDiffSource.appending(path: "KSSDiff-\(version)/Sources/KSSDiff", directoryHint: .isDirectory)
+        let kssDiffDestination = currentDir.appendingPathComponent("../SDK/Sources/Lib_KSSDiff")
+
+        try? fileManager.removeItem(at: kssDiffDestination)
+        try fileManager.copyItem(
+            at: kssDiff,
+            to: kssDiffDestination
+        )
+
+        try editSwiftFiles(at: kssDiffDestination) { swift in
+            swift = swift.replacingOccurrences(of: "import KSSFoundation", with: "")
+            swift = swift.replacingOccurrences(of: "duration(1.0, .seconds)", with: "1.0")
+        }
+    }
+
+    private func installCasePaths(version: String) async throws {
+        let source = try await downloadLibrary(
+            .package(url: "https://github.com/pointfreeco/swift-case-paths", exact: version)
+        )
+        let casePaths = source.appending(path: "swift-case-paths-\(version)/Sources/CasePaths", directoryHint: .isDirectory)
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/Lib_CasePaths")
+
+        try? fileManager.removeItem(at: destination)
+        try fileManager.copyItem(
+            at: casePaths,
+            to: destination
+        )
+
+        try editSwiftFiles(at: destination) { swift in
+            swift = swift.replacingOccurrences(of: " CasePaths.", with: " Lib_CasePaths.")
+        }
+    }
+
+    private func installMobius(version: String) async throws {
+        let source = try await downloadLibrary(
+            .package(url: "https://github.com/spotify/Mobius.swift", exact: version)
+        )
+        .appending(path: "Mobius.swift-\(version)", directoryHint: .isDirectory)
+
+        let mobiusCore = source.appending(path: "MobiusCore", directoryHint: .isDirectory)
+        let mobiusExtras = source.appending(path: "MobiusExtras", directoryHint: .isDirectory)
+
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/Lib_Mobius")
+
+        try? fileManager.removeItem(at: destination)
+        try fileManager.createDirectory(at: destination, withIntermediateDirectories: true)
+
+        for source in [mobiusCore, mobiusExtras] {
+            try fileManager.copyItem(
+                at: source.appending(
+                    path: "Source",
+                    directoryHint: .isDirectory
+                ),
+                to: destination.appending(path: source.lastPathComponent)
+            )
         }
 
-        return targetDirs
+        try editSwiftFiles(at: destination) { swift in
+            swift = swift.replacingOccurrences(of: "import MobiusCore", with: "")
+            swift = swift.replacingOccurrences(of: "import CasePaths", with: "import Lib_CasePaths")
+            swift = swift.replacingOccurrences(of: " CasePaths.", with: " Lib_CasePaths.")
+            swift = swift.replacingOccurrences(of: " MobiusCore.", with: " Lib_Mobius.")
+        }
     }
 
     mutating func run() async throws {
-        let fileManager = FileManager.default
-
-        var unzippedDirs: [URL] = []
-        for library in libraries {
-            try await unzippedDirs.append(downloadLibrary(library))
-        }
-
-        let currentDir = URL(fileURLWithPath: fileManager.currentDirectoryPath)
-
-        let sourceDirs = try unzippedDirs
-            .flatMap(targetDirs)
-            .filter {
-                ![
-                    "DependenciesMacros",
-                    "DependenciesMacrosPlugin",
-                    "DependenciesTestObserver"
-                ].contains($0.lastPathComponent)
-            }
-
-        for source in sourceDirs {
-            let targetName = source.lastPathComponent
-
-            try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
-
-//            let fileURLs = fileManager.enumerator(at: source, includingPropertiesForKeys: nil)!
-//                .compactMap { $0 as? URL }
-//                .filter { !$0.hasDirectoryPath && $0.pathExtension == "swift" }
-//
-//            for url in fileURLs {
-//                let encoding = String.Encoding.utf8
-//                var contents = try String(contentsOf: url, encoding: encoding)
-//
-//                //modify contents as needed
-//
-//                try contents.write(to: url, atomically: false, encoding: encoding)
-//            }
-
-            let destination = currentDir.appendingPathComponent("../SDK/Sources/\(targetName)")
-            try? fileManager.removeItem(at: destination)
-            try fileManager.copyItem(
-                at: source,
-                to: destination
-            )
-        }
+        try await installKSSDiff(version: "3.0.1")
+        try await installCasePaths(version: "0.10.1")
+        try await installMobius(version: "0.5.2")
     }
 }
