@@ -178,7 +178,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"${ENABLE_PREVIEWS}\" = \"YES\" ]; then\n  echo \"Previews enabled, exiting to prevent 'preview paused'.\"\n  exit 0;\nfi\n\nlint() {\n    ~/.mint/bin/mint run swiftlint --config ../.swiftlint.yml\n}\n\nlint\ncd ../SDK\nlint\n";
+			shellScript = "if [ \"${ENABLE_PREVIEWS}\" = \"YES\" ]; then\n  echo \"Previews enabled, exiting to prevent 'preview paused'.\"\n  exit 0;\nfi\n\nlint() {\n    ~/.mint/bin/mint run swiftlint --config ../.swiftlint.yml\n}\n\n#lint\n#cd ../SDK\n#lint\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

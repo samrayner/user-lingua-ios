@@ -1,4 +1,4 @@
-// AppPreviewFeature.swift
+// AppPreviewFeatureView.swift
 
 import ComposableArchitecture
 import Core
@@ -6,54 +6,12 @@ import Foundation
 import SwiftUI
 import Theme
 
-@Reducer
-package struct AppPreviewFeature {
-    @Dependency(ContentSizeCategoryServiceDependency.self) var contentSizeCategoryService
-    @Dependency(WindowServiceDependency.self) var windowService
-
-    @ObservableState
-    package struct State: Equatable {
-        @Shared(InMemoryKey.configuration) var configuration = .init()
-        @Shared private(set) var isFullScreen: Bool
-    }
-
-    package enum Action {
-        case didTapIncreaseTextSize
-        case didTapDecreaseTextSize
-        case didTapToggleDarkMode
-        case delegate(Delegate)
-    }
-
-    @CasePathable
-    package enum Delegate {
-        case didTapToggleFullScreen
-    }
-
-    package var body: some ReducerOf<Self> {
-        Reduce { _, action in
-            switch action {
-            case .didTapIncreaseTextSize:
-                contentSizeCategoryService.incrementAppContentSizeCategory()
-                return .none
-            case .didTapDecreaseTextSize:
-                contentSizeCategoryService.decrementAppContentSizeCategory()
-                return .none
-            case .didTapToggleDarkMode:
-                windowService.toggleDarkMode()
-                return .none
-            case .delegate:
-                return .none
-            }
-        }
-    }
-}
-
 struct AppPreviewFeatureView: View {
-    private let store: StoreOf<AppPreviewFeature>
+    private let store: StoreOf<InspectionFeature>
     @State private var isInDarkMode: Bool
 
     init(
-        store: StoreOf<AppPreviewFeature>,
+        store: StoreOf<InspectionFeature>,
         isInDarkMode: Bool
     ) {
         self.store = store
@@ -88,7 +46,7 @@ struct AppPreviewFeatureView: View {
                         }
                     }
 
-                    Button(action: { store.send(.delegate(.didTapToggleFullScreen)) }) {
+                    Button(action: { store.send(.didTapToggleFullScreen) }) {
                         Image.theme(store.isFullScreen ? \.exitFullScreen : \.enterFullScreen)
                             .padding(.Space.s)
                     }

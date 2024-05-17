@@ -2,6 +2,7 @@
 
 import ComposableArchitecture
 import Core
+import Diff
 import Foundation
 import RecognitionFeature
 import Strings
@@ -42,20 +43,18 @@ package struct InspectionFeature {
             }
         }
 
-        @Shared package internal(set) var recognizedString: RecognizedString
-        @Shared var suggestionString: String
-        @Shared var isFullScreen: Bool
-        @Shared var localeIdentifier: String
+        package internal(set) var recognizedString: RecognizedString
+        var suggestionString: String
+        package internal(set) var isTransitioning = true
         @Shared(InMemoryKey.recognitionState) var recognition = .init()
         @Shared(InMemoryKey.configuration) var configuration = .init()
         @Shared(AppStorageKey.previewMode) var previewMode: PreviewMode = .app
-        package internal(set) var isTransitioning = true
         var focusedField: Field?
         var keyboardHeight: CGFloat = 0
         var appFacade: UIImage?
         var viewportFrame: CGRect = .zero
-        var appPreview: AppPreviewFeature.State
-        var textPreview: TextPreviewFeature.State
+        var isFullScreen = false
+        var localeIdentifier = Locale.current.identifier(.bcp47)
 
         package var locale: Locale {
             Locale(identifier: localeIdentifier)
@@ -63,6 +62,25 @@ package struct InspectionFeature {
 
         var localizedValue: String {
             recognizedString.localizedValue(locale: locale)
+        }
+
+        var diff: AttributedString {
+            .init(
+                old: localizedValue,
+                new: suggestionString,
+                diffAttributes: .init(
+                    insert: [
+                        .foregroundColor: UIColor.theme(\.diffInsertion),
+                        .underlineColor: UIColor.theme(\.diffInsertion),
+                        .underlineStyle: NSUnderlineStyle.single.rawValue
+                    ],
+                    delete: [
+                        .foregroundColor: UIColor.theme(\.diffDeletion),
+                        .strikethroughColor: UIColor.theme(\.diffDeletion),
+                        .strikethroughStyle: NSUnderlineStyle.single.rawValue
+                    ]
+                )
+            )
         }
 
         func makeSuggestion() -> Suggestion {
@@ -78,24 +96,8 @@ package struct InspectionFeature {
             appFacade: UIImage?
         ) {
             self.appFacade = appFacade
-
-            let sharedRecognizedString = Shared(recognizedString)
-            let suggestionString = Shared(recognizedString.value)
-            self._recognizedString = sharedRecognizedString
-            self._suggestionString = suggestionString
-
-            let isFullScreen = Shared(false)
-            self._isFullScreen = isFullScreen
-            self.appPreview = .init(isFullScreen: isFullScreen)
-
-            let localeIdentifier = Shared(Locale.current.identifier(.bcp47))
-            self._localeIdentifier = localeIdentifier
-
-            self.textPreview = .init(
-                recognizedString: sharedRecognizedString,
-                suggestionString: suggestionString,
-                localeIdentifier: localeIdentifier
-            )
+            self.recognizedString = recognizedString
+            self.suggestionString = recognizedString.value
         }
     }
 
@@ -104,6 +106,10 @@ package struct InspectionFeature {
         case didTapClose
         case didTapDoneSuggesting
         case didTapSubmit
+        case didTapIncreaseTextSize
+        case didTapDecreaseTextSize
+        case didTapToggleDarkMode
+        case didTapToggleFullScreen
         case onAppear
         case didAppear
         case saveSuggestion
@@ -115,8 +121,6 @@ package struct InspectionFeature {
         case observeKeyboardWillChangeFrame
         case binding(BindingAction<State>)
         case recognition(RecognitionFeature.Action)
-        case appPreview(AppPreviewFeature.Action)
-        case textPreview(TextPreviewFeature.Action)
     }
 
     enum CancelID {
@@ -128,14 +132,6 @@ package struct InspectionFeature {
 
         Scope(state: \.recognition, action: \.recognition) {
             RecognitionFeature()
-        }
-
-        Scope(state: \.appPreview, action: \.appPreview) {
-            AppPreviewFeature()
-        }
-
-        Scope(state: \.textPreview, action: \.textPreview) {
-            TextPreviewFeature()
         }
 
         Reduce { state, action in
@@ -157,6 +153,21 @@ package struct InspectionFeature {
                 return .none
             case .didTapSubmit:
                 print("SUBMITTED \(state.makeSuggestion())")
+                return .none
+            case .didTapIncreaseTextSize:
+                contentSizeCategoryService.incrementAppContentSizeCategory()
+                return .none
+            case .didTapDecreaseTextSize:
+                contentSizeCategoryService.decrementAppContentSizeCategory()
+                return .none
+            case .didTapToggleDarkMode:
+                windowService.toggleDarkMode()
+                return .none
+            case .didTapToggleFullScreen:
+                state.focusedField = nil
+                withAnimation(.linear) {
+                    state.isFullScreen.toggle()
+                }
                 return .none
             case .onAppear:
                 return .run { send in
@@ -181,12 +192,6 @@ package struct InspectionFeature {
                 return .run { send in
                     await send(.recognition(.start))
                 }
-            case .appPreview(.delegate(.didTapToggleFullScreen)):
-                state.focusedField = nil
-                withAnimation(.linear) {
-                    state.isFullScreen.toggle()
-                }
-                return .none
             case let .recognition(.delegate(.didRecognizeStrings(recognizedStrings))):
                 guard let recognizedString = recognizedStrings.first(
                     where: { $0.recordedString.formatted == state.recognizedString.recordedString.formatted }
@@ -243,7 +248,7 @@ package struct InspectionFeature {
                 // debounce primarily to avoid SwiftUI bug:
                 // https://github.com/pointfreeco/swift-composable-architecture/discussions/1093
                 .debounce(id: CancelID.suggestionSaveDebounce, for: .seconds(0.1), scheduler: mainQueue)
-            case .recognition, .appPreview, .textPreview, .binding:
+            case .recognition, .binding:
                 return .none
             }
         }
@@ -283,13 +288,11 @@ package struct InspectionFeatureView: View {
                         switch store.previewMode {
                         case .app:
                             AppPreviewFeatureView(
-                                store: store.scope(state: \.appPreview, action: \.appPreview),
+                                store: store,
                                 isInDarkMode: windowService.appUIStyle == .dark
                             )
                         case .text:
-                            TextPreviewFeatureView(
-                                store: store.scope(state: \.textPreview, action: \.textPreview)
-                            )
+                            TextPreviewFeatureView(store: store)
                         }
                     }
 
