@@ -1,6 +1,5 @@
 // StringsRepository.swift
 
-import Dependencies
 import Foundation
 
 // sourcery: AutoMockable
@@ -129,10 +128,4 @@ extension String {
             .matches(in: self, range: NSRange(startIndex..., in: self))
             .count
     }
-}
-
-package enum StringsRepositoryDependency: DependencyKey {
-    package static let liveValue: any StringsRepositoryProtocol = StringsRepository()
-    package static let previewValue: any StringsRepositoryProtocol = StringsRepositoryProtocolMock()
-    package static let testValue: any StringsRepositoryProtocol = StringsRepositoryProtocolMock()
 }

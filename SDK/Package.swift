@@ -11,7 +11,11 @@ let package = Package(
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(name: "UserLingua", targets: ["UserLingua"]),
-        .library(name: "CombineFeedback", targets: ["CombineFeedback"])
+        .library(name: "Core", targets: ["Core"]),
+        .library(name: "RootFeature", targets: ["RootFeature"]),
+        .library(name: "RecognitionFeature", targets: ["RecognitionFeature"]),
+        .library(name: "SelectionFeature", targets: ["SelectionFeature"]),
+        .library(name: "InspectionFeature", targets: ["InspectionFeature"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -34,9 +38,7 @@ let package = Package(
         ),
         .target(
             name: "Core",
-            dependencies: [
-                "CombineFeedback"
-            ]
+            dependencies: []
         ),
         .target(
             name: "Theme",
@@ -88,6 +90,7 @@ let package = Package(
             name: "RootFeature",
             dependencies: [
                 "Core",
+                "CombineFeedback",
                 "Theme",
                 "SelectionFeature"
             ]
@@ -95,13 +98,15 @@ let package = Package(
         .target(
             name: "RecognitionFeature",
             dependencies: [
-                "Core"
+                "Core",
+                "CombineFeedback"
             ]
         ),
         .target(
             name: "SelectionFeature",
             dependencies: [
                 "Core",
+                "CombineFeedback",
                 "Strings",
                 "Theme",
                 "RecognitionFeature",
@@ -112,6 +117,7 @@ let package = Package(
             name: "InspectionFeature",
             dependencies: [
                 "Core",
+                "CombineFeedback",
                 "Strings",
                 "Theme",
                 "RecognitionFeature",

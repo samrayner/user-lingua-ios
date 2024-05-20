@@ -1,7 +1,6 @@
 // UserLinguaObservable.swift
 
 import Combine
-import Dependencies
 
 // sourcery: AutoMockable
 package protocol UserLinguaObservableProtocol: ObservableObject {
@@ -21,10 +20,4 @@ public final class UserLinguaObservable: UserLinguaObservableProtocol {
     package var refreshPublisher: AnyPublisher<Void, Never> {
         objectWillChange.eraseToAnyPublisher()
     }
-}
-
-package enum UserLinguaObservableDependency: DependencyKey {
-    package static let liveValue: any UserLinguaObservableProtocol = UserLinguaObservable()
-    package static let previewValue: any UserLinguaObservableProtocol = UserLinguaObservableProtocolMock()
-    package static let testValue: any UserLinguaObservableProtocol = UserLinguaObservableProtocolMock()
 }

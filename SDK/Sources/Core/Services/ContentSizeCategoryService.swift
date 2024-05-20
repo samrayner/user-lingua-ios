@@ -1,7 +1,6 @@
 // ContentSizeCategoryService.swift
 
 import Combine
-import Dependencies
 import UIKit
 
 // sourcery: AutoMockable
@@ -58,10 +57,4 @@ package final class ContentSizeCategoryService: ContentSizeCategoryServiceProtoc
     package func resetAppContentSizeCategory() {
         notifyDidChange(newValue: systemContentSizeCategory)
     }
-}
-
-package enum ContentSizeCategoryServiceDependency: DependencyKey {
-    package static let liveValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryService()
-    package static let previewValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryServiceProtocolMock()
-    package static let testValue: any ContentSizeCategoryServiceProtocol = ContentSizeCategoryServiceProtocolMock()
 }

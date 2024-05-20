@@ -1,7 +1,6 @@
 // StringRecognizer.swift
 
 import Core
-import Dependencies
 import Foundation
 import UIKit
 import Vision
@@ -276,14 +275,4 @@ extension RecognizedLine {
             boundingBox: Self.boundingBoxOfRecognizedText(vnRecognizedText)
         )
     }
-}
-
-package enum StringRecognizerDependency: DependencyKey {
-    package static let liveValue: any StringRecognizerProtocol = {
-        @Dependency(StringsRepositoryDependency.self) var stringsRepository
-        return StringRecognizer(stringsRepository: stringsRepository)
-    }()
-
-    package static let previewValue: any StringRecognizerProtocol = StringRecognizerProtocolMock()
-    package static let testValue: any StringRecognizerProtocol = StringRecognizerProtocolMock()
 }

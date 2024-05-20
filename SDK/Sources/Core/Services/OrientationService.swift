@@ -1,7 +1,6 @@
 // OrientationService.swift
 
 import Combine
-import Dependencies
 import Foundation
 import UIKit
 
@@ -31,10 +30,4 @@ package final class OrientationService: OrientationServiceProtocol {
                 .values
         )
     }
-}
-
-package enum OrientationServiceDependency: DependencyKey {
-    package static let liveValue: any OrientationServiceProtocol = OrientationService()
-    package static let previewValue: any OrientationServiceProtocol = OrientationServiceProtocolMock()
-    package static let testValue: any OrientationServiceProtocol = OrientationServiceProtocolMock()
 }

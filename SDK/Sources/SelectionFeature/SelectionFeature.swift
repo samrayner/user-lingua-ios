@@ -1,6 +1,6 @@
 // SelectionFeature.swift
 
-import ComposableArchitecture
+import CombineFeedback
 import Core
 import Foundation
 import InspectionFeature

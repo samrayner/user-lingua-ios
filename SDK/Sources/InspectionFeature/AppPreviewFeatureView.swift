@@ -1,6 +1,6 @@
 // AppPreviewFeatureView.swift
 
-import ComposableArchitecture
+import CombineFeedback
 import Core
 import Foundation
 import SwiftUI

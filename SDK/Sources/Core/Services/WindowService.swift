@@ -1,6 +1,5 @@
 // WindowService.swift
 
-import Dependencies
 import SwiftUI
 import UIKit
 
@@ -145,10 +144,4 @@ extension UIApplication {
             }
             .flatMap { $0 as? UIWindowScene }
     }
-}
-
-package enum WindowServiceDependency: DependencyKey {
-    package static let liveValue: any WindowServiceProtocol = WindowService()
-    package static let previewValue: any WindowServiceProtocol = WindowServiceProtocolMock()
-    package static let testValue: any WindowServiceProtocol = WindowServiceProtocolMock()
 }

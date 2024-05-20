@@ -1,6 +1,5 @@
 // Configuration.swift
 
-import ComposableArchitecture
 import Foundation
 
 public struct Configuration: Equatable {

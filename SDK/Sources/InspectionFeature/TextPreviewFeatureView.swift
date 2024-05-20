@@ -1,6 +1,6 @@
 // TextPreviewFeatureView.swift
 
-import ComposableArchitecture
+import CombineFeedback
 import Core
 import Foundation
 import Strings

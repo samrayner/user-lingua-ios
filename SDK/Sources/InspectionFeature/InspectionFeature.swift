@@ -1,6 +1,6 @@
 // InspectionFeature.swift
 
-import ComposableArchitecture
+import CombineFeedback
 import Core
 import Diff
 import Foundation

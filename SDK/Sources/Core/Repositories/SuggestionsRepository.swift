@@ -1,6 +1,5 @@
 // SuggestionsRepository.swift
 
-import Dependencies
 import Foundation
 
 // sourcery: AutoMockable
@@ -23,10 +22,4 @@ package final class SuggestionsRepository: SuggestionsRepositoryProtocol {
     package func suggestion(for original: String, locale: Locale) -> Suggestion? {
         suggestions[original, default: [:]][locale]
     }
-}
-
-package enum SuggestionsRepositoryDependency: DependencyKey {
-    package static let liveValue: any SuggestionsRepositoryProtocol = SuggestionsRepository()
-    package static let previewValue: any SuggestionsRepositoryProtocol = SuggestionsRepositoryProtocolMock()
-    package static let testValue: any SuggestionsRepositoryProtocol = SuggestionsRepositoryProtocolMock()
 }
