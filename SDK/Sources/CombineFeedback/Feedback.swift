@@ -548,12 +548,12 @@ struct TaskPublisher<Output>: Publisher {
     subscription.start()
   }
 
-  final class TaskSubscription<Output, Downstream: Subscriber>: Combine.Subscription where Downstream.Input == Output, Downstream.Failure == Never {
-    private var handle: Task<Output, Never>?
-    private let work: () async -> Output
+  final class TaskSubscription<Out, Downstream: Subscriber>: Combine.Subscription where Downstream.Input == Out, Downstream.Failure == Never {
+    private var handle: Task<Out, Never>?
+    private let work: () async -> Out
     private let subscriber: Downstream
 
-    init(work: @escaping () async -> Output, subscriber: Downstream) {
+    init(work: @escaping () async -> Out, subscriber: Downstream) {
       self.work = work
       self.subscriber = subscriber
     }
