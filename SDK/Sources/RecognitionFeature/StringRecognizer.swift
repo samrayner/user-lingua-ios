@@ -1,73 +1,83 @@
 // StringRecognizer.swift
 
+import Combine
 import Core
 import Foundation
 import UIKit
 import Vision
 
+package enum StringRecognizerError: Error {
+    case invalidImage
+    case recognitionRequestFailed(Error)
+}
+
 // sourcery: AutoMockable
 package protocol StringRecognizerProtocol {
-    func recognizeStrings(in image: UIImage) async throws -> [RecognizedString]
+    func recognizeStrings(in image: UIImage) -> AnyPublisher<[RecognizedString], StringRecognizerError>
 }
 
 final class StringRecognizer: StringRecognizerProtocol {
-    enum Error: Swift.Error {
-        case invalidImage
-        case recognitionRequestFailed(Swift.Error)
-    }
-
     let stringsRepository: StringsRepositoryProtocol
 
     package init(stringsRepository: StringsRepositoryProtocol) {
         self.stringsRepository = stringsRepository
     }
 
-    package func recognizeStrings(in image: UIImage) async throws -> [RecognizedString] {
-        try await identifyRecognizedLines(recognizeLines(in: image))
+    package func recognizeStrings(in image: UIImage) -> AnyPublisher<[RecognizedString], StringRecognizerError> {
+        recognizeLines(in: image)
+            .map(identifyRecognizedLines)
+            .eraseToAnyPublisher()
     }
 
-    private func recognizeLines(in image: UIImage) async throws -> [RecognizedLine] {
+    private func recognizeLines(in image: UIImage) -> AnyPublisher<[RecognizedLine], StringRecognizerError> {
         guard let cgImage = image.cgImage else {
-            throw Error.invalidImage
+            return Fail(error: .invalidImage).eraseToAnyPublisher()
         }
 
         let requestHandler = VNImageRequestHandler(cgImage: cgImage)
 
-        return try await withCheckedThrowingContinuation { continuation in
-            let request = VNRecognizeTextRequest { request, error in
-                if let error {
-                    continuation.resume(throwing: Error.recognitionRequestFailed(error))
-                    return
-                }
+        let subject = PassthroughSubject<[RecognizedLine], StringRecognizerError>()
 
-                guard let observations = request.results as? [VNRecognizedTextObservation]
-                else {
-                    continuation.resume(returning: [])
-                    return
-                }
-
-                let recognizedText = observations
-                    .compactMap { observation in
-                        observation.topCandidates(1).first
-                    }
-                    .map(RecognizedLine.init)
-
-                continuation.resume(returning: recognizedText)
+        let request = VNRecognizeTextRequest { request, error in
+            if let error {
+                subject.send(
+                    completion: .failure(.recognitionRequestFailed(error))
+                )
+                return
             }
 
-            request.recognitionLevel = .fast
-            request.automaticallyDetectsLanguage = false
-            request.usesLanguageCorrection = false
-
-            let minimumTextPixelHeight: Double = 6
-            request.minimumTextHeight = Float(minimumTextPixelHeight / image.size.height)
-
-            do {
-                try requestHandler.perform([request])
-            } catch {
-                continuation.resume(throwing: Error.recognitionRequestFailed(error))
+            guard let observations = request.results as? [VNRecognizedTextObservation]
+            else {
+                subject.send([])
+                subject.send(completion: .finished)
+                return
             }
+
+            let recognizedText = observations
+                .compactMap { observation in
+                    observation.topCandidates(1).first
+                }
+                .map(RecognizedLine.init)
+
+            subject.send(recognizedText)
+            subject.send(completion: .finished)
         }
+
+        request.recognitionLevel = .fast
+        request.automaticallyDetectsLanguage = false
+        request.usesLanguageCorrection = false
+
+        let minimumTextPixelHeight: Double = 6
+        request.minimumTextHeight = Float(minimumTextPixelHeight / image.size.height)
+
+        do {
+            try requestHandler.perform([request])
+        } catch {
+            return Fail(error: .recognitionRequestFailed(error))
+                .eraseToAnyPublisher()
+        }
+
+        return subject.eraseToAnyPublisher()
     }
 
     func identifyRecognizedLines(_ lines: [RecognizedLine]) -> [RecognizedString] {

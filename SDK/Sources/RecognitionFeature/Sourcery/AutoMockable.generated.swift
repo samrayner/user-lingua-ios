@@ -11,6 +11,7 @@ import AppKit
 #endif
 
 import Core
+import Combine
 
 
 
@@ -41,27 +42,23 @@ package class StringRecognizerProtocolMock: StringRecognizerProtocol {
 
     //MARK: - recognizeStrings
 
-    package var recognizeStringsInImageUIImageRecognizedStringThrowableError: (any Error)?
-    package var recognizeStringsInImageUIImageRecognizedStringCallsCount = 0
-    package var recognizeStringsInImageUIImageRecognizedStringCalled: Bool {
-        return recognizeStringsInImageUIImageRecognizedStringCallsCount > 0
+    package var recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorCallsCount = 0
+    package var recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorCalled: Bool {
+        return recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorCallsCount > 0
     }
-    package var recognizeStringsInImageUIImageRecognizedStringReceivedImage: (UIImage)?
-    package var recognizeStringsInImageUIImageRecognizedStringReceivedInvocations: [(UIImage)] = []
-    package var recognizeStringsInImageUIImageRecognizedStringReturnValue: [RecognizedString]!
-    package var recognizeStringsInImageUIImageRecognizedStringClosure: ((UIImage) async throws -> [RecognizedString])?
+    package var recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorReceivedImage: (UIImage)?
+    package var recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorReceivedInvocations: [(UIImage)] = []
+    package var recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorReturnValue: AnyPublisher<[RecognizedString], StringRecognizerError>!
+    package var recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorClosure: ((UIImage) -> AnyPublisher<[RecognizedString], StringRecognizerError>)?
 
-    package func recognizeStrings(in image: UIImage) async throws -> [RecognizedString] {
-        recognizeStringsInImageUIImageRecognizedStringCallsCount += 1
-        recognizeStringsInImageUIImageRecognizedStringReceivedImage = image
-        recognizeStringsInImageUIImageRecognizedStringReceivedInvocations.append(image)
-        if let error = recognizeStringsInImageUIImageRecognizedStringThrowableError {
-            throw error
-        }
-        if let recognizeStringsInImageUIImageRecognizedStringClosure = recognizeStringsInImageUIImageRecognizedStringClosure {
-            return try await recognizeStringsInImageUIImageRecognizedStringClosure(image)
+    package func recognizeStrings(in image: UIImage) -> AnyPublisher<[RecognizedString], StringRecognizerError> {
+        recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorCallsCount += 1
+        recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorReceivedImage = image
+        recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorReceivedInvocations.append(image)
+        if let recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorClosure = recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorClosure {
+            return recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorClosure(image)
         } else {
-            return recognizeStringsInImageUIImageRecognizedStringReturnValue
+            return recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorReturnValue
         }
     }
 

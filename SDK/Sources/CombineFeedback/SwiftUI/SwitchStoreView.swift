@@ -1,5 +1,7 @@
-import SwiftUI
+// SwitchStoreView.swift
+
 import CasePaths
+import SwiftUI
 
 /// A view that can switch over a store of enum state and handle each case.
 ///
@@ -13,7 +15,7 @@ import CasePaths
 /// }
 /// ```
 /// Gives compile time guaranties that all cases of the enum State can be handled
-///```swift
+/// ```swift
 /// SwitchStoreView(store: store) { state in
 ///   switch state {
 ///     case .loggedIn:
@@ -27,71 +29,71 @@ import CasePaths
 ///   }
 /// }
 public struct SwitchStoreView<State, Event, Content>: View where Content: View {
-  private let store: Store<State, Event>
-  private let content: (State) -> Content
-  private let removeDuplicates: (State, State) -> Bool
+    private let store: Store<State, Event>
+    private let content: (State) -> Content
+    private let removeDuplicates: (State, State) -> Bool
 
-  public init(
-    store: Store<State, Event>,
-    removeDuplicates: @escaping (State, State) -> Bool,
-    @ViewBuilder content: @escaping (State) -> Content
-  ) {
-    self.store = store
-    self.removeDuplicates = removeDuplicates
-    self.content = content
-  }
-
-  public var body: some View {
-    WithContextView(store: store, removeDuplicates: removeDuplicates) { context in
-      self.content(context[dynamicMember: \State.self])
+    public init(
+        store: Store<State, Event>,
+        removeDuplicates: @escaping (State, State) -> Bool,
+        @ViewBuilder content: @escaping (State) -> Content
+    ) {
+        self.store = store
+        self.removeDuplicates = removeDuplicates
+        self.content = content
     }
-    .environmentObject(StoreObservableObject(store: self.store))
-  }
+
+    public var body: some View {
+        WithContextView(store: store, removeDuplicates: removeDuplicates) { context in
+            content(context[dynamicMember: \State.self])
+        }
+        .environmentObject(StoreObservableObject(store: store))
+    }
 }
 
 extension SwitchStoreView where State: Equatable {
-  public init(
-    store: Store<State, Event>,
-    @ViewBuilder content: @escaping (State) -> Content
-  ) {
-    self.init(store: store, removeDuplicates: ==, content: content)
-  }
+    public init(
+        store: Store<State, Event>,
+        @ViewBuilder content: @escaping (State) -> Content
+    ) {
+        self.init(store: store, removeDuplicates: ==, content: content)
+    }
 }
 
 /// Implementation is taken and adapted from the TCA
 /// A convenient view helper that lets you match cases of the ``SwitchStoreView`` state
 public struct CaseLetStoreView<GlobalState, GlobalEvent, LocalState, LocalEvent, Content: View>: View {
-  @EnvironmentObject private var store: StoreObservableObject<GlobalState, GlobalEvent>
-  public let toLocalState: (GlobalState) -> LocalState?
-  public let fromLocalEvent: (LocalEvent) -> GlobalEvent
-  public let content: (Store<LocalState, LocalEvent>) -> Content
+    @EnvironmentObject private var store: StoreObservableObject<GlobalState, GlobalEvent>
+    public let toLocalState: (GlobalState) -> LocalState?
+    public let fromLocalEvent: (LocalEvent) -> GlobalEvent
+    public let content: (Store<LocalState, LocalEvent>) -> Content
 
-  public init(
-    state toLocalState: @escaping (GlobalState) -> LocalState?,
-    action fromLocalEvent: @escaping (LocalEvent) -> GlobalEvent,
-    @ViewBuilder then content: @escaping (Store<LocalState, LocalEvent>) -> Content
-  ) {
-    self.toLocalState = toLocalState
-    self.fromLocalEvent = fromLocalEvent
-    self.content = content
-  }
+    public init(
+        state toLocalState: @escaping (GlobalState) -> LocalState?,
+        action fromLocalEvent: @escaping (LocalEvent) -> GlobalEvent,
+        @ViewBuilder then content: @escaping (Store<LocalState, LocalEvent>) -> Content
+    ) {
+        self.toLocalState = toLocalState
+        self.fromLocalEvent = fromLocalEvent
+        self.content = content
+    }
 
-  public var body: some View {
-    IfLetStoreView(
-      store: self.store.wrappedValue
-        .scope(
-          getValue: toLocalState,
-          event: fromLocalEvent
-        ),
-      then: self.content
-    )
-  }
+    public var body: some View {
+        IfLetStoreView(
+            store: store.wrappedValue
+                .scope(
+                    getValue: toLocalState,
+                    event: fromLocalEvent
+                ),
+            then: content
+        )
+    }
 }
 
 private class StoreObservableObject<State, Event>: ObservableObject {
-  let wrappedValue: Store<State, Event>
+    let wrappedValue: Store<State, Event>
 
-  init(store: Store<State, Event>) {
-    self.wrappedValue = store
-  }
+    init(store: Store<State, Event>) {
+        self.wrappedValue = store
+    }
 }

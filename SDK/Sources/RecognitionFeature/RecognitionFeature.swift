@@ -1,5 +1,6 @@
 // RecognitionFeature.swift
 
+import Combine
 import CombineFeedback
 import Core
 import Foundation
@@ -45,7 +46,7 @@ package enum RecognitionFeature: Feature {
         case didResetApp
     }
 
-    package static func reducer() -> Reducer<State, Event> {
+    package static func reducer() -> ReducerOf<Self> {
         .init { state, event in
             switch event {
             case .start:
@@ -64,45 +65,53 @@ package enum RecognitionFeature: Feature {
         }
     }
 
-    static var feedbacks: [Feedback<State, Event, Dependencies>] {
-        [
-            .lensing(state: \.stage) { stage, dependencies in
-                switch stage {
-                case .preparingFacade:
-                    guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
-                        return .didFinish(.failure(.screenshotFailed))
+    package static func feedback() -> FeedbackOf<Self> {
+        .state(\.stage) { stage, dependencies in
+            switch stage {
+            case .preparingFacade:
+                guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
+                    return .run { send in
+                        send(.didFinish(.failure(.screenshotFailed)))
                     }
-
-                    let appYOffset = dependencies.windowService.appYOffset
-
-                    return .didPrepareFacade(
-                        screenshot: screenshot,
-                        appYOffset: appYOffset
-                    )
-                case .preparingApp:
-                    dependencies.windowService.resetAppPosition()
-                    dependencies.appViewModel.refresh() // refresh app views with scrambled text
-
-                    guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
-                        return .didFinish(.failure(.screenshotFailed))
-                    }
-
-                    return .didPrepareApp(screenshot: screenshot)
-                case let .recognizingStrings(screenshot):
-                    do {
-                        let recognizedStrings = try await dependencies.stringRecognizer
-                            .recognizeStrings(in: screenshot)
-                        return .didFinish(.success(recognizedStrings))
-                    } catch {
-                        return .didFinish(.failure(.recognitionFailed(error)))
-                    }
-                case let .resettingApp(appYOffset):
-                    dependencies.windowService.positionApp(yOffset: appYOffset, animationDuration: 0)
-                    dependencies.appViewModel.refresh() // refresh app views with unscrambled text
-                    return .didResetApp
                 }
+
+                let appYOffset = dependencies.windowService.appYOffset
+
+                return .run { send in
+                    send(.didPrepareFacade(screenshot: screenshot, appYOffset: appYOffset))
+                }
+            case .preparingApp:
+                dependencies.windowService.resetAppPosition()
+                dependencies.appViewModel.refresh() // refresh app views with scrambled text
+
+                guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
+                    return .run { send in
+                        send(.didFinish(.failure(.screenshotFailed)))
+                    }
+                }
+
+                return .run { send in
+                    send(.didPrepareApp(screenshot: screenshot))
+                }
+            case let .recognizingStrings(screenshot):
+                return .observe(
+                    dependencies.stringRecognizer
+                        .recognizeStrings(in: screenshot)
+                        .mapError(Error.recognitionFailed)
+                        .mapToResult()
+                        .map(Event.didFinish)
+                        .eraseToAnyPublisher()
+                )
+            case let .resettingApp(appYOffset):
+                dependencies.windowService.positionApp(yOffset: appYOffset, animationDuration: 0)
+                dependencies.appViewModel.refresh() // refresh app views with unscrambled text
+                return .run { send in
+                    send(.didResetApp)
+                }
+            case nil:
+                return .none
             }
-        ]
+        }
     }
 }
 

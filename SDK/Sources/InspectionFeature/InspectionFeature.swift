@@ -1,5 +1,7 @@
 // InspectionFeature.swift
 
+import CasePaths
+import Combine
 import CombineFeedback
 import Core
 import Diff
@@ -9,21 +11,16 @@ import Strings
 import SwiftUI
 import Theme
 
-@Reducer
-package struct InspectionFeature {
-    @Dependency(\.continuousClock) var clock
-    @Dependency(\.mainQueue) var mainQueue
-    @Dependency(\.dismiss) var dismiss
-    @Dependency(SuggestionsRepositoryDependency.self) var suggestionsRepository
-    @Dependency(UserLinguaObservableDependency.self) var appViewModel
-    @Dependency(ContentSizeCategoryServiceDependency.self) var contentSizeCategoryService
-    @Dependency(WindowServiceDependency.self) var windowService
-    @Dependency(NotificationServiceDependency.self) var notificationService
-    @Dependency(OrientationServiceDependency.self) var orientationService
+package enum InspectionFeature: Feature {
+    package struct Dependencies {
+        let notificationCenter: NotificationCenter
+        let windowService: any WindowServiceProtocol
+        let appViewModel: any UserLinguaObservableProtocol
+        let contentSizeCategoryService: any ContentSizeCategoryServiceProtocol
+        let orientationService: any OrientationServiceProtocol
+        let suggestionsRepository: any SuggestionsRepositoryProtocol
+    }
 
-    package init() {}
-
-    @ObservableState
     package struct State: Equatable {
         enum Field: String, Hashable {
             case suggestion
@@ -43,22 +40,54 @@ package struct InspectionFeature {
             }
         }
 
+        package enum PresentationState: Equatable {
+            case presenting(appFacade: UIImage?)
+            case presented
+            case preparingToDismiss
+            case dismissing(appFacade: UIImage?)
+        }
+
         package internal(set) var recognizedString: RecognizedString
-        var suggestionString: String
-        package internal(set) var isTransitioning = true
-        @Shared(InMemoryKey.recognitionState) var recognition = .init()
-        @Shared(InMemoryKey.configuration) var configuration = .init()
-        @Shared(AppStorageKey.previewMode) var previewMode: PreviewMode = .app
+        var suggestion: Suggestion?
+        var presentation: PresentationState
+        var recognition = RecognitionFeature.State()
+        var configuration = Configuration()
+        var previewMode: PreviewMode = .app
         var focusedField: Field?
         var keyboardHeight: CGFloat = 0
-        var appFacade: UIImage?
         var viewportFrame: CGRect = .zero
         var isFullScreen = false
-        var localeIdentifier = Locale.current.identifier(.bcp47)
+        var locale = Locale.current
 
-        package var locale: Locale {
-            Locale(identifier: localeIdentifier)
+        package var isTransitioning: Bool {
+            presentation != .presented
         }
+
+//        var localeIdentifierBinding: Binding<String> {
+//            Binding(
+//                get: {
+//                    locale.identifier(.bcp47)
+//                },
+//                set: { newValue in
+//                    locale = .init(identifier: newValue)
+//                }
+//            )
+//        }
+
+//        var suggestionStringBinding: Binding<String> {
+//            Binding(
+//                get: {
+//                    suggestion?.newValue ?? ""
+//                },
+//                set: { newValue in
+//                    suggestion = .init(
+//                        recordedString: recognizedString.recordedString,
+//                        newValue: newValue,
+//                        locale: locale
+//                    )
+//                }
+//            )
+//        }
 
         var localizedValue: String {
             recognizedString.localizedValue(locale: locale)
@@ -67,7 +96,7 @@ package struct InspectionFeature {
         var diff: AttributedString {
             .init(
                 old: localizedValue,
-                new: suggestionString,
+                new: suggestion?.newValue ?? "",
                 diffAttributes: .init(
                     insert: [
                         .foregroundColor: UIColor.theme(\.diffInsertion),
@@ -83,25 +112,16 @@ package struct InspectionFeature {
             )
         }
 
-        func makeSuggestion() -> Suggestion {
-            .init(
-                recordedString: recognizedString.recordedString,
-                newValue: suggestionString,
-                locale: locale
-            )
-        }
-
         package init(
             recognizedString: RecognizedString,
-            appFacade: UIImage?
+            appFacade: UIImage
         ) {
-            self.appFacade = appFacade
             self.recognizedString = recognizedString
-            self.suggestionString = recognizedString.value
+            self.presentation = .presenting(appFacade: appFacade)
         }
     }
 
-    package enum Action: BindableAction {
+    package enum Event {
         case didTapSuggestionPreview
         case didTapClose
         case didTapDoneSuggesting
@@ -110,154 +130,156 @@ package struct InspectionFeature {
         case didTapDecreaseTextSize
         case didTapToggleDarkMode
         case didTapToggleFullScreen
-        case onAppear
         case didAppear
-        case saveSuggestion
+        case dismiss(appFacade: UIImage?)
+        case setSuggestion(Suggestion)
+        case saveSuggestion(Suggestion)
         case observeOrientation
-        case orientationDidChange(UIDeviceOrientation)
         case viewportFrameDidChange(CGRect)
         case focusViewport(fromZeroPosition: Bool = false)
         case keyboardWillChangeFrame(KeyboardNotification)
         case observeKeyboardWillChangeFrame
-        case binding(BindingAction<State>)
-        case recognition(RecognitionFeature.Action)
+        case localeDidChange(Locale)
+        case recognition(RecognitionFeature.Event)
     }
 
     enum CancelID {
         case suggestionSaveDebounce
     }
 
-    package var body: some ReducerOf<Self> {
-        BindingReducer()
+    package static func reducer() -> ReducerOf<Self> {
+        Reducer.combine(
+            RecognitionFeature.reducer()
+                .pullback(state: \State.recognition, event: /Event.recognition),
 
-        Scope(state: \.recognition, action: \.recognition) {
-            RecognitionFeature()
-        }
-
-        Reduce { state, action in
-            switch action {
-            case .didTapSuggestionPreview:
-                state.focusedField = .suggestion
-                return .none
-            case .didTapClose:
-                state.appFacade = windowService.screenshotAppWindow()
-                state.isTransitioning = true
-                contentSizeCategoryService.resetAppContentSizeCategory()
-                windowService.resetAppWindow()
-                appViewModel.refresh() // rerun UserLingua.shared.displayString
-                return .run { _ in
-                    await dismiss()
-                }
-            case .didTapDoneSuggesting:
-                state.focusedField = nil
-                return .none
-            case .didTapSubmit:
-                print("SUBMITTED \(state.makeSuggestion())")
-                return .none
-            case .didTapIncreaseTextSize:
-                contentSizeCategoryService.incrementAppContentSizeCategory()
-                return .none
-            case .didTapDecreaseTextSize:
-                contentSizeCategoryService.decrementAppContentSizeCategory()
-                return .none
-            case .didTapToggleDarkMode:
-                windowService.toggleDarkMode()
-                return .none
-            case .didTapToggleFullScreen:
-                state.focusedField = nil
-                withAnimation(.linear) {
-                    state.isFullScreen.toggle()
-                }
-                return .none
-            case .onAppear:
-                return .run { send in
-                    try await clock.sleep(for: .seconds(.AnimationDuration.screenTransition))
-                    await send(.didAppear)
-                }
-            case .didAppear:
-                state.appFacade = nil
-                state.isTransitioning = false
-                return .none
-            case .saveSuggestion:
-                suggestionsRepository.saveSuggestion(state.makeSuggestion())
-                appViewModel.refresh()
-                return .none
-            case .observeOrientation:
-                return .run { send in
-                    for await orientation in await orientationService.orientationDidChange() {
-                        await send(.orientationDidChange(orientation))
+            ReducerOf<Self> { state, event in
+                switch event {
+                case .didTapSuggestionPreview:
+                    state.focusedField = .suggestion
+                case .didTapClose:
+                    state.presentation = .preparingToDismiss
+                case .didTapDoneSuggesting:
+                    state.focusedField = nil
+                case .didTapSubmit:
+                    print("SUBMITTED \(state.suggestion)")
+                case .didTapToggleFullScreen:
+                    state.focusedField = nil
+                    withAnimation(.linear) {
+                        state.isFullScreen.toggle()
                     }
-                }
-            case .orientationDidChange:
-                return .run { send in
-                    await send(.recognition(.start))
-                }
-            case let .recognition(.delegate(.didRecognizeStrings(recognizedStrings))):
-                guard let recognizedString = recognizedStrings.first(
-                    where: { $0.recordedString.formatted == state.recognizedString.recordedString.formatted }
-                ) else { return .none }
+                case .didAppear:
+                    state.presentation = .presented
+                case let .dismiss(appFacade):
+                    state.presentation = .dismissing(appFacade: appFacade)
+                case let .updateSuggestion(suggestion):
+                    state.suggestion = suggestion
+                case let .recognition(.delegate(.didRecognizeStrings(recognizedStrings))):
+                    guard let recognizedString = recognizedStrings.first(
+                        where: { $0.recordedString.formatted == state.recognizedString.recordedString.formatted }
+                    ) else { return }
 
-                state.recognizedString = recognizedString
-                return .run { send in
-                    await send(.focusViewport(fromZeroPosition: true))
+                    state.recognizedString = recognizedString
+                case let .viewportFrameDidChange(frame):
+                    state.viewportFrame = frame
+                case let .keyboardWillChangeFrame(notification):
+                    let newHeight = max(0, UIScreen.main.bounds.height - notification.endFrame.origin.y)
+                    if newHeight != state.keyboardHeight {
+                        withAnimation(notification.animation) {
+                            state.keyboardHeight = newHeight
+                        }
+                    }
+                case .recognition,
+                     .didTapIncreaseTextSize,
+                     .didTapDecreaseTextSize,
+                     .didTapToggleDarkMode:
+                    break
                 }
-            case let .viewportFrameDidChange(frame):
-                state.viewportFrame = frame
-                return .run { send in
-                    await send(.focusViewport())
+            }
+        )
+    }
+
+    package static func feedback() -> FeedbackOf<Self> {
+        .combine(
+            .state(\.presentation) { presentation, dependencies in
+                switch presentation {
+                case .preparingToDismiss:
+                    let appFacade = dependencies.windowService.screenshotAppWindow()
+                    dependencies.contentSizeCategoryService.resetAppContentSizeCategory()
+                    dependencies.windowService.resetAppWindow()
+                    dependencies.appViewModel.refresh() // rerun UserLingua.shared.displayString
+                    return .run { send in
+                        send(.dismiss(appFacade: appFacade))
+                    }
+                case .presenting, .presented, .dismissing:
+                    return .none
                 }
-            case let .focusViewport(fromZeroPosition):
+            },
+            .state(\.viewportFrame) { _, _ in
+                .run { send in
+                    send(.focusViewport())
+                }
+            },
+            .state(\.recognizedString) { _, _ in
+                .run { send in
+                    send(.focusViewport(fromZeroPosition: true))
+                }
+            },
+            .state(\.suggestion) { suggestion, dependencies in
+                dependencies.appViewModel.refresh()
+                dependencies.suggestionsRepository.saveSuggestion(suggestion) // TODO: debounce
+                return .none
+            },
+            .event(/Event.didTapDecreaseTextSize) { _, _, dependencies in
+                dependencies.contentSizeCategoryService.decrementAppContentSizeCategory()
+                return .none
+            },
+            .event(/Event.didTapToggleDarkMode) { _, _, dependencies in
+                dependencies.windowService.toggleDarkMode()
+                return .none
+            },
+            .event(/Event.observeOrientation) { _, _, dependencies in
+                .observe(
+                    dependencies.orientationService
+                        .orientationDidChange()
+                        .map { _ in .recognition(.start) }
+                        .eraseToAnyPublisher()
+                )
+            },
+            .event(/Event.observeKeyboardWillChangeFrame) { _, _, dependencies in
+                .observe(
+                    dependencies.notificationCenter
+                        .publisher(for: .swizzled(UIResponder.keyboardWillChangeFrameNotification))
+                        .compactMap { KeyboardNotification(userInfo: $0.userInfo) }
+                        .map { .keyboardWillChangeFrame($0) }
+                        .eraseToAnyPublisher()
+                )
+            },
+            .event(/Event.focusViewport) { fromZeroPosition, state, dependencies in
                 if fromZeroPosition {
-                    windowService.resetAppPosition()
+                    dependencies.windowService.resetAppPosition()
                 }
 
-                windowService.positionApp(
+                dependencies.windowService.positionApp(
                     focusing: state.recognizedString.boundingBoxCenter,
                     within: state.viewportFrame,
                     animationDuration: .AnimationDuration.quick
                 )
-                return .none
-            case let .keyboardWillChangeFrame(notification):
-                let newHeight = max(0, UIScreen.main.bounds.height - notification.endFrame.origin.y)
-                if newHeight != state.keyboardHeight {
-                    withAnimation(notification.animation) {
-                        state.keyboardHeight = newHeight
-                    }
-                }
-                return .none
-            case .observeKeyboardWillChangeFrame:
-                return .run { send in
-                    let stream = await notificationService.observe(name: .swizzled(UIResponder.keyboardWillChangeFrameNotification))
-                        .compactMap { KeyboardNotification(userInfo: $0.userInfo) }
-
-                    for await keyboardNotification in stream {
-                        await send(.keyboardWillChangeFrame(keyboardNotification))
-                    }
-                }
-            case .binding(\.localeIdentifier):
-                state.suggestionString = suggestionsRepository.suggestion(
+            },
+            .event(/Event.localeDidChange) { _, state, dependencies in
+                let suggestion = dependencies.suggestionsRepository.suggestion(
                     for: state.recognizedString.value,
                     locale: state.locale
-                )?.newValue ?? state.localizedValue
-                appViewModel.refresh()
-                return .none
-            case .binding(\.suggestionString):
+                )
                 return .run { send in
-                    await send(.saveSuggestion)
+                    send(.updateSuggestion(suggestion))
                 }
-                // debounce primarily to avoid SwiftUI bug:
-                // https://github.com/pointfreeco/swift-composable-architecture/discussions/1093
-                .debounce(id: CancelID.suggestionSaveDebounce, for: .seconds(0.1), scheduler: mainQueue)
-            case .recognition, .binding:
-                return .none
             }
-        }
+        )
     }
 }
 
 package struct InspectionFeatureView: View {
-    @Dependency(WindowServiceDependency.self) private var windowService
-    @Perception.Bindable private var store: StoreOf<InspectionFeature>
+    private var store: StoreOf<InspectionFeature>
     @FocusState private var focusedField: InspectionFeature.State.Field?
 
     package init(store: StoreOf<InspectionFeature>) {
@@ -314,9 +336,14 @@ package struct InspectionFeatureView: View {
             }
             .font(.theme(\.body))
             .clearPresentationBackground()
-            .onAppear { store.send(.onAppear) }
-            .task { await store.send(.observeKeyboardWillChangeFrame).finish() }
-            .task { await store.send(.observeOrientation).finish() }
+            .onAppear {
+                Task {
+                    await store.send(.observeKeyboardWillChangeFrame)
+                    await store.send(.observeOrientation)
+                    await Task.sleep(for: .seconds(0.4))
+                    await store.send(.didAppear)
+                }
+            }
         }
     }
 

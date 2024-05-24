@@ -91,57 +91,6 @@ package class ContentSizeCategoryServiceProtocolMock: ContentSizeCategoryService
 
 
 }
-package class NotificationServiceProtocolMock: NotificationServiceProtocol {
-
-
-
-
-    //MARK: - observe
-
-    package var observeNameNotificationNameAsyncStreamNotificationCallsCount = 0
-    package var observeNameNotificationNameAsyncStreamNotificationCalled: Bool {
-        return observeNameNotificationNameAsyncStreamNotificationCallsCount > 0
-    }
-    package var observeNameNotificationNameAsyncStreamNotificationReceivedName: (Notification.Name)?
-    package var observeNameNotificationNameAsyncStreamNotificationReceivedInvocations: [(Notification.Name)] = []
-    package var observeNameNotificationNameAsyncStreamNotificationReturnValue: AsyncStream<Notification>!
-    package var observeNameNotificationNameAsyncStreamNotificationClosure: ((Notification.Name) async -> AsyncStream<Notification>)?
-
-    package func observe(name: Notification.Name) async -> AsyncStream<Notification> {
-        observeNameNotificationNameAsyncStreamNotificationCallsCount += 1
-        observeNameNotificationNameAsyncStreamNotificationReceivedName = name
-        observeNameNotificationNameAsyncStreamNotificationReceivedInvocations.append(name)
-        if let observeNameNotificationNameAsyncStreamNotificationClosure = observeNameNotificationNameAsyncStreamNotificationClosure {
-            return await observeNameNotificationNameAsyncStreamNotificationClosure(name)
-        } else {
-            return observeNameNotificationNameAsyncStreamNotificationReturnValue
-        }
-    }
-
-    //MARK: - observe
-
-    package var observeNamesNotificationNameAsyncStreamNotificationCallsCount = 0
-    package var observeNamesNotificationNameAsyncStreamNotificationCalled: Bool {
-        return observeNamesNotificationNameAsyncStreamNotificationCallsCount > 0
-    }
-    package var observeNamesNotificationNameAsyncStreamNotificationReceivedNames: ([Notification.Name])?
-    package var observeNamesNotificationNameAsyncStreamNotificationReceivedInvocations: [([Notification.Name])] = []
-    package var observeNamesNotificationNameAsyncStreamNotificationReturnValue: AsyncStream<Notification>!
-    package var observeNamesNotificationNameAsyncStreamNotificationClosure: (([Notification.Name]) async -> AsyncStream<Notification>)?
-
-    package func observe(names: [Notification.Name]) async -> AsyncStream<Notification> {
-        observeNamesNotificationNameAsyncStreamNotificationCallsCount += 1
-        observeNamesNotificationNameAsyncStreamNotificationReceivedNames = names
-        observeNamesNotificationNameAsyncStreamNotificationReceivedInvocations.append(names)
-        if let observeNamesNotificationNameAsyncStreamNotificationClosure = observeNamesNotificationNameAsyncStreamNotificationClosure {
-            return await observeNamesNotificationNameAsyncStreamNotificationClosure(names)
-        } else {
-            return observeNamesNotificationNameAsyncStreamNotificationReturnValue
-        }
-    }
-
-
-}
 package class OrientationServiceProtocolMock: OrientationServiceProtocol {
 
 
@@ -149,19 +98,19 @@ package class OrientationServiceProtocolMock: OrientationServiceProtocol {
 
     //MARK: - orientationDidChange
 
-    package var orientationDidChangeAsyncStreamUIDeviceOrientationCallsCount = 0
-    package var orientationDidChangeAsyncStreamUIDeviceOrientationCalled: Bool {
-        return orientationDidChangeAsyncStreamUIDeviceOrientationCallsCount > 0
+    package var orientationDidChangeAnyPublisherUIDeviceOrientationNeverCallsCount = 0
+    package var orientationDidChangeAnyPublisherUIDeviceOrientationNeverCalled: Bool {
+        return orientationDidChangeAnyPublisherUIDeviceOrientationNeverCallsCount > 0
     }
-    package var orientationDidChangeAsyncStreamUIDeviceOrientationReturnValue: AsyncStream<UIDeviceOrientation>!
-    package var orientationDidChangeAsyncStreamUIDeviceOrientationClosure: (() async -> AsyncStream<UIDeviceOrientation>)?
+    package var orientationDidChangeAnyPublisherUIDeviceOrientationNeverReturnValue: AnyPublisher<UIDeviceOrientation, Never>!
+    package var orientationDidChangeAnyPublisherUIDeviceOrientationNeverClosure: (() -> AnyPublisher<UIDeviceOrientation, Never>)?
 
-    package func orientationDidChange() async -> AsyncStream<UIDeviceOrientation> {
-        orientationDidChangeAsyncStreamUIDeviceOrientationCallsCount += 1
-        if let orientationDidChangeAsyncStreamUIDeviceOrientationClosure = orientationDidChangeAsyncStreamUIDeviceOrientationClosure {
-            return await orientationDidChangeAsyncStreamUIDeviceOrientationClosure()
+    package func orientationDidChange() -> AnyPublisher<UIDeviceOrientation, Never> {
+        orientationDidChangeAnyPublisherUIDeviceOrientationNeverCallsCount += 1
+        if let orientationDidChangeAnyPublisherUIDeviceOrientationNeverClosure = orientationDidChangeAnyPublisherUIDeviceOrientationNeverClosure {
+            return orientationDidChangeAnyPublisherUIDeviceOrientationNeverClosure()
         } else {
-            return orientationDidChangeAsyncStreamUIDeviceOrientationReturnValue
+            return orientationDidChangeAnyPublisherUIDeviceOrientationNeverReturnValue
         }
     }
 

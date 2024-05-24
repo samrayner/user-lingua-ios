@@ -18,6 +18,7 @@ configurations:
         hideVersionHeader: true
         autoMockableImports:
           - Core
+          - Combine
     - sources:
         - SDK/Sources/UserLingua
       templates:
