@@ -21,34 +21,35 @@ package enum InspectionFeature: Feature {
         let suggestionsRepository: any SuggestionsRepositoryProtocol
     }
 
-    package struct State: Equatable {
-        enum Field: String, Hashable {
-            case suggestion
-        }
+    package enum Field: String, Hashable {
+        case suggestion
+    }
 
-        enum PreviewMode: String, CaseIterable {
-            case text
-            case app
+    package enum PreviewMode: String, CaseIterable {
+        case text
+        case app
 
-            var icon: Image {
-                switch self {
-                case .text:
-                    Image.theme(\.textPreviewMode)
-                case .app:
-                    Image.theme(\.appPreviewMode)
-                }
+        var icon: Image {
+            switch self {
+            case .text:
+                Image.theme(\.textPreviewMode)
+            case .app:
+                Image.theme(\.appPreviewMode)
             }
         }
+    }
 
-        package enum PresentationState: Equatable {
-            case presenting(appFacade: UIImage?)
-            case presented
-            case preparingToDismiss
-            case dismissing(appFacade: UIImage?)
-        }
+    package enum PresentationState: Equatable {
+        case presenting(appFacade: UIImage?)
+        case presented
+        case preparingToDismiss
+        case dismissing(appFacade: UIImage?)
+    }
 
+    package struct State: Equatable {
         package internal(set) var recognizedString: RecognizedString
-        var suggestion: Suggestion?
+        var isInDarkMode: Bool
+        var suggestionValue: String
         var presentation: PresentationState
         var recognition = RecognitionFeature.State()
         var configuration = Configuration()
@@ -63,32 +64,6 @@ package enum InspectionFeature: Feature {
             presentation != .presented
         }
 
-//        var localeIdentifierBinding: Binding<String> {
-//            Binding(
-//                get: {
-//                    locale.identifier(.bcp47)
-//                },
-//                set: { newValue in
-//                    locale = .init(identifier: newValue)
-//                }
-//            )
-//        }
-
-//        var suggestionStringBinding: Binding<String> {
-//            Binding(
-//                get: {
-//                    suggestion?.newValue ?? ""
-//                },
-//                set: { newValue in
-//                    suggestion = .init(
-//                        recordedString: recognizedString.recordedString,
-//                        newValue: newValue,
-//                        locale: locale
-//                    )
-//                }
-//            )
-//        }
-
         var localizedValue: String {
             recognizedString.localizedValue(locale: locale)
         }
@@ -96,7 +71,7 @@ package enum InspectionFeature: Feature {
         var diff: AttributedString {
             .init(
                 old: localizedValue,
-                new: suggestion?.newValue ?? "",
+                new: suggestionValue,
                 diffAttributes: .init(
                     insert: [
                         .foregroundColor: UIColor.theme(\.diffInsertion),
@@ -114,10 +89,21 @@ package enum InspectionFeature: Feature {
 
         package init(
             recognizedString: RecognizedString,
-            appFacade: UIImage
+            appFacade: UIImage,
+            isInDarkMode: Bool
         ) {
             self.recognizedString = recognizedString
+            self.suggestionValue = recognizedString.value
             self.presentation = .presenting(appFacade: appFacade)
+            self.isInDarkMode = isInDarkMode
+        }
+
+        func makeSuggestion() -> Suggestion {
+            .init(
+                recordedString: recognizedString.recordedString,
+                newValue: suggestionValue,
+                locale: locale
+            )
         }
     }
 
@@ -130,16 +116,19 @@ package enum InspectionFeature: Feature {
         case didTapDecreaseTextSize
         case didTapToggleDarkMode
         case didTapToggleFullScreen
+        case onAppear
         case didAppear
         case dismiss(appFacade: UIImage?)
-        case setSuggestion(Suggestion)
-        case saveSuggestion(Suggestion)
+        case setPreviewMode(PreviewMode)
+        case setSuggestionValue(String)
+        case setFocusedField(Field?)
+        case saveSuggestion
+        case setLocale(identifier: String)
         case observeOrientation
         case viewportFrameDidChange(CGRect)
         case focusViewport(fromZeroPosition: Bool = false)
         case keyboardWillChangeFrame(KeyboardNotification)
         case observeKeyboardWillChangeFrame
-        case localeDidChange(Locale)
         case recognition(RecognitionFeature.Event)
     }
 
@@ -148,7 +137,7 @@ package enum InspectionFeature: Feature {
     }
 
     package static func reducer() -> ReducerOf<Self> {
-        Reducer.combine(
+        .combine(
             RecognitionFeature.reducer()
                 .pullback(state: \State.recognition, event: /Event.recognition),
 
@@ -160,8 +149,10 @@ package enum InspectionFeature: Feature {
                     state.presentation = .preparingToDismiss
                 case .didTapDoneSuggesting:
                     state.focusedField = nil
+                case .didTapToggleDarkMode:
+                    state.isInDarkMode.toggle()
                 case .didTapSubmit:
-                    print("SUBMITTED \(state.suggestion)")
+                    print("SUBMITTED \(state.suggestionValue)")
                 case .didTapToggleFullScreen:
                     state.focusedField = nil
                     withAnimation(.linear) {
@@ -171,14 +162,14 @@ package enum InspectionFeature: Feature {
                     state.presentation = .presented
                 case let .dismiss(appFacade):
                     state.presentation = .dismissing(appFacade: appFacade)
-                case let .updateSuggestion(suggestion):
-                    state.suggestion = suggestion
-                case let .recognition(.delegate(.didRecognizeStrings(recognizedStrings))):
-                    guard let recognizedString = recognizedStrings.first(
-                        where: { $0.recordedString.formatted == state.recognizedString.recordedString.formatted }
-                    ) else { return }
-
-                    state.recognizedString = recognizedString
+                case let .setSuggestionValue(value):
+                    state.suggestionValue = value
+                case let .setLocale(identifier):
+                    state.locale = .init(identifier: identifier)
+                case let .setPreviewMode(previewMode):
+                    state.previewMode = previewMode
+                case let .setFocusedField(field):
+                    state.focusedField = field
                 case let .viewportFrameDidChange(frame):
                     state.viewportFrame = frame
                 case let .keyboardWillChangeFrame(notification):
@@ -188,19 +179,36 @@ package enum InspectionFeature: Feature {
                             state.keyboardHeight = newHeight
                         }
                     }
-                case .recognition,
-                     .didTapIncreaseTextSize,
+                case let .recognition(.delegate(.didFinish(result))):
+                    switch result {
+                    case let .success(recognizedStrings):
+                        guard let recognizedString = recognizedStrings.first(
+                            where: { $0.recordedString.formatted == state.recognizedString.recordedString.formatted }
+                        ) else { return }
+
+                        state.recognizedString = recognizedString
+                    case .failure:
+                        // do not update recognizedString as was not found on re-recognition
+                        // this could be because of keyboard avoidance in the app hiding it from view
+                        return
+                    }
+                case .didTapIncreaseTextSize,
                      .didTapDecreaseTextSize,
-                     .didTapToggleDarkMode:
-                    break
+                     .onAppear,
+                     .observeOrientation,
+                     .focusViewport,
+                     .observeKeyboardWillChangeFrame,
+                     .saveSuggestion,
+                     .recognition:
+                    return
                 }
             }
         )
     }
 
     package static func feedback() -> FeedbackOf<Self> {
-        .combine(
-            .state(\.presentation) { presentation, dependencies in
+        let stateFeedback = FeedbackOf<Self>.combine(
+            .state(\.presentation) { presentation, _, dependencies in
                 switch presentation {
                 case .preparingToDismiss:
                     let appFacade = dependencies.windowService.screenshotAppWindow()
@@ -214,27 +222,39 @@ package enum InspectionFeature: Feature {
                     return .none
                 }
             },
-            .state(\.viewportFrame) { _, _ in
+            .state(\.viewportFrame) { _, _, _ in
                 .run { send in
                     send(.focusViewport())
                 }
             },
-            .state(\.recognizedString) { _, _ in
+            .state(\.recognizedString) { _, _, _ in
                 .run { send in
                     send(.focusViewport(fromZeroPosition: true))
                 }
             },
-            .state(\.suggestion) { suggestion, dependencies in
-                dependencies.appViewModel.refresh()
-                dependencies.suggestionsRepository.saveSuggestion(suggestion) // TODO: debounce
+            .state(\.suggestionValue) { _, _, _ in
+                .run { send in
+                    send(.saveSuggestion) // TODO: debounce
+                }
+            },
+            .state(\.isInDarkMode) { _, _, dependencies in
+                dependencies.windowService.toggleDarkMode()
                 return .none
             },
+            .state(\.locale) { _, state, dependencies in
+                let suggestionValue = dependencies.suggestionsRepository.suggestion(
+                    for: state.recognizedString.value,
+                    locale: state.locale
+                )?.newValue ?? state.localizedValue
+                return .run { send in
+                    send(.setSuggestionValue(suggestionValue))
+                }
+            }
+        )
+
+        let eventFeedback = FeedbackOf<Self>.combine(
             .event(/Event.didTapDecreaseTextSize) { _, _, dependencies in
                 dependencies.contentSizeCategoryService.decrementAppContentSizeCategory()
-                return .none
-            },
-            .event(/Event.didTapToggleDarkMode) { _, _, dependencies in
-                dependencies.windowService.toggleDarkMode()
                 return .none
             },
             .event(/Event.observeOrientation) { _, _, dependencies in
@@ -264,23 +284,34 @@ package enum InspectionFeature: Feature {
                     within: state.viewportFrame,
                     animationDuration: .AnimationDuration.quick
                 )
+
+                return .none
             },
-            .event(/Event.localeDidChange) { _, state, dependencies in
-                let suggestion = dependencies.suggestionsRepository.suggestion(
-                    for: state.recognizedString.value,
-                    locale: state.locale
+            .event(/Event.onAppear) { _, _, _ in
+                .observe(
+                    [Event.observeKeyboardWillChangeFrame, Event.observeOrientation]
+                        .publisher
+                        .merge(
+                            with: Just(Event.didAppear)
+                                .delay(for: .seconds(.AnimationDuration.screenTransition), scheduler: RunLoop.main)
+                        )
+                        .eraseToAnyPublisher()
                 )
-                return .run { send in
-                    send(.updateSuggestion(suggestion))
-                }
+            },
+            .event(/Event.saveSuggestion) { _, state, dependencies in
+                dependencies.suggestionsRepository.saveSuggestion(state.makeSuggestion())
+                dependencies.appViewModel.refresh()
+                return .none
             }
         )
+
+        return .combine(stateFeedback, eventFeedback)
     }
 }
 
 package struct InspectionFeatureView: View {
     private var store: StoreOf<InspectionFeature>
-    @FocusState private var focusedField: InspectionFeature.State.Field?
+    @FocusState private var focusedField: InspectionFeature.Field?
 
     package init(store: StoreOf<InspectionFeature>) {
         self.store = store
@@ -297,10 +328,10 @@ package struct InspectionFeatureView: View {
     }
 
     package var body: some View {
-        WithPerceptionTracking {
+        WithViewStore(store) { store in
             VStack(spacing: 0) {
                 if !store.isFullScreen {
-                    header()
+                    header(store: store)
                         .zIndex(10)
                         .transition(.move(edge: .top))
                 }
@@ -309,46 +340,36 @@ package struct InspectionFeatureView: View {
                     Group {
                         switch store.previewMode {
                         case .app:
-                            AppPreviewFeatureView(
-                                store: store,
-                                isInDarkMode: windowService.appUIStyle == .dark
-                            )
+                            AppPreviewFeatureView(store: self.store)
                         case .text:
-                            TextPreviewFeatureView(store: store)
+                            TextPreviewFeatureView(store: self.store)
                         }
                     }
 
-                    viewport()
+                    viewport(store: store)
                 }
 
                 if !store.isFullScreen {
-                    inspectionPanel()
+                    inspectionPanel(store: store)
                         .zIndex(10)
                         .transition(.move(edge: .bottom))
                 }
             }
             .ignoresSafeArea(edges: ignoredSafeAreaEdges)
             .background {
-                if let appFacade = store.appFacade {
+                if case let .presenting(appFacade) = store.presentation, let appFacade {
                     Image(uiImage: appFacade)
                         .ignoresSafeArea(.all)
                 }
             }
             .font(.theme(\.body))
             .clearPresentationBackground()
-            .onAppear {
-                Task {
-                    await store.send(.observeKeyboardWillChangeFrame)
-                    await store.send(.observeOrientation)
-                    await Task.sleep(for: .seconds(0.4))
-                    await store.send(.didAppear)
-                }
-            }
+            .onAppear { store.send(.onAppear) }
         }
     }
 
     @ViewBuilder
-    func header() -> some View {
+    func header(store: ViewStoreOf<InspectionFeature>) -> some View {
         ZStack {
             Text(Strings.Inspection.title)
                 .font(.theme(\.headerTitle))
@@ -362,8 +383,14 @@ package struct InspectionFeatureView: View {
 
                 Spacer()
 
-                Picker(Strings.Inspection.PreviewModePicker.title, selection: $store.previewMode) {
-                    ForEach(InspectionFeature.State.PreviewMode.allCases, id: \.self) { previewMode in
+                Picker(
+                    Strings.Inspection.PreviewModePicker.title,
+                    selection: store.binding(
+                        get: \.previewMode,
+                        send: { .setPreviewMode($0) }
+                    )
+                ) {
+                    ForEach(InspectionFeature.PreviewMode.allCases, id: \.self) { previewMode in
                         previewMode.icon
                             .tag(previewMode)
                     }
@@ -380,7 +407,7 @@ package struct InspectionFeatureView: View {
     }
 
     @ViewBuilder
-    private func viewport() -> some View {
+    private func viewport(store: ViewStoreOf<InspectionFeature>) -> some View {
         RoundedRectangle(cornerRadius: .Radius.l)
             .inset(by: -.BorderWidth.xl)
             .strokeBorder(Color.theme(\.background), lineWidth: .BorderWidth.xl)
@@ -402,34 +429,41 @@ package struct InspectionFeatureView: View {
     }
 
     @ViewBuilder
-    private func inspectionPanel() -> some View {
+    private func inspectionPanel(store: ViewStoreOf<InspectionFeature>) -> some View {
         VStack(alignment: .leading, spacing: .Space.m) {
             HStack(spacing: .Space.m) {
-                TextField(Strings.Inspection.SuggestionField.placeholder, text: $store.suggestionString, axis: .vertical)
-                    .textFieldStyle(.plain)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                    .focused($focusedField, equals: .suggestion)
-                    .frame(maxWidth: .infinity, minHeight: 30)
-                    .overlay(alignment: .leading) {
-                        if focusedField != .suggestion && store.suggestionString == store.localizedValue {
-                            Text(
-                                store.recognizedString.localizedValue(
-                                    locale: store.locale,
-                                    placeholderAttributes: [
-                                        .backgroundColor: UIColor.theme(\.placeholderBackground),
-                                        .foregroundColor: UIColor.theme(\.placeholderText)
-                                    ],
-                                    placeholderTransform: { " \($0) " }
-                                )
+                TextField(
+                    Strings.Inspection.SuggestionField.placeholder,
+                    text: store.binding(
+                        get: \.suggestionValue,
+                        send: { .setSuggestionValue($0) }
+                    ),
+                    axis: .vertical
+                )
+                .textFieldStyle(.plain)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .focused($focusedField, equals: .suggestion)
+                .frame(maxWidth: .infinity, minHeight: 30)
+                .overlay(alignment: .leading) {
+                    if focusedField != .suggestion && store.suggestionValue == store.localizedValue {
+                        Text(
+                            store.recognizedString.localizedValue(
+                                locale: store.locale,
+                                placeholderAttributes: [
+                                    .backgroundColor: UIColor.theme(\.placeholderBackground),
+                                    .foregroundColor: UIColor.theme(\.placeholderText)
+                                ],
+                                placeholderTransform: { " \($0) " }
                             )
-                            .background(Color.theme(\.suggestionFieldBackground))
-                            .onTapGesture { store.send(.didTapSuggestionPreview) }
-                        }
+                        )
+                        .background(Color.theme(\.suggestionFieldBackground))
+                        .onTapGesture { store.send(.didTapSuggestionPreview) }
                     }
-                    .padding(.Space.s)
-                    .background(Color.theme(\.suggestionFieldBackground))
-                    .cornerRadius(.Radius.m)
+                }
+                .padding(.Space.s)
+                .background(Color.theme(\.suggestionFieldBackground))
+                .cornerRadius(.Radius.m)
 
                 if focusedField == .suggestion {
                     Button(action: { store.send(.didTapDoneSuggesting) }) {
@@ -440,7 +474,13 @@ package struct InspectionFeatureView: View {
 
             VStack(alignment: .leading, spacing: .Space.m) {
                 if store.recognizedString.isLocalized && Bundle.main.preferredLocalizations.count > 1 {
-                    Picker(Strings.Inspection.LocalePicker.title, selection: $store.localeIdentifier) {
+                    Picker(
+                        Strings.Inspection.LocalePicker.title,
+                        selection: store.binding(
+                            get: { $0.locale.identifier(.bcp47) },
+                            send: { .setLocale(identifier: $0) }
+                        )
+                    ) {
                         ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
                             Text(identifier)
                         }
@@ -450,27 +490,25 @@ package struct InspectionFeatureView: View {
 
                 if let localization = store.recognizedString.localization {
                     VStack(alignment: .leading, spacing: .Space.xs) {
-                        localizationDetailsRow(
-                            Text("\(Strings.Inspection.Localization.Key.title): ").bold() +
-                                Text(localization.key)
-                        )
+                        (Text("\(Strings.Inspection.Localization.Key.title): ").bold() + Text(localization.key))
+                            .padding(.horizontal, .Space.s)
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
-                        localizationDetailsRow(
-                            Text("\(Strings.Inspection.Localization.Table.title): ").bold() +
-                                Text("\(localization.tableName ?? "Localizable").strings")
-                        )
+                        (Text("\(Strings.Inspection.Localization.Table.title): ")
+                            .bold() + Text("\(localization.tableName ?? "Localizable").strings"))
+                            .padding(.horizontal, .Space.s)
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
                         if let comment = localization.comment {
-                            localizationDetailsRow(
-                                Text("\(Strings.Inspection.Localization.Comment.title): ").bold() +
-                                    Text(comment)
-                            )
+                            (Text("\(Strings.Inspection.Localization.Comment.title): ").bold() + Text(comment))
+                                .padding(.horizontal, .Space.s)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
                     .font(.theme(\.localizationDetails))
                 }
 
-                if store.suggestionString != store.localizedValue {
+                if store.suggestionValue != store.localizedValue {
                     Button(action: { store.send(.didTapSubmit) }) {
                         Text(Strings.Inspection.submitButton)
                             .frame(maxWidth: .infinity)
@@ -484,13 +522,6 @@ package struct InspectionFeatureView: View {
         .padding(.bottom, .Space.s)
         .padding(.horizontal, .Space.m)
         .background(Color.theme(\.background))
-        .bind($store.focusedField, to: $focusedField)
-    }
-
-    @ViewBuilder
-    private func localizationDetailsRow(_ content: some View) -> some View {
-        content
-            .padding(.horizontal, .Space.s)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        .bind(store.binding(get: \.focusedField, send: { .setFocusedField($0) }), to: $focusedField)
     }
 }

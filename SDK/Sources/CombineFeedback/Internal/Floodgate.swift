@@ -3,7 +3,7 @@
 import Combine
 import Foundation
 
-final class Floodgate<State, Event, S: Subscriber, Dependency>: FeedbackEventConsumer<Event>, Subscription where S.Input == State,
+final class Floodgate<State, Event, S: Subscriber, Dependencies>: FeedbackEventConsumer<Event>, Subscription where S.Input == State,
     S.Failure == Never {
     struct QueueState {
         var events: [(Event, Token)] = []
@@ -22,22 +22,22 @@ final class Floodgate<State, Event, S: Subscriber, Dependency>: FeedbackEventCon
 
     private let queue = Atomic(QueueState())
     private let reducer: Reducer<State, Event>
-    private let feedbacks: [Feedback<State, Event, Dependency>]
+    private let feedbacks: [Feedback<State, Event, Dependencies>]
     private let sink: S
-    private let dependency: Dependency
+    private let dependencies: Dependencies
 
     init(
         state: State,
-        feedbacks: [Feedback<State, Event, Dependency>],
+        feedbacks: [Feedback<State, Event, Dependencies>],
         sink: S,
         reducer: Reducer<State, Event>,
-        dependency: Dependency
+        dependencies: Dependencies
     ) {
         self.state = state
         self.feedbacks = feedbacks
         self.sink = sink
         self.reducer = reducer
-        self.dependency = dependency
+        self.dependencies = dependencies
     }
 
     func bootstrap() {
@@ -47,7 +47,7 @@ final class Floodgate<State, Event, S: Subscriber, Dependency>: FeedbackEventCon
         guard !hasStarted else { return }
         hasStarted = true
         cancelable = feedbacks.map {
-            $0.events(stateDidChange.eraseToAnyPublisher(), self, dependency)
+            $0.events(stateDidChange.eraseToAnyPublisher(), self, dependencies)
         }
         _ = sink.receive(state)
         stateDidChange.send((state, nil))

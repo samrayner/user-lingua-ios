@@ -8,18 +8,13 @@ import Theme
 
 struct AppPreviewFeatureView: View {
     private let store: StoreOf<InspectionFeature>
-    @State private var isInDarkMode: Bool
 
-    init(
-        store: StoreOf<InspectionFeature>,
-        isInDarkMode: Bool
-    ) {
+    init(store: StoreOf<InspectionFeature>) {
         self.store = store
-        self._isInDarkMode = .init(initialValue: isInDarkMode)
     }
 
     var body: some View {
-        WithPerceptionTracking {
+        WithViewStore(store) { store in
             VStack {
                 Spacer()
 
@@ -37,10 +32,7 @@ struct AppPreviewFeatureView: View {
                     }
 
                     if store.configuration.appSupportsDarkMode {
-                        Button(action: {
-                            store.send(.didTapToggleDarkMode)
-                            isInDarkMode.toggle()
-                        }) {
+                        Button(action: { store.send(.didTapToggleDarkMode) }) {
                             Image.theme(\.toggleDarkMode)
                                 .padding(.Space.s)
                         }
@@ -60,7 +52,7 @@ struct AppPreviewFeatureView: View {
                 .padding(.Space.m)
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
-            .environment(\.colorScheme, isInDarkMode ? .light : .dark)
+            .environment(\.colorScheme, store.isInDarkMode ? .light : .dark)
         }
     }
 }

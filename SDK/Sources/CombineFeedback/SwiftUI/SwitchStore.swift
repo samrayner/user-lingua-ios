@@ -1,4 +1,4 @@
-// SwitchStoreView.swift
+// SwitchStore.swift
 
 import CasePaths
 import SwiftUI
@@ -16,19 +16,19 @@ import SwiftUI
 /// ```
 /// Gives compile time guaranties that all cases of the enum State can be handled
 /// ```swift
-/// SwitchStoreView(store: store) { state in
+/// SwitchStore(store: store) { state in
 ///   switch state {
 ///     case .loggedIn:
-///       CaseLetStoreView(state: /AppState.loggedIn, action: Event.loggedIn) { store in
+///       CaseLetStore(state: /AppState.loggedIn, event: AppEvent.loggedIn) { store in
 ///         LoggedInView(store: store)
 ///       }
 ///     case .loggedOut:
-///       CaseLetStoreView(state: /AppState.loggedOut, action: AppState.loggedOut) { store in
+///       CaseLetStore(state: /AppState.loggedOut, event: AppEvent.loggedOut) { store in
 ///         SignInView(store: store)
 ///       }
 ///   }
 /// }
-public struct SwitchStoreView<State, Event, Content>: View where Content: View {
+public struct SwitchStore<State, Event, Content>: View where Content: View {
     private let store: Store<State, Event>
     private let content: (State) -> Content
     private let removeDuplicates: (State, State) -> Bool
@@ -44,14 +44,14 @@ public struct SwitchStoreView<State, Event, Content>: View where Content: View {
     }
 
     public var body: some View {
-        WithContextView(store: store, removeDuplicates: removeDuplicates) { context in
-            content(context[dynamicMember: \State.self])
+        WithViewStore(store, removeDuplicates: removeDuplicates) { viewStore in
+            content(viewStore[dynamicMember: \State.self])
         }
         .environmentObject(StoreObservableObject(store: store))
     }
 }
 
-extension SwitchStoreView where State: Equatable {
+extension SwitchStore where State: Equatable {
     public init(
         store: Store<State, Event>,
         @ViewBuilder content: @escaping (State) -> Content
@@ -70,7 +70,7 @@ public struct CaseLetStoreView<GlobalState, GlobalEvent, LocalState, LocalEvent,
 
     public init(
         state toLocalState: @escaping (GlobalState) -> LocalState?,
-        action fromLocalEvent: @escaping (LocalEvent) -> GlobalEvent,
+        event fromLocalEvent: @escaping (LocalEvent) -> GlobalEvent,
         @ViewBuilder then content: @escaping (Store<LocalState, LocalEvent>) -> Content
     ) {
         self.toLocalState = toLocalState
@@ -79,7 +79,7 @@ public struct CaseLetStoreView<GlobalState, GlobalEvent, LocalState, LocalEvent,
     }
 
     public var body: some View {
-        IfLetStoreView(
+        IfLetStore(
             store: store.wrappedValue
                 .scope(
                     getValue: toLocalState,

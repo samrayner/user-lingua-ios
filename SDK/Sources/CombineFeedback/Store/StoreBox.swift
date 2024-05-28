@@ -18,13 +18,13 @@ class RootStoreBox<State, Event>: StoreBoxBase<State, Event> {
         subject.eraseToAnyPublisher()
     }
 
-    public init<Dependency>(
+    public init<Dependencies>(
         initial: State,
-        feedbacks: [Feedback<State, Event, Dependency>],
+        feedbacks: [Feedback<State, Event, Dependencies>],
         reducer: Reducer<State, Event>,
-        dependency: Dependency
+        dependencies: Dependencies
     ) {
-        let input = Feedback<State, Event, Dependency>.input
+        let input = Feedback<State, Event, Dependencies>.input
         self.subject = CurrentValueSubject(initial)
         self.inputObserver = input.observer
         Publishers.FeedbackLoop(
@@ -32,7 +32,7 @@ class RootStoreBox<State, Event>: StoreBoxBase<State, Event> {
             reduce: reducer,
             feedbacks: feedbacks
                 .appending(input.feedback),
-            dependency: dependency
+            dependencies: dependencies
         )
         .sink(receiveValue: { [subject] state in
             subject.send(state)

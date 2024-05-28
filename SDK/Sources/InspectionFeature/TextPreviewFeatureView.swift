@@ -9,19 +9,23 @@ import Theme
 
 struct TextPreviewFeatureView: View {
     @Environment(\.colorScheme) private var colorScheme
-    @Dependency(\.locale) private var systemLocale
-    @Perception.Bindable private var store: StoreOf<InspectionFeature>
+    private let store: StoreOf<InspectionFeature>
+    private let systemLocale: Locale
     @AppStorage(UserDefaults.Keys.textPreviewBaseIsExpanded) var baseIsExpanded = true
     @AppStorage(UserDefaults.Keys.textPreviewOriginalIsExpanded) var originalIsExpanded = true
     @AppStorage(UserDefaults.Keys.textPreviewDiffIsExpanded) var diffIsExpanded = true
     @AppStorage(UserDefaults.Keys.textPreviewSuggestionIsExpanded) var suggestionIsExpanded = true
 
-    init(store: StoreOf<InspectionFeature>) {
+    init(
+        store: StoreOf<InspectionFeature>,
+        systemLocale: Locale = Locale.current
+    ) {
         self.store = store
+        self.systemLocale = systemLocale
     }
 
     var body: some View {
-        WithPerceptionTracking {
+        WithViewStore(store) { store in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     TextPreviewSectionView(
@@ -43,9 +47,9 @@ struct TextPreviewFeatureView: View {
                             isExpanded: $originalIsExpanded,
                             title: Text(
                                 Strings.Inspection.TextPreview.originalTitle(
-                                    systemLocale.localizedString(forLanguageCode: store.localeIdentifier)
+                                    systemLocale.localizedString(forLanguageCode: store.locale.identifier)
                                         ?? Strings.Inspection.TextPreview.languageNameFallback,
-                                    store.localeIdentifier
+                                    store.locale.identifier
                                 )
                             ),
                             content: Text(localizedValueWithHighlightedPlaceholders(locale: store.locale))
@@ -58,9 +62,9 @@ struct TextPreviewFeatureView: View {
                         isExpanded: $diffIsExpanded,
                         title: Text(
                             Strings.Inspection.TextPreview.diffTitle(
-                                systemLocale.localizedString(forLanguageCode: store.localeIdentifier)
-                                    ?? store.localeIdentifier,
-                                store.localeIdentifier
+                                systemLocale.localizedString(forLanguageCode: store.locale.identifier)
+                                    ?? store.locale.identifier,
+                                store.locale.identifier
                             )
                         ),
                         content: Text(store.diff)
@@ -72,12 +76,12 @@ struct TextPreviewFeatureView: View {
                         isExpanded: $suggestionIsExpanded,
                         title: Text(
                             Strings.Inspection.TextPreview.suggestionTitle(
-                                systemLocale.localizedString(forLanguageCode: store.localeIdentifier)
-                                    ?? store.localeIdentifier,
-                                store.localeIdentifier
+                                systemLocale.localizedString(forLanguageCode: store.locale.identifier)
+                                    ?? store.locale.identifier,
+                                store.locale.identifier
                             )
                         ),
-                        content: Text(store.suggestionString)
+                        content: Text(store.suggestionValue)
                     )
                 }
             }

@@ -4,6 +4,7 @@ import CasePaths
 import Combine
 import Foundation
 
+@dynamicMemberLookup
 open class Store<State, Event> {
     private let box: StoreBoxBase<State, Event>
 
@@ -19,25 +20,25 @@ open class Store<State, Event> {
         self.box = box
     }
 
-    public init<Dependency>(
+    public init<Dependencies>(
         initial: State,
-        feedbacks: [Feedback<State, Event, Dependency>],
+        feedbacks: [Feedback<State, Event, Dependencies>],
         reducer: Reducer<State, Event>,
-        dependency: Dependency
+        dependencies: Dependencies
     ) {
         self.box = RootStoreBox(
             initial: initial,
             feedbacks: feedbacks,
             reducer: reducer,
-            dependency: dependency
+            dependencies: dependencies
         )
     }
 
     @MainActor
-    func context(
+    func viewStore(
         removeDuplicates isDuplicate: @escaping (State, State) -> Bool
-    ) -> ViewContext<State, Event> {
-        ViewContext(store: box, removeDuplicates: isDuplicate)
+    ) -> ViewStore<State, Event> {
+        ViewStore(store: box, removeDuplicates: isDuplicate)
     }
 
     open func send(_ event: Event) {
@@ -66,6 +67,10 @@ open class Store<State, Event> {
         event: @escaping (E) -> Event
     ) -> Store<S, E> {
         Store<S, E>(box: box.scoped(to: scope, event: event))
+    }
+
+    public subscript<U>(dynamicMember keyPath: KeyPath<State, U>) -> U {
+        state[keyPath: keyPath]
     }
 }
 

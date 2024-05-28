@@ -1,5 +1,6 @@
 // RecognitionFeature.swift
 
+import CasePaths
 import Combine
 import CombineFeedback
 import Core
@@ -44,6 +45,11 @@ package enum RecognitionFeature: Feature {
         case didPrepareApp(screenshot: UIImage)
         case didFinish(Result<[RecognizedString], Error>)
         case didResetApp
+        case delegate(Delegate)
+
+        package enum Delegate {
+            case didFinish(Result<[RecognizedString], Error>)
+        }
     }
 
     package static func reducer() -> ReducerOf<Self> {
@@ -61,57 +67,67 @@ package enum RecognitionFeature: Feature {
                 state.stage = .resettingApp(yOffset: state.appYOffset)
             case .didResetApp:
                 state = .init()
+            case .delegate:
+                return
             }
         }
     }
 
     package static func feedback() -> FeedbackOf<Self> {
-        .state(\.stage) { stage, dependencies in
-            switch stage {
-            case .preparingFacade:
-                guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
-                    return .run { send in
-                        send(.didFinish(.failure(.screenshotFailed)))
+        .combine(
+            .state(\.stage) { stage, _, dependencies in
+                switch stage {
+                case .preparingFacade:
+                    guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
+                        return .run { send in
+                            send(.didFinish(.failure(.screenshotFailed)))
+                        }
                     }
-                }
 
-                let appYOffset = dependencies.windowService.appYOffset
+                    let appYOffset = dependencies.windowService.appYOffset
 
-                return .run { send in
-                    send(.didPrepareFacade(screenshot: screenshot, appYOffset: appYOffset))
-                }
-            case .preparingApp:
-                dependencies.windowService.resetAppPosition()
-                dependencies.appViewModel.refresh() // refresh app views with scrambled text
-
-                guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
                     return .run { send in
-                        send(.didFinish(.failure(.screenshotFailed)))
+                        send(.didPrepareFacade(screenshot: screenshot, appYOffset: appYOffset))
                     }
-                }
+                case .preparingApp:
+                    dependencies.windowService.resetAppPosition()
+                    dependencies.appViewModel.refresh() // refresh app views with scrambled text
 
-                return .run { send in
-                    send(.didPrepareApp(screenshot: screenshot))
+                    guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
+                        return .run { send in
+                            send(.didFinish(.failure(.screenshotFailed)))
+                        }
+                    }
+
+                    return .run { send in
+                        send(.didPrepareApp(screenshot: screenshot))
+                    }
+                case let .recognizingStrings(screenshot):
+                    return .observe(
+                        dependencies.stringRecognizer
+                            .recognizeStrings(in: screenshot)
+                            .mapError(Error.recognitionFailed)
+                            .mapToResult()
+                            .map(Event.didFinish)
+                            .eraseToAnyPublisher()
+                    )
+                case let .resettingApp(appYOffset):
+                    dependencies.windowService.positionApp(yOffset: appYOffset, animationDuration: 0)
+                    dependencies.appViewModel.refresh() // refresh app views with unscrambled text
+                    return .run { send in
+                        send(.didResetApp)
+                    }
+                case .none:
+                    return .none
                 }
-            case let .recognizingStrings(screenshot):
-                return .observe(
-                    dependencies.stringRecognizer
-                        .recognizeStrings(in: screenshot)
-                        .mapError(Error.recognitionFailed)
-                        .mapToResult()
-                        .map(Event.didFinish)
-                        .eraseToAnyPublisher()
-                )
-            case let .resettingApp(appYOffset):
-                dependencies.windowService.positionApp(yOffset: appYOffset, animationDuration: 0)
-                dependencies.appViewModel.refresh() // refresh app views with unscrambled text
-                return .run { send in
-                    send(.didResetApp)
+            },
+
+            .event(/Event.didFinish) { payload, _, _ in
+                .run { send in
+                    send(.delegate(.didFinish(payload)))
                 }
-            case nil:
-                return .none
             }
-        }
+        )
     }
 }
 
@@ -123,8 +139,8 @@ package struct RecognitionFeatureView: View {
     }
 
     package var body: some View {
-        WithContextView(store: store) { context in
-            if let appFacade = context.appFacade {
+        WithViewStore(store) { store in
+            if let appFacade = store.appFacade {
                 Image(uiImage: appFacade)
                     .ignoresSafeArea()
             }

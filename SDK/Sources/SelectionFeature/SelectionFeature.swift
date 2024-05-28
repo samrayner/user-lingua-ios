@@ -61,7 +61,8 @@ package struct SelectionFeature {
                 ThemeFont.scaleFactor = contentSizeCategoryService.systemContentSizeCategory.fontScaleFactor
                 state.inspection = .init(
                     recognizedString: recognizedString,
-                    appFacade: windowService.screenshotAppWindow()
+                    appFacade: windowService.screenshotAppWindow(),
+                    isInDarkMode: windowService.appUIStyle == .dark
                 )
                 state.recognizedStrings = nil
                 return .cancel(id: CancelID.deviceOrientationObservation)

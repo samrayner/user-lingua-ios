@@ -4,17 +4,17 @@ import Combine
 import Foundation
 
 extension Publishers {
-    public static func system<State, Event, Dependency>(
+    public static func system<State, Event, Dependencies>(
         initial: State,
-        feedbacks: [Feedback<State, Event, Dependency>],
+        feedbacks: [Feedback<State, Event, Dependencies>],
         reduce: Reducer<State, Event>,
-        dependency: Dependency
+        dependencies: Dependencies
     ) -> AnyPublisher<State, Never> {
         Publishers.FeedbackLoop(
             initial: initial,
             reduce: reduce,
             feedbacks: feedbacks,
-            dependency: dependency
+            dependencies: dependencies
         )
         .eraseToAnyPublisher()
     }

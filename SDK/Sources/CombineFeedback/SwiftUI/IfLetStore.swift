@@ -1,10 +1,10 @@
-// IfLetStoreView.swift
+// IfLetStore.swift
 
 import SwiftUI
 
-public struct IfLetStoreView<State, Event, Content: View>: View {
+public struct IfLetStore<State, Event, Content: View>: View {
     private let store: Store<State?, Event>
-    private let content: (ViewContext<State?, Event>) -> Content
+    private let content: (ViewStore<State?, Event>) -> Content
 
     public init<IfContent: View, ElseContent: View>(
         store: Store<State?, Event>,
@@ -12,8 +12,8 @@ public struct IfLetStoreView<State, Event, Content: View>: View {
         @ViewBuilder else elseContent: @escaping () -> ElseContent
     ) where Content == _ConditionalContent<IfContent, ElseContent> {
         self.store = store
-        self.content = { context in
-            if let state = context[dynamicMember: \State.self] {
+        self.content = { viewStore in
+            if let state = viewStore[dynamicMember: \State.self] {
                 ViewBuilder.buildEither(
                     first: ifContent(
                         store.scope(
@@ -37,8 +37,8 @@ public struct IfLetStoreView<State, Event, Content: View>: View {
     }
 
     public var body: some View {
-        WithContextView(
-            store: store,
+        WithViewStore(
+            store,
             removeDuplicates: { ($0 != nil) == ($1 != nil) },
             content: content
         )
