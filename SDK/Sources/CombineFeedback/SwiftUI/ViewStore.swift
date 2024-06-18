@@ -45,6 +45,12 @@ public final class ViewStore<State, Event>: ObservableObject {
             }
         )
     }
+
+    public func publisher<Value>(for transform: @escaping (State) -> Value) -> AnyPublisher<Value, Never> {
+        $state
+            .map(transform)
+            .eraseToAnyPublisher()
+    }
 }
 
 public typealias ViewStoreOf<F: Feature> = ViewStore<F.State, F.Event>

@@ -89,7 +89,7 @@ package enum InspectionFeature: Feature {
 
         package init(
             recognizedString: RecognizedString,
-            appFacade: UIImage,
+            appFacade: UIImage?,
             isInDarkMode: Bool
         ) {
             self.recognizedString = recognizedString
@@ -130,10 +130,6 @@ package enum InspectionFeature: Feature {
         case keyboardWillChangeFrame(KeyboardNotification)
         case observeKeyboardWillChangeFrame
         case recognition(RecognitionFeature.Event)
-    }
-
-    enum CancelID {
-        case suggestionSaveDebounce
     }
 
     package static func reducer() -> ReducerOf<Self> {
@@ -215,27 +211,19 @@ package enum InspectionFeature: Feature {
                     dependencies.contentSizeCategoryService.resetAppContentSizeCategory()
                     dependencies.windowService.resetAppWindow()
                     dependencies.appViewModel.refresh() // rerun UserLingua.shared.displayString
-                    return .run { send in
-                        send(.dismiss(appFacade: appFacade))
-                    }
+                    return .send(.dismiss(appFacade: appFacade))
                 case .presenting, .presented, .dismissing:
                     return .none
                 }
             },
             .state(\.viewportFrame) { _, _, _ in
-                .run { send in
-                    send(.focusViewport())
-                }
+                .send(.focusViewport())
             },
             .state(\.recognizedString) { _, _, _ in
-                .run { send in
-                    send(.focusViewport(fromZeroPosition: true))
-                }
+                .send(.focusViewport(fromZeroPosition: true))
             },
             .state(\.suggestionValue) { _, _, _ in
-                .run { send in
-                    send(.saveSuggestion) // TODO: debounce
-                }
+                .send(.saveSuggestion) // TODO: debounce
             },
             .state(\.isInDarkMode) { _, _, dependencies in
                 dependencies.windowService.toggleDarkMode()
@@ -246,9 +234,7 @@ package enum InspectionFeature: Feature {
                     for: state.recognizedString.value,
                     locale: state.locale
                 )?.newValue ?? state.localizedValue
-                return .run { send in
-                    send(.setSuggestionValue(suggestionValue))
-                }
+                return .send(.setSuggestionValue(suggestionValue))
             }
         )
 
@@ -289,13 +275,11 @@ package enum InspectionFeature: Feature {
             },
             .event(/Event.onAppear) { _, _, _ in
                 .observe(
-                    [Event.observeKeyboardWillChangeFrame, Event.observeOrientation]
-                        .publisher
-                        .merge(
-                            with: Just(Event.didAppear)
-                                .delay(for: .seconds(.AnimationDuration.screenTransition), scheduler: RunLoop.main)
-                        )
-                        .eraseToAnyPublisher()
+                    Publishers.Merge(
+                        [Event.observeKeyboardWillChangeFrame, Event.observeOrientation].publisher,
+                        Just(Event.didAppear).delay(for: .seconds(.AnimationDuration.screenTransition), scheduler: RunLoop.main)
+                    )
+                    .eraseToAnyPublisher()
                 )
             },
             .event(/Event.saveSuggestion) { _, state, dependencies in
@@ -310,8 +294,9 @@ package enum InspectionFeature: Feature {
 }
 
 package struct InspectionFeatureView: View {
-    private var store: StoreOf<InspectionFeature>
+    private let store: StoreOf<InspectionFeature>
     @FocusState private var focusedField: InspectionFeature.Field?
+    @Environment(\.dismiss) var dismiss
 
     package init(store: StoreOf<InspectionFeature>) {
         self.store = store
@@ -357,14 +342,20 @@ package struct InspectionFeatureView: View {
             }
             .ignoresSafeArea(edges: ignoredSafeAreaEdges)
             .background {
-                if case let .presenting(appFacade) = store.presentation, let appFacade {
-                    Image(uiImage: appFacade)
-                        .ignoresSafeArea(.all)
+                switch store.presentation {
+                case let .presenting(appFacade), let .dismissing(appFacade):
+                    appFacade.map { Image(uiImage: $0).ignoresSafeArea() }
+                default:
+                    EmptyView()
                 }
             }
             .font(.theme(\.body))
             .clearPresentationBackground()
             .onAppear { store.send(.onAppear) }
+            .onReceive(store.publisher(for: \.presentation)) {
+                guard case .dismissing = $0 else { return }
+                dismiss()
+            }
         }
     }
 

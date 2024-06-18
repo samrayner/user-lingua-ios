@@ -5,6 +5,12 @@ import Combine
 
 public struct Feedback<State, Event, Dependencies> {
     public enum Action {
+        public static func send(_ event: Event) -> Self {
+            .run { send in
+                send(event)
+            }
+        }
+
         case observe(AnyPublisher<Event, Never>)
         case run(((Event) -> Void) -> Void)
         case none

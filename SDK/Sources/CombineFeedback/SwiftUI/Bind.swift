@@ -1,4 +1,6 @@
-// ViewStoreBinding.swift
+// Bind.swift
+
+// https://github.com/pointfreeco/swiftui-navigation/blob/main/Sources/SwiftUINavigation/Binding.swift
 
 #if canImport(SwiftUI)
 import SwiftUI

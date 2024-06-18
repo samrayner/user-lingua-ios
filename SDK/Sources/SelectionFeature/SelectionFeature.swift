@@ -1,5 +1,7 @@
 // SelectionFeature.swift
 
+import CasePaths
+import Combine
 import CombineFeedback
 import Core
 import Foundation
@@ -8,102 +10,120 @@ import RecognitionFeature
 import SwiftUI
 import Theme
 
-@Reducer
-package struct SelectionFeature {
-    @Dependency(ContentSizeCategoryServiceDependency.self) var contentSizeCategoryService
-    @Dependency(OrientationServiceDependency.self) var orientationService
-    @Dependency(WindowServiceDependency.self) var windowService
+package enum SelectionFeature: Feature {
+    package struct Dependencies {
+        let windowService: any WindowServiceProtocol
+        let contentSizeCategoryService: any ContentSizeCategoryServiceProtocol
+        let orientationService: any OrientationServiceProtocol
+    }
 
-    package init() {}
-
-    @ObservableState
     package struct State: Equatable {
-        @Shared(InMemoryKey.recognitionState) package var recognition = .init()
+        package var recognition = RecognitionFeature.State()
+        package var inspection: InspectionFeature.State?
         var recognizedStrings: [RecognizedString]?
-
-        @Presents package var inspection: InspectionFeature.State?
 
         package init() {}
     }
 
-    package enum Action: BindableAction {
+    package enum Event {
         case didSelectString(RecognizedString)
         case didTapOverlay
         case inspectionDidDismiss
+        case setInspection(InspectionFeature.State?)
         case onAppear
         case observeOrientation
         case orientationDidChange(UIDeviceOrientation)
-        case inspection(PresentationAction<InspectionFeature.Action>)
-        case recognition(RecognitionFeature.Action)
-        case binding(BindingAction<State>)
+        case inspection(InspectionFeature.Event)
+        case recognition(RecognitionFeature.Event)
         case delegate(Delegate)
-    }
 
-    @CasePathable
-    package enum Delegate {
-        case dismiss
-    }
-
-    enum CancelID {
-        case deviceOrientationObservation
-    }
-
-    package var body: some ReducerOf<Self> {
-        BindingReducer()
-
-        Scope(state: \.recognition, action: \.recognition) {
-            RecognitionFeature()
+        package enum Delegate {
+            case dismiss
         }
+    }
 
-        Reduce { state, action in
-            switch action {
-            case let .didSelectString(recognizedString):
-                ThemeFont.scaleFactor = contentSizeCategoryService.systemContentSizeCategory.fontScaleFactor
-                state.inspection = .init(
-                    recognizedString: recognizedString,
-                    appFacade: windowService.screenshotAppWindow(),
-                    isInDarkMode: windowService.appUIStyle == .dark
-                )
-                state.recognizedStrings = nil
-                return .cancel(id: CancelID.deviceOrientationObservation)
-            case .didTapOverlay, .inspectionDidDismiss:
-                return .run { send in
-                    await send(.delegate(.dismiss))
-                }
-            case .onAppear:
-                state.recognizedStrings = []
-                return .run { send in
-                    await send(.recognition(.start))
-                    await send(.observeOrientation)
-                }
-            case .observeOrientation:
-                return .run { send in
-                    for await orientation in await orientationService.orientationDidChange() {
-                        await send(.orientationDidChange(orientation))
+    package static func reducer() -> ReducerOf<Self> {
+        .combine(
+            RecognitionFeature.reducer()
+                .pullback(state: \State.recognition, event: /Event.recognition),
+
+            InspectionFeature.reducer()
+                .optional()
+                .pullback(state: \State.inspection, event: /Event.inspection),
+
+            ReducerOf<Self> { state, event in
+                switch event {
+                case let .setInspection(inspectionState):
+                    state.inspection = inspectionState
+                    state.recognizedStrings = nil
+                case .onAppear:
+                    state.recognizedStrings = []
+                case .orientationDidChange:
+                    state.recognizedStrings = []
+                case let .recognition(.delegate(.didFinish(result))):
+                    switch result {
+                    case let .success(recognizedStrings):
+                        state.recognizedStrings = recognizedStrings
+                    case .failure:
+                        // TODO: recognition error handling
+                        return
                     }
+                case .inspection,
+                     .recognition,
+                     .delegate,
+                     .didSelectString,
+                     .didTapOverlay,
+                     .inspectionDidDismiss,
+                     .observeOrientation:
+                    return
                 }
-                .cancellable(id: CancelID.deviceOrientationObservation)
-            case .orientationDidChange:
-                state.recognizedStrings = []
-                return .run { send in
-                    await send(.recognition(.start))
-                }
-            case let .recognition(.delegate(.didRecognizeStrings(recognizedStrings))):
-                state.recognizedStrings = recognizedStrings
-                return .none
-            case .inspection, .recognition, .binding, .delegate:
-                return .none
             }
-        }
-        .ifLet(\.$inspection, action: \.inspection) {
-            InspectionFeature()
-        }
+        )
+    }
+
+    package static func feedback() -> FeedbackOf<Self> {
+        .combine(
+            .event(/Event.didSelectString) { recognizedString, _, dependencies in
+                ThemeFont.scaleFactor = dependencies.contentSizeCategoryService.systemContentSizeCategory.fontScaleFactor
+                let inspectionState = InspectionFeature.State(
+                    recognizedString: recognizedString,
+                    appFacade: dependencies.windowService.screenshotAppWindow(),
+                    isInDarkMode: dependencies.windowService.appUIStyle == .dark
+                )
+                return .send(.setInspection(inspectionState))
+            },
+            .event(/Event.didTapOverlay) { _, _, _ in
+                .send(.delegate(.dismiss))
+            },
+            .event(/Event.inspectionDidDismiss) { _, _, _ in
+                .send(.delegate(.dismiss))
+            },
+            .event(/Event.onAppear) { _, _, _ in
+                .run { send in
+                    send(.recognition(.start))
+                    send(.observeOrientation)
+                }
+            },
+            .event(/Event.observeOrientation) { _, _, dependencies in
+                .observe(
+                    dependencies.orientationService
+                        .orientationDidChange()
+                        .map(Event.orientationDidChange)
+                        .eraseToAnyPublisher()
+                )
+            },
+            .event(/Event.orientationDidChange) { _, _, _ in
+                .send(.recognition(.start))
+            }
+        )
     }
 }
 
 package struct SelectionFeatureView: View {
+    typealias Event = SelectionFeature.Event
+
     @Environment(\.colorScheme) private var colorScheme
-    @Perception.Bindable package var store: StoreOf<SelectionFeature>
+    private let store: StoreOf<SelectionFeature>
     @State private var isVisible = false
 
     package init(store: StoreOf<SelectionFeature>) {
@@ -111,7 +131,7 @@ package struct SelectionFeatureView: View {
     }
 
     package var body: some View {
-        WithPerceptionTracking {
+        WithViewStore(store) { store in
             ZStack(alignment: .topLeading) {
                 if store.recognizedStrings != nil {
                     Color.theme(\.overlay)
@@ -137,11 +157,11 @@ package struct SelectionFeatureView: View {
             }
             .ignoresSafeArea()
             .background {
-                RecognitionFeatureView(store: store.scope(state: \.recognition, action: \.recognition))
+                RecognitionFeatureView(store: self.store.scoped(to: \.recognition, event: Event.recognition))
             }
             .onAppear { store.send(.onAppear) }
             .fullScreenCover(
-                item: $store.scope(state: \.inspection, action: \.inspection),
+                item: self.store.scopeBinding(get: \.inspection, set: Event.setInspection, event: Event.inspection),
                 onDismiss: { store.send(.inspectionDidDismiss) }
             ) { store in
                 InspectionFeatureView(store: store)

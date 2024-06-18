@@ -86,17 +86,13 @@ package enum RecognitionFeature: Feature {
 
                     let appYOffset = dependencies.windowService.appYOffset
 
-                    return .run { send in
-                        send(.didPrepareFacade(screenshot: screenshot, appYOffset: appYOffset))
-                    }
+                    return .send(.didPrepareFacade(screenshot: screenshot, appYOffset: appYOffset))
                 case .preparingApp:
                     dependencies.windowService.resetAppPosition()
                     dependencies.appViewModel.refresh() // refresh app views with scrambled text
 
                     guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
-                        return .run { send in
-                            send(.didFinish(.failure(.screenshotFailed)))
-                        }
+                        return .send(.didFinish(.failure(.screenshotFailed)))
                     }
 
                     return .run { send in
@@ -114,18 +110,13 @@ package enum RecognitionFeature: Feature {
                 case let .resettingApp(appYOffset):
                     dependencies.windowService.positionApp(yOffset: appYOffset, animationDuration: 0)
                     dependencies.appViewModel.refresh() // refresh app views with unscrambled text
-                    return .run { send in
-                        send(.didResetApp)
-                    }
+                    return .send(.didResetApp)
                 case .none:
                     return .none
                 }
             },
-
             .event(/Event.didFinish) { payload, _, _ in
-                .run { send in
-                    send(.delegate(.didFinish(payload)))
-                }
+                .send(.delegate(.didFinish(payload)))
             }
         )
     }

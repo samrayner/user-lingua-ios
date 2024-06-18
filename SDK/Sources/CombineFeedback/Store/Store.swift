@@ -3,6 +3,7 @@
 import CasePaths
 import Combine
 import Foundation
+import SwiftUI
 
 @dynamicMemberLookup
 open class Store<State, Event> {
@@ -69,6 +70,28 @@ open class Store<State, Event> {
         Store<S, E>(box: box.scoped(to: scope, event: event))
     }
 
+    public func scoped<S, E>(
+        to scope: WritableKeyPath<State, S?>,
+        event: @escaping (E) -> Event
+    ) -> Store<S, E>? {
+        box.scoped(optional: scope, event: event).map(Store<S, E>.init(box:))
+    }
+
+    public func scopeBinding<S, E>(
+        get scope: WritableKeyPath<State, S?>,
+        set: @escaping (S?) -> Event,
+        event: @escaping (E) -> Event
+    ) -> Binding<Store<S, E>?> {
+        Binding(
+            get: {
+                self.scoped(to: scope, event: event)
+            },
+            set: {
+                self.send(set($0?.state))
+            }
+        )
+    }
+
     public subscript<U>(dynamicMember keyPath: KeyPath<State, U>) -> U {
         state[keyPath: keyPath]
     }
@@ -95,3 +118,17 @@ extension Publisher where Self.Failure == Never {
 }
 
 public typealias StoreOf<F: Feature> = Store<F.State, F.Event>
+
+extension Store: Equatable {
+    public static func == (lhs: Store, rhs: Store) -> Bool {
+        lhs === rhs
+    }
+}
+
+extension Store: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
+}
+
+extension Store: Identifiable {}
