@@ -2,6 +2,8 @@
 
 import ComposableArchitecture
 
-extension InMemoryKey where Value == RecognitionFeature.State {
-    package static var recognitionState: Self { .init(#function) }
+extension PersistenceKey where Self == InMemoryKey<RecognitionFeature.State> {
+    package static var recognitionState: Self {
+        inMemory(#function)
+    }
 }

@@ -10,12 +10,12 @@ let package = Package(
     platforms: [.iOS(.v16), .macOS(.v10_15)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
-        .library(name: "UserLingua", targets: ["UserLingua"]),
-        .library(name: "CombineFeedback", targets: ["CombineFeedback"])
+        .library(name: "UserLingua", targets: ["UserLingua"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/apple/swift-syntax", "509.0.0" ..< "511.0.0")
+        .package(url: "https://github.com/apple/swift-syntax", "509.0.0" ..< "511.0.0"),
+        .package(url: "https://github.com/apple/swift-collections", from: "1.1.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -35,7 +35,7 @@ let package = Package(
         .target(
             name: "Core",
             dependencies: [
-                "CombineFeedback"
+                "ComposableArchitecture"
             ]
         ),
         .target(
@@ -68,6 +68,12 @@ let package = Package(
             dependencies: []
         ),
         .target(
+            name: "CustomDump",
+            dependencies: [
+                "XCTestDynamicOverlay"
+            ]
+        ),
+        .target(
             name: "XCTestDynamicOverlay",
             dependencies: []
         ),
@@ -78,10 +84,56 @@ let package = Package(
             ]
         ),
         .target(
-            name: "CombineFeedback",
+            name: "IdentifiedCollections",
+            dependencies: [
+                .product(name: "OrderedCollections", package: "swift-collections")
+            ]
+        ),
+        .target(
+            name: "ConcurrencyExtras"
+        ),
+        .target(
+            name: "SwiftUINavigation",
+            dependencies: [
+                "SwiftUINavigationCore",
+                "CasePaths"
+            ]
+        ),
+        .target(
+            name: "SwiftUINavigationCore",
+            dependencies: [
+                "CustomDump",
+                "XCTestDynamicOverlay"
+            ]
+        ),
+        .target(
+            name: "Dependencies",
+            dependencies: [
+                "Clocks",
+                "CombineSchedulers",
+                "ConcurrencyExtras",
+                "XCTestDynamicOverlay"
+            ]
+        ),
+        .target(
+            name: "Clocks",
+            dependencies: [
+                "ConcurrencyExtras",
+                "XCTestDynamicOverlay"
+            ]
+        ),
+        .target(
+            name: "ComposableArchitecture",
             dependencies: [
                 "CasePaths",
-                "CombineSchedulers"
+                "CombineSchedulers",
+                "ConcurrencyExtras",
+                "CustomDump",
+                "Dependencies",
+                "IdentifiedCollections",
+                "SwiftUINavigationCore",
+                "XCTestDynamicOverlay",
+                .product(name: "OrderedCollections", package: "swift-collections")
             ]
         ),
         .target(

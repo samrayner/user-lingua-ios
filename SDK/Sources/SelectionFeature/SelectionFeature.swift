@@ -18,7 +18,7 @@ package struct SelectionFeature {
 
     @ObservableState
     package struct State: Equatable {
-        @Shared(InMemoryKey.recognitionState) package var recognition = .init()
+        @Shared(.recognitionState) package var recognition = .init()
         var recognizedStrings: [RecognizedString]?
 
         @Presents package var inspection: InspectionFeature.State?

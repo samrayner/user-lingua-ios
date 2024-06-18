@@ -72,7 +72,7 @@ struct UpdateLibs: AsyncParsableCommand {
             .package(url: "https://github.com/klassen-software-solutions/KSSDiff", exact: version)
         )
         let kssDiff = kssDiffSource.appending(path: "KSSDiff-\(version)/Sources/KSSDiff", directoryHint: .isDirectory)
-        let kssDiffDestination = currentDir.appendingPathComponent("../SDK/Sources/Lib_KSSDiff")
+        let kssDiffDestination = currentDir.appendingPathComponent("../SDK/Sources/KSSDiff")
 
         try? fileManager.removeItem(at: kssDiffDestination)
         try fileManager.copyItem(
@@ -87,58 +87,228 @@ struct UpdateLibs: AsyncParsableCommand {
     }
 
     private func installCasePaths(version: String) async throws {
-        let source = try await downloadLibrary(
+        let unzipped = try await downloadLibrary(
             .package(url: "https://github.com/pointfreeco/swift-case-paths", exact: version)
         )
-        let casePaths = source.appending(path: "swift-case-paths-\(version)/Sources/CasePaths", directoryHint: .isDirectory)
-        let destination = currentDir.appendingPathComponent("../SDK/Sources/Lib_CasePaths")
+        let source = unzipped.appending(path: "swift-case-paths-\(version)/Sources/CasePaths", directoryHint: .isDirectory)
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/CasePaths")
+
+        try? fileManager.removeItem(at: source.appendingPathComponent("Macros.swift"))
+        try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
 
         try? fileManager.removeItem(at: destination)
         try fileManager.copyItem(
-            at: casePaths,
+            at: source,
             to: destination
         )
 
-        try editSwiftFiles(at: destination) { swift in
-            swift = swift.replacingOccurrences(of: " CasePaths.", with: " Lib_CasePaths.")
+        try editSwiftFiles(at: destination) { _ in
+            // do nothing
         }
     }
 
-    private func installMobius(version: String) async throws {
-        let source = try await downloadLibrary(
-            .package(url: "https://github.com/spotify/Mobius.swift", exact: version)
+    private func installCombineSchedulers(version: String) async throws {
+        let unzipped = try await downloadLibrary(
+            .package(url: "https://github.com/pointfreeco/combine-schedulers", exact: version)
         )
-        .appending(path: "Mobius.swift-\(version)", directoryHint: .isDirectory)
+        let source = unzipped.appending(path: "combine-schedulers-\(version)/Sources/CombineSchedulers", directoryHint: .isDirectory)
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/CombineSchedulers")
 
-        let mobiusCore = source.appending(path: "MobiusCore", directoryHint: .isDirectory)
-        let mobiusExtras = source.appending(path: "MobiusExtras", directoryHint: .isDirectory)
-
-        let destination = currentDir.appendingPathComponent("../SDK/Sources/Lib_Mobius")
+        try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
 
         try? fileManager.removeItem(at: destination)
-        try fileManager.createDirectory(at: destination, withIntermediateDirectories: true)
+        try fileManager.copyItem(
+            at: source,
+            to: destination
+        )
 
-        for source in [mobiusCore, mobiusExtras] {
-            try fileManager.copyItem(
-                at: source.appending(
-                    path: "Source",
-                    directoryHint: .isDirectory
-                ),
-                to: destination.appending(path: source.lastPathComponent)
-            )
+        try editSwiftFiles(at: destination) { _ in
+            // do nothing
         }
+    }
 
-        try editSwiftFiles(at: destination) { swift in
-            swift = swift.replacingOccurrences(of: "import MobiusCore", with: "")
-            swift = swift.replacingOccurrences(of: "import CasePaths", with: "import Lib_CasePaths")
-            swift = swift.replacingOccurrences(of: " CasePaths.", with: " Lib_CasePaths.")
-            swift = swift.replacingOccurrences(of: " MobiusCore.", with: " Lib_Mobius.")
+    private func installConcurrencyExtras(version: String) async throws {
+        let unzipped = try await downloadLibrary(
+            .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", exact: version)
+        )
+        let source = unzipped.appending(path: "swift-concurrency-extras-\(version)/Sources/ConcurrencyExtras", directoryHint: .isDirectory)
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/ConcurrencyExtras")
+
+        try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
+
+        try? fileManager.removeItem(at: destination)
+        try fileManager.copyItem(
+            at: source,
+            to: destination
+        )
+
+        try editSwiftFiles(at: destination) { _ in
+            // do nothing
+        }
+    }
+
+    private func installCustomDump(version: String) async throws {
+        let unzipped = try await downloadLibrary(
+            .package(url: "https://github.com/pointfreeco/swift-custom-dump", exact: version)
+        )
+        let source = unzipped.appending(path: "swift-custom-dump-\(version)/Sources/CustomDump", directoryHint: .isDirectory)
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/CustomDump")
+
+        try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
+
+        try? fileManager.removeItem(at: destination)
+        try fileManager.copyItem(
+            at: source,
+            to: destination
+        )
+
+        try editSwiftFiles(at: destination) { _ in
+            // do nothing
+        }
+    }
+
+    private func installDependencies(version: String) async throws {
+        let unzipped = try await downloadLibrary(
+            .package(url: "https://github.com/pointfreeco/swift-dependencies", exact: version)
+        )
+        let source = unzipped.appending(path: "swift-dependencies-\(version)/Sources/Dependencies", directoryHint: .isDirectory)
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/Dependencies")
+
+        try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
+
+        try? fileManager.removeItem(at: destination)
+        try fileManager.copyItem(
+            at: source,
+            to: destination
+        )
+
+        try editSwiftFiles(at: destination) { _ in
+            // do nothing
+        }
+    }
+
+    private func installIdentifiedCollections(version: String) async throws {
+        let unzipped = try await downloadLibrary(
+            .package(url: "https://github.com/pointfreeco/swift-identified-collections", exact: version)
+        )
+        let source = unzipped.appending(
+            path: "swift-identified-collections-\(version)/Sources/IdentifiedCollections",
+            directoryHint: .isDirectory
+        )
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/IdentifiedCollections")
+
+        try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
+
+        try? fileManager.removeItem(at: destination)
+        try fileManager.copyItem(
+            at: source,
+            to: destination
+        )
+
+        try editSwiftFiles(at: destination) { _ in
+            // do nothing
+        }
+    }
+
+    private func installSwiftUINavigation(version: String) async throws {
+        let unzipped = try await downloadLibrary(
+            .package(url: "https://github.com/pointfreeco/swiftui-navigation", exact: version)
+        )
+        for sourcePath in ["SwiftUINavigation", "SwiftUINavigationCore"] {
+            let source = unzipped.appending(path: "swiftui-navigation-\(version)/Sources/\(sourcePath)", directoryHint: .isDirectory)
+            let destination = currentDir.appendingPathComponent("../SDK/Sources/\(sourcePath)")
+
+            try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
+
+            try? fileManager.removeItem(at: destination)
+            try fileManager.copyItem(
+                at: source,
+                to: destination
+            )
+
+            try editSwiftFiles(at: destination) { _ in
+                // do nothing
+            }
+        }
+    }
+
+    private func installXCTestDynamicOverlay(version: String) async throws {
+        let unzipped = try await downloadLibrary(
+            .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", exact: version)
+        )
+        let source = unzipped.appending(path: "xctest-dynamic-overlay-\(version)/Sources/XCTestDynamicOverlay", directoryHint: .isDirectory)
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/XCTestDynamicOverlay")
+
+        try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
+
+        try? fileManager.removeItem(at: destination)
+        try fileManager.copyItem(
+            at: source,
+            to: destination
+        )
+
+        try editSwiftFiles(at: destination) { _ in
+            // do nothing
+        }
+    }
+
+    private func installClocks(version: String) async throws {
+        let unzipped = try await downloadLibrary(
+            .package(url: "https://github.com/pointfreeco/swift-clocks", exact: version)
+        )
+        let source = unzipped.appending(path: "swift-clocks-\(version)/Sources/Clocks", directoryHint: .isDirectory)
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/Clocks")
+
+        try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
+
+        try? fileManager.removeItem(at: destination)
+        try fileManager.copyItem(
+            at: source,
+            to: destination
+        )
+
+        try editSwiftFiles(at: destination) { _ in
+            // do nothing
+        }
+    }
+
+    private func installComposableArchitecture(version: String) async throws {
+        let unzipped = try await downloadLibrary(
+            .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: version)
+        )
+        let source = unzipped.appending(
+            path: "swift-composable-architecture-\(version)/Sources/ComposableArchitecture",
+            directoryHint: .isDirectory
+        )
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/ComposableArchitecture")
+
+        try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
+        try? fileManager.removeItem(at: source.appendingPathComponent("Macros.swift"))
+
+        try? fileManager.removeItem(at: destination)
+        try fileManager.copyItem(
+            at: source,
+            to: destination
+        )
+
+        try editSwiftFiles(at: destination) { _ in
+            // do nothing
         }
     }
 
     mutating func run() async throws {
         try await installKSSDiff(version: "3.0.1")
-        try await installCasePaths(version: "0.10.1")
-        try await installMobius(version: "0.5.2")
+
+        // TCA
+        try await installCasePaths(version: "1.3.3")
+        try await installCombineSchedulers(version: "1.0.0")
+        try await installConcurrencyExtras(version: "1.1.0")
+        try await installCustomDump(version: "1.3.0")
+        try await installDependencies(version: "1.2.2")
+        try await installIdentifiedCollections(version: "1.0.1")
+        try await installSwiftUINavigation(version: "1.3.0")
+        try await installXCTestDynamicOverlay(version: "1.1.2")
+        try await installClocks(version: "1.0.2")
+        try await installComposableArchitecture(version: "1.11.1")
     }
 }

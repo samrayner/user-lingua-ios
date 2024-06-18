@@ -1,7 +1,16 @@
 --exclude **/*.generated.swift
 --exclude SDK/Sources/KSSDiff
 --exclude SDK/Sources/CasePaths
---exclude SDK/Sources/CombineFeedback
+--exclude SDK/Sources/Clocks
+--exclude SDK/Sources/CombineSchedulers
+--exclude SDK/Sources/ComposableArchitecture
+--exclude SDK/Sources/ConcurrencyExtras
+--exclude SDK/Sources/CustomDump
+--exclude SDK/Sources/Dependencies
+--exclude SDK/Sources/IdentifiedCollections
+--exclude SDK/Sources/SwiftUINavigation
+--exclude SDK/Sources/SwiftUINavigationCore
+--exclude SDK/Sources/XCTestDynamicOverlay
 
 --commas inline
 --funcattributes prev-line

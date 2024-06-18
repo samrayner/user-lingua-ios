@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E8639B6B2B7A532000685EEA /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8639B6A2B7A532000685EEA /* UserLingua */; };
 		E8639B6D2B7A53BA00685EEA /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E8639B6C2B7A53BA00685EEA /* Localizable.xcstrings */; };
 		E8639B6F2B7A545400685EEA /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8639B6E2B7A545400685EEA /* TabBarController.swift */; };
 		E8639B712B7A54C000685EEA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8639B702B7A54C000685EEA /* ContentView.swift */; };
+		E8866DF92C21E4870077649D /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8866DF82C21E4870077649D /* UserLingua */; };
 		E8C95F6B2B7A516B00FDC7C4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6A2B7A516B00FDC7C4 /* AppDelegate.swift */; };
 		E8C95F6D2B7A516B00FDC7C4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6C2B7A516B00FDC7C4 /* SceneDelegate.swift */; };
 		E8C95F6F2B7A516B00FDC7C4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6E2B7A516B00FDC7C4 /* ViewController.swift */; };
@@ -39,7 +39,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8639B6B2B7A532000685EEA /* UserLingua in Frameworks */,
+				E8866DF92C21E4870077649D /* UserLingua in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,7 +106,7 @@
 			);
 			name = UserLinguaExample;
 			packageProductDependencies = (
-				E8639B6A2B7A532000685EEA /* UserLingua */,
+				E8866DF82C21E4870077649D /* UserLingua */,
 			);
 			productName = UserLinguaExample;
 			productReference = E8C95F672B7A516B00FDC7C4 /* UserLinguaExample.app */;
@@ -420,7 +420,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E8639B6A2B7A532000685EEA /* UserLingua */ = {
+		E8866DF82C21E4870077649D /* UserLingua */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLingua;
 		};

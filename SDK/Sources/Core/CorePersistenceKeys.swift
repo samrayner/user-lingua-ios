@@ -2,6 +2,8 @@
 
 import ComposableArchitecture
 
-extension InMemoryKey where Value == Configuration {
-    package static var configuration: Self { .init(#function) }
+extension PersistenceKey where Self == InMemoryKey<String> {
+    package static var configuration: Self {
+        inMemory(#function)
+    }
 }

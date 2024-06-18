@@ -46,9 +46,9 @@ package struct InspectionFeature {
         package internal(set) var recognizedString: RecognizedString
         var suggestionString: String
         package internal(set) var isTransitioning = true
-        @Shared(InMemoryKey.recognitionState) var recognition = .init()
-        @Shared(InMemoryKey.configuration) var configuration = .init()
-        @Shared(AppStorageKey.previewMode) var previewMode: PreviewMode = .app
+        @Shared(.recognitionState) var recognition = .init()
+        @Shared(.configuration) var configuration = .init()
+        @Shared(.previewMode) var previewMode: PreviewMode = .app
         var focusedField: Field?
         var keyboardHeight: CGFloat = 0
         var appFacade: UIImage?
