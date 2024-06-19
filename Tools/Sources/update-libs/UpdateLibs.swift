@@ -90,20 +90,22 @@ struct UpdateLibs: AsyncParsableCommand {
         let unzipped = try await downloadLibrary(
             .package(url: "https://github.com/pointfreeco/swift-case-paths", exact: version)
         )
-        let source = unzipped.appending(path: "swift-case-paths-\(version)/Sources/CasePaths", directoryHint: .isDirectory)
-        let destination = currentDir.appendingPathComponent("../SDK/Sources/CasePaths")
 
-        try? fileManager.removeItem(at: source.appendingPathComponent("Macros.swift"))
-        try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
+        for sourcePath in ["CasePaths", "CasePathsMacros"] {
+            let source = unzipped.appending(path: "swift-case-paths-\(version)/Sources/\(sourcePath)", directoryHint: .isDirectory)
+            let destination = currentDir.appendingPathComponent("../SDK/Sources/\(sourcePath)")
 
-        try? fileManager.removeItem(at: destination)
-        try fileManager.copyItem(
-            at: source,
-            to: destination
-        )
+            try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
 
-        try editSwiftFiles(at: destination) { _ in
-            // do nothing
+            try? fileManager.removeItem(at: destination)
+            try fileManager.copyItem(
+                at: source,
+                to: destination
+            )
+
+            try editSwiftFiles(at: destination) { _ in
+                // do nothing
+            }
         }
     }
 
@@ -276,23 +278,24 @@ struct UpdateLibs: AsyncParsableCommand {
         let unzipped = try await downloadLibrary(
             .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: version)
         )
-        let source = unzipped.appending(
-            path: "swift-composable-architecture-\(version)/Sources/ComposableArchitecture",
-            directoryHint: .isDirectory
-        )
-        let destination = currentDir.appendingPathComponent("../SDK/Sources/ComposableArchitecture")
+        for sourcePath in ["ComposableArchitecture", "ComposableArchitectureMacros"] {
+            let source = unzipped.appending(
+                path: "swift-composable-architecture-\(version)/Sources/\(sourcePath)",
+                directoryHint: .isDirectory
+            )
+            let destination = currentDir.appendingPathComponent("../SDK/Sources/\(sourcePath)")
 
-        try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
-        try? fileManager.removeItem(at: source.appendingPathComponent("Macros.swift"))
+            try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
 
-        try? fileManager.removeItem(at: destination)
-        try fileManager.copyItem(
-            at: source,
-            to: destination
-        )
+            try? fileManager.removeItem(at: destination)
+            try fileManager.copyItem(
+                at: source,
+                to: destination
+            )
 
-        try editSwiftFiles(at: destination) { _ in
-            // do nothing
+            try editSwiftFiles(at: destination) { _ in
+                // do nothing
+            }
         }
     }
 
