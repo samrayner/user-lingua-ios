@@ -10,6 +10,7 @@ excluded: # Paths to ignore during linting. Takes precedence over `included`.
   - SDK/Sources/CustomDump
   - SDK/Sources/Dependencies
   - SDK/Sources/IdentifiedCollections
+  - SDK/Sources/Perception
   - SDK/Sources/SwiftUINavigation
   - SDK/Sources/SwiftUINavigationCore
   - SDK/Sources/XCTestDynamicOverlay

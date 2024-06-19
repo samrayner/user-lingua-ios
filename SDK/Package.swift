@@ -113,6 +113,7 @@ let package = Package(
                 "CustomDump",
                 "Dependencies",
                 "IdentifiedCollections",
+                "Perception",
                 "SwiftUINavigationCore",
                 "XCTestDynamicOverlay",
                 .product(name: "OrderedCollections", package: "swift-collections"),
@@ -154,6 +155,13 @@ let package = Package(
             name: "IdentifiedCollections",
             dependencies: [
                 .product(name: "OrderedCollections", package: "swift-collections")
+            ]
+        ),
+        .target(
+            name: "Perception",
+            dependencies: [
+                "PerceptionMacros",
+                "XCTestDynamicOverlay"
             ]
         ),
         .target(
@@ -201,6 +209,13 @@ let package = Package(
         ),
         .macro(
             name: "CasePathsMacros",
+            dependencies: [
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
+            ]
+        ),
+        .macro(
+            name: "PerceptionMacros",
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax")

@@ -8,6 +8,7 @@
 --exclude SDK/Sources/CustomDump
 --exclude SDK/Sources/Dependencies
 --exclude SDK/Sources/IdentifiedCollections
+--exclude SDK/Sources/Perception
 --exclude SDK/Sources/SwiftUINavigation
 --exclude SDK/Sources/SwiftUINavigationCore
 --exclude SDK/Sources/XCTestDynamicOverlay

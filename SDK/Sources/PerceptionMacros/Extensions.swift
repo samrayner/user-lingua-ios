@@ -1,0 +1,270 @@
+// Extensions.swift
+
+import SwiftDiagnostics
+import SwiftOperators
+import SwiftSyntax
+import SwiftSyntaxBuilder
+import SwiftSyntaxMacros
+
+extension VariableDeclSyntax {
+    var identifierPattern: IdentifierPatternSyntax? {
+        bindings.first?.pattern.as(IdentifierPatternSyntax.self)
+    }
+
+    var isInstance: Bool {
+        for modifier in modifiers {
+            for token in modifier.tokens(viewMode: .all) {
+                if token.tokenKind == .keyword(.static) || token.tokenKind == .keyword(.class) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
+    var identifier: TokenSyntax? {
+        identifierPattern?.identifier
+    }
+
+    var type: TypeSyntax? {
+        bindings.first?.typeAnnotation?.type
+    }
+
+    func accessorsMatching(_ predicate: (TokenKind) -> Bool) -> [AccessorDeclSyntax] {
+        let patternBindings = bindings.compactMap { binding in
+            binding
+        }
+        let accessors: [AccessorDeclListSyntax.Element] = patternBindings.compactMap { patternBinding in
+            switch patternBinding.accessorBlock?.accessors {
+            case let .accessors(accessors):
+                accessors
+            default:
+                nil
+            }
+        }.flatMap { $0 }
+        return accessors.compactMap { accessor in
+            predicate(accessor.accessorSpecifier.tokenKind) ? accessor : nil
+        }
+    }
+
+    var willSetAccessors: [AccessorDeclSyntax] {
+        accessorsMatching { $0 == .keyword(.willSet) }
+    }
+
+    var didSetAccessors: [AccessorDeclSyntax] {
+        accessorsMatching { $0 == .keyword(.didSet) }
+    }
+
+    var isComputed: Bool {
+        if accessorsMatching({ $0 == .keyword(.get) }).count > 0 {
+            true
+        } else {
+            bindings.contains { binding in
+                if case .getter = binding.accessorBlock?.accessors {
+                    true
+                } else {
+                    false
+                }
+            }
+        }
+    }
+
+    var isImmutable: Bool {
+        bindingSpecifier.tokenKind == .keyword(.let)
+    }
+
+    func isEquivalent(to other: VariableDeclSyntax) -> Bool {
+        if isInstance != other.isInstance {
+            return false
+        }
+        return identifier?.text == other.identifier?.text
+    }
+
+    var initializer: InitializerClauseSyntax? {
+        bindings.first?.initializer
+    }
+
+    func hasMacroApplication(_ name: String) -> Bool {
+        for attribute in attributes {
+            switch attribute {
+            case let .attribute(attr):
+                if attr.attributeName.tokens(viewMode: .all).map({ $0.tokenKind }) == [.identifier(name)] {
+                    return true
+                }
+            default:
+                break
+            }
+        }
+        return false
+    }
+}
+
+extension TypeSyntax {
+    var identifier: String? {
+        for token in tokens(viewMode: .all) {
+            switch token.tokenKind {
+            case let .identifier(identifier):
+                return identifier
+            default:
+                break
+            }
+        }
+        return nil
+    }
+
+    func genericSubstitution(_ parameters: GenericParameterListSyntax?) -> String? {
+        var genericParameters = [String: TypeSyntax?]()
+        if let parameters {
+            for parameter in parameters {
+                genericParameters[parameter.name.text] = parameter.inheritedType
+            }
+        }
+        var iterator = asProtocol(TypeSyntaxProtocol.self).tokens(viewMode: .sourceAccurate)
+            .makeIterator()
+        guard let base = iterator.next() else {
+            return nil
+        }
+
+        if let genericBase = genericParameters[base.text] {
+            if let text = genericBase?.identifier {
+                return "some " + text
+            } else {
+                return nil
+            }
+        }
+        var substituted = base.text
+
+        while let token = iterator.next() {
+            switch token.tokenKind {
+            case .leftAngle:
+                substituted += "<"
+            case .rightAngle:
+                substituted += ">"
+            case .comma:
+                substituted += ","
+            case let .identifier(identifier):
+                let type: TypeSyntax = "\(raw: identifier)"
+                guard let substitutedType = type.genericSubstitution(parameters) else {
+                    return nil
+                }
+                substituted += substitutedType
+            default:
+                // ignore?
+                break
+            }
+        }
+
+        return substituted
+    }
+}
+
+extension FunctionDeclSyntax {
+    var isInstance: Bool {
+        for modifier in modifiers {
+            for token in modifier.tokens(viewMode: .all) {
+                if token.tokenKind == .keyword(.static) || token.tokenKind == .keyword(.class) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
+    struct SignatureStandin: Equatable {
+        var isInstance: Bool
+        var identifier: String
+        var parameters: [String]
+        var returnType: String
+    }
+
+    var signatureStandin: SignatureStandin {
+        var parameters = [String]()
+        for parameter in signature.parameterClause.parameters {
+            parameters.append(
+                parameter.firstName.text + ":"
+                    + (parameter.type.genericSubstitution(genericParameterClause?.parameters) ?? "")
+            )
+        }
+        let returnType =
+            signature.returnClause?.type.genericSubstitution(genericParameterClause?.parameters) ?? "Void"
+        return SignatureStandin(
+            isInstance: isInstance, identifier: name.text, parameters: parameters, returnType: returnType
+        )
+    }
+
+    func isEquivalent(to other: FunctionDeclSyntax) -> Bool {
+        signatureStandin == other.signatureStandin
+    }
+}
+
+extension DeclGroupSyntax {
+    var memberFunctionStandins: [FunctionDeclSyntax.SignatureStandin] {
+        var standins = [FunctionDeclSyntax.SignatureStandin]()
+        for member in memberBlock.members {
+            if let function = member.decl.as(FunctionDeclSyntax.self) {
+                standins.append(function.signatureStandin)
+            }
+        }
+        return standins
+    }
+
+    func hasMemberFunction(equivalentTo other: FunctionDeclSyntax) -> Bool {
+        for member in memberBlock.members {
+            if let function = member.decl.as(FunctionDeclSyntax.self) {
+                if function.isEquivalent(to: other) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    func hasMemberProperty(equivalentTo other: VariableDeclSyntax) -> Bool {
+        for member in memberBlock.members {
+            if let variable = member.decl.as(VariableDeclSyntax.self) {
+                if variable.isEquivalent(to: other) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    var definedVariables: [VariableDeclSyntax] {
+        memberBlock.members.compactMap { member in
+            if let variableDecl = member.decl.as(VariableDeclSyntax.self) {
+                return variableDecl
+            }
+            return nil
+        }
+    }
+
+    func addIfNeeded(_ decl: DeclSyntax?, to declarations: inout [DeclSyntax]) {
+        guard let decl else { return }
+        if let fn = decl.as(FunctionDeclSyntax.self) {
+            if !hasMemberFunction(equivalentTo: fn) {
+                declarations.append(decl)
+            }
+        } else if let property = decl.as(VariableDeclSyntax.self) {
+            if !hasMemberProperty(equivalentTo: property) {
+                declarations.append(decl)
+            }
+        }
+    }
+
+    var isClass: Bool {
+        self.is(ClassDeclSyntax.self)
+    }
+
+    var isActor: Bool {
+        self.is(ActorDeclSyntax.self)
+    }
+
+    var isEnum: Bool {
+        self.is(EnumDeclSyntax.self)
+    }
+
+    var isStruct: Bool {
+        self.is(StructDeclSyntax.self)
+    }
+}

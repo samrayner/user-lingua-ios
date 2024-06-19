@@ -299,6 +299,31 @@ struct UpdateLibs: AsyncParsableCommand {
         }
     }
 
+    private func installPerception(version: String) async throws {
+        let unzipped = try await downloadLibrary(
+            .package(url: "https://github.com/pointfreeco/swift-perception", exact: version)
+        )
+        for sourcePath in ["Perception", "PerceptionMacros"] {
+            let source = unzipped.appending(
+                path: "swift-perception-\(version)/Sources/\(sourcePath)",
+                directoryHint: .isDirectory
+            )
+            let destination = currentDir.appendingPathComponent("../SDK/Sources/\(sourcePath)")
+
+            try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
+
+            try? fileManager.removeItem(at: destination)
+            try fileManager.copyItem(
+                at: source,
+                to: destination
+            )
+
+            try editSwiftFiles(at: destination) { _ in
+                // do nothing
+            }
+        }
+    }
+
     mutating func run() async throws {
         try await installKSSDiff(version: "3.0.1")
 
@@ -313,5 +338,6 @@ struct UpdateLibs: AsyncParsableCommand {
         try await installXCTestDynamicOverlay(version: "1.1.2")
         try await installClocks(version: "1.0.2")
         try await installComposableArchitecture(version: "1.11.1")
+        try await installPerception(version: "1.1.7")
     }
 }
