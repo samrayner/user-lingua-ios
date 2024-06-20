@@ -8,7 +8,7 @@ import SwiftUI
 import Theme
 
 struct TextPreviewFeatureView: View {
-    @ObservedObject private(set) var configuration: Configuration = .init() // TODO: inject configuration
+    @EnvironmentObject var configuration: Configuration
     @Environment(\.colorScheme) private var colorScheme
     private let store: StoreOf<InspectionFeature>
     private let systemLocale: Locale

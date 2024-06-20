@@ -4,14 +4,14 @@ import Foundation
 import SwiftUI
 
 // sourcery: AutoMockable
-public protocol ConfigurationProtocol {
+public protocol ConfigurationProtocol: ObservableObject {
     var automaticallyOptInTextViews: Bool { get set }
     var appSupportsDynamicType: Bool { get set }
     var appSupportsDarkMode: Bool { get set }
     var baseLocale: Locale { get set }
 }
 
-public final class Configuration: ConfigurationProtocol, ObservableObject {
+public final class Configuration: ConfigurationProtocol {
     @Published public var automaticallyOptInTextViews: Bool
     @Published public var appSupportsDynamicType: Bool
     @Published public var appSupportsDarkMode: Bool

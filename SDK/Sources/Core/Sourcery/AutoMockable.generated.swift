@@ -35,6 +35,34 @@ import SwiftUI
 
 
 
+public class ConfigurationProtocolMock: ConfigurationProtocol {
+
+    public init() {}
+
+    public var automaticallyOptInTextViews: Bool {
+        get { return underlyingAutomaticallyOptInTextViews }
+        set(value) { underlyingAutomaticallyOptInTextViews = value }
+    }
+    public var underlyingAutomaticallyOptInTextViews: (Bool)!
+    public var appSupportsDynamicType: Bool {
+        get { return underlyingAppSupportsDynamicType }
+        set(value) { underlyingAppSupportsDynamicType = value }
+    }
+    public var underlyingAppSupportsDynamicType: (Bool)!
+    public var appSupportsDarkMode: Bool {
+        get { return underlyingAppSupportsDarkMode }
+        set(value) { underlyingAppSupportsDarkMode = value }
+    }
+    public var underlyingAppSupportsDarkMode: (Bool)!
+    public var baseLocale: Locale {
+        get { return underlyingBaseLocale }
+        set(value) { underlyingBaseLocale = value }
+    }
+    public var underlyingBaseLocale: (Locale)!
+
+
+
+}
 package class ContentSizeCategoryServiceProtocolMock: ContentSizeCategoryServiceProtocol {
 
 

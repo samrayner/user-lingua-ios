@@ -12,7 +12,7 @@ public final class UserLingua {
     public static let shared = UserLingua()
 
     public let viewModel = UserLinguaObservable()
-    public private(set) var configuration: ConfigurationProtocol = Configuration()
+    public private(set) var configuration: any ConfigurationProtocol = Configuration()
     private let windowService: WindowServiceProtocol = WindowService()
     private let contentSizeCategoryService: ContentSizeCategoryServiceProtocol = ContentSizeCategoryService()
     private let suggestionsRepository: SuggestionsRepositoryProtocol = SuggestionsRepository()
@@ -37,7 +37,10 @@ public final class UserLingua {
     }
 
     private init() {
-        windowService.setRootView(RootFeatureView(store: store))
+        windowService.setRootView(
+            RootFeatureView(store: store)
+                .environmentObject(configuration)
+        )
     }
 
     var isTakingScreenshot: Bool {

@@ -7,7 +7,7 @@ import SwiftUI
 import Theme
 
 struct AppPreviewFeatureView: View {
-    @ObservedObject private(set) var configuration: Configuration = .init() // TODO: inject configuration
+    @EnvironmentObject var configuration: Configuration
     private let store: StoreOf<InspectionFeature>
 
     init(store: StoreOf<InspectionFeature>) {
