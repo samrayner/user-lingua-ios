@@ -99,7 +99,7 @@ package enum RecognitionFeature: Feature {
                         send(.didPrepareApp(screenshot: screenshot))
                     }
                 case let .recognizingStrings(screenshot):
-                    return .observe(
+                    return .publish(
                         dependencies.stringRecognizer
                             .recognizeStrings(in: screenshot)
                             .mapError(Error.recognitionFailed)

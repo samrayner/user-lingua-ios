@@ -108,7 +108,7 @@ class StoreBoxBase<State, Event> {
     }
 
     final func scoped<S, E>(
-        to scope: WritableKeyPath<State, S>,
+        to scope: KeyPath<State, S>,
         event: @escaping (E) -> Event
     ) -> StoreBoxBase<S, E> {
         scoped(
@@ -120,7 +120,7 @@ class StoreBoxBase<State, Event> {
     }
 
     func scoped<S, E>(
-        optional scope: WritableKeyPath<State, S?>,
+        optional scope: KeyPath<State, S?>,
         event: @escaping (E) -> Event
     ) -> StoreBoxBase<S, E>? {
         guard let childState = _current[keyPath: scope] else { return nil }

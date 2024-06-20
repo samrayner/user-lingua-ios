@@ -105,7 +105,7 @@ package enum SelectionFeature: Feature {
                 }
             },
             .event(/Event.observeOrientation) { _, _, dependencies in
-                .observe(
+                .publish(
                     dependencies.orientationService
                         .orientationDidChange()
                         .map(Event.orientationDidChange)

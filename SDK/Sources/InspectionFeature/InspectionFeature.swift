@@ -52,7 +52,7 @@ package enum InspectionFeature: Feature {
         var suggestionValue: String
         var presentation: PresentationState
         var recognition = RecognitionFeature.State()
-        var configuration = Configuration()
+        var configuration = Configuration() // TODO: Move to global reference type
         var previewMode: PreviewMode = .app
         var focusedField: Field?
         var keyboardHeight: CGFloat = 0
@@ -244,7 +244,7 @@ package enum InspectionFeature: Feature {
                 return .none
             },
             .event(/Event.observeOrientation) { _, _, dependencies in
-                .observe(
+                .publish(
                     dependencies.orientationService
                         .orientationDidChange()
                         .map { _ in .recognition(.start) }
@@ -252,7 +252,7 @@ package enum InspectionFeature: Feature {
                 )
             },
             .event(/Event.observeKeyboardWillChangeFrame) { _, _, dependencies in
-                .observe(
+                .publish(
                     dependencies.notificationCenter
                         .publisher(for: .swizzled(UIResponder.keyboardWillChangeFrameNotification))
                         .compactMap { KeyboardNotification(userInfo: $0.userInfo) }
@@ -274,7 +274,7 @@ package enum InspectionFeature: Feature {
                 return .none
             },
             .event(/Event.onAppear) { _, _, _ in
-                .observe(
+                .publish(
                     Publishers.Merge(
                         [Event.observeKeyboardWillChangeFrame, Event.observeOrientation].publisher,
                         Just(Event.didAppear).delay(for: .seconds(.AnimationDuration.screenTransition), scheduler: RunLoop.main)

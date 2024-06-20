@@ -64,21 +64,21 @@ open class Store<State, Event> {
     }
 
     public func scoped<S, E>(
-        to scope: WritableKeyPath<State, S>,
+        to scope: KeyPath<State, S>,
         event: @escaping (E) -> Event
     ) -> Store<S, E> {
         Store<S, E>(box: box.scoped(to: scope, event: event))
     }
 
     public func scoped<S, E>(
-        to scope: WritableKeyPath<State, S?>,
+        to scope: KeyPath<State, S?>,
         event: @escaping (E) -> Event
     ) -> Store<S, E>? {
         box.scoped(optional: scope, event: event).map(Store<S, E>.init(box:))
     }
 
     public func scopeBinding<S, E>(
-        get scope: WritableKeyPath<State, S?>,
+        get scope: KeyPath<State, S?>,
         set: @escaping (S?) -> Event,
         event: @escaping (E) -> Event
     ) -> Binding<Store<S, E>?> {

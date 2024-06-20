@@ -1,5 +1,6 @@
 // RootFeature.swift
 
+import CasePaths
 import CombineFeedback
 import Core
 import Foundation
@@ -9,92 +10,87 @@ import SelectionFeature
 import SwiftUI
 import Theme
 
-@Reducer
-package struct RootFeature {
-    @Dependency(WindowServiceDependency.self) var windowService
-    @Dependency(NotificationServiceDependency.self) var notificationService
-
-    let onForeground: () -> Void
-    let onBackground: () -> Void
-
-    package init(
-        onForeground: @escaping () -> Void = {},
-        onBackground: @escaping () -> Void = {}
-    ) {
-        self.onForeground = onForeground
-        self.onBackground = onBackground
+package enum RootFeature: Feature {
+    package struct Dependencies {
+        let notificationCenter: NotificationCenter
+        let windowService: any WindowServiceProtocol
+        let onForeground: () -> Void
+        let onBackground: () -> Void
     }
 
-    @Reducer(state: .equatable)
-    package enum Mode {
+    package enum State: Equatable {
         case disabled
         case recording
-        case visible(SelectionFeature)
-    }
+        case visible(SelectionFeature.State)
 
-    @ObservableState
-    package struct State: Equatable {
-        @Shared(InMemoryKey.configuration) package var configuration = .init()
-        package var mode: Mode.State = .disabled
-
-        package init() {}
-    }
-
-    package enum Action {
-        case enable
-        case disable
-        case configure(Configuration)
-        case didShake
-        case mode(Mode.Action)
-    }
-
-    enum CancelID {
-        case deviceShakeObservation
-    }
-
-    package var body: some ReducerOf<Self> {
-        Scope(state: \.mode, action: \.mode) {
-            EmptyReducer()
-                .ifCaseLet(\.visible, action: \.visible) {
-                    SelectionFeature()
-                }
-        }
-
-        Reduce { state, action in
-            switch action {
-            case .enable:
-                state.mode = .recording
-                return .run { send in
-                    for await _ in await notificationService.observe(name: .deviceDidShake) {
-                        await send(.didShake)
-                    }
-                }
-                .cancellable(id: CancelID.deviceShakeObservation)
-            case .disable:
-                state.mode = .disabled
-                return .cancel(id: CancelID.deviceShakeObservation)
-            case let .configure(configuration):
-                state.configuration = configuration
-                return .none
-            case .didShake:
-                guard state.mode == .recording else { return .none }
-                windowService.showWindow()
-                state.mode = .visible(.init())
-                onForeground()
-                return .none
-            case .mode(.visible(.delegate(.dismiss))):
-                state.mode = .recording
-                onBackground()
-                windowService.hideWindow()
-                return .none
-            case .mode:
-                return .none
+        var selection: SelectionFeature.State? {
+            switch self {
+            case let .visible(state):
+                state
+            case .disabled, .recording:
+                nil
             }
         }
+    }
+
+    package enum Event {
+        case enable
+        case disable
+        case didShake
+        case selection(SelectionFeature.Event)
+    }
+
+    package static func reducer() -> ReducerOf<Self> {
+        .combine(
+            SelectionFeature.reducer()
+                .pullback(state: /State.visible, event: /Event.selection),
+
+            ReducerOf<Self> { state, event in
+                switch event {
+                case .enable:
+                    state = .recording
+                case .disable:
+                    state = .disabled
+                case .didShake:
+                    guard state == .recording else { return }
+                    state = .visible(.init())
+                case .selection(.delegate(.dismiss)):
+                    state = .recording
+                case .selection:
+                    return
+                }
+            }
+        )
+    }
+
+    package static func feedback() -> FeedbackOf<Self> {
+        .combine(
+            .state { state, dependencies in
+                switch state {
+                case .recording:
+                    dependencies.onBackground()
+                    dependencies.windowService.hideWindow()
+                    return .publish(
+                        dependencies.notificationCenter
+                            .publisher(for: .deviceDidShake)
+                            .map { _ in .didShake }
+                            .eraseToAnyPublisher()
+                    )
+                case .visible:
+                    dependencies.windowService.showWindow()
+                    dependencies.onForeground()
+                    return .none
+                case .disabled:
+                    return .none
+                }
+            }
+        )
     }
 }
 
 package struct RootFeatureView: View {
+    typealias Event = RootFeature.Event
+
     let store: StoreOf<RootFeature>
 
     package init(store: StoreOf<RootFeature>) {
@@ -102,9 +98,9 @@ package struct RootFeatureView: View {
     }
 
     package var body: some View {
-        WithPerceptionTracking {
+        WithViewStore(store) { _ in
             ZStack {
-                if let store = store.scope(state: \.mode.visible, action: \.mode.visible) {
+                if let store = store.scoped(to: \.selection, event: Event.selection) {
                     SelectionFeatureView(store: store)
                 }
             }

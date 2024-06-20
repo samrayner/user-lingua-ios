@@ -11,17 +11,18 @@ public struct Feedback<State, Event, Dependencies> {
             }
         }
 
-        case observe(AnyPublisher<Event, Never>)
+        case publish(AnyPublisher<Event, Never>)
         case run(((Event) -> Void) -> Void)
         case none
 
         var publisher: AnyPublisher<Event, Never> {
             switch self {
-            case let .observe(publisher):
+            case let .publish(publisher):
                 return publisher
             case let .run(closure):
                 let subject = PassthroughSubject<Event, Never>()
                 closure(subject.send)
+                subject.send(completion: .finished)
                 return subject.eraseToAnyPublisher()
             case .none:
                 return Empty().eraseToAnyPublisher()
