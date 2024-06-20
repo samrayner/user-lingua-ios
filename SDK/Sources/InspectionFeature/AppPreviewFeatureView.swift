@@ -7,6 +7,7 @@ import SwiftUI
 import Theme
 
 struct AppPreviewFeatureView: View {
+    @ObservedObject private(set) var configuration: Configuration = .init() // TODO: inject configuration
     private let store: StoreOf<InspectionFeature>
 
     init(store: StoreOf<InspectionFeature>) {
@@ -19,7 +20,7 @@ struct AppPreviewFeatureView: View {
                 Spacer()
 
                 HStack(spacing: 0) {
-                    if store.configuration.appSupportsDynamicType {
+                    if configuration.appSupportsDynamicType {
                         Button(action: { store.send(.didTapDecreaseTextSize) }) {
                             Image.theme(\.decreaseTextSize)
                                 .padding(.Space.s)
@@ -31,7 +32,7 @@ struct AppPreviewFeatureView: View {
                         }
                     }
 
-                    if store.configuration.appSupportsDarkMode {
+                    if configuration.appSupportsDarkMode {
                         Button(action: { store.send(.didTapToggleDarkMode) }) {
                             Image.theme(\.toggleDarkMode)
                                 .padding(.Space.s)

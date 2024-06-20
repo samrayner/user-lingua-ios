@@ -8,6 +8,7 @@ import SwiftUI
 import Theme
 
 struct TextPreviewFeatureView: View {
+    @ObservedObject private(set) var configuration: Configuration = .init() // TODO: inject configuration
     @Environment(\.colorScheme) private var colorScheme
     private let store: StoreOf<InspectionFeature>
     private let systemLocale: Locale
@@ -32,15 +33,15 @@ struct TextPreviewFeatureView: View {
                         isExpanded: $baseIsExpanded,
                         title: Text(
                             Strings.Inspection.TextPreview.baseTitle(
-                                systemLocale.localizedString(forLanguageCode: store.configuration.baseLocale.identifier(.bcp47))
+                                systemLocale.localizedString(forLanguageCode: configuration.baseLocale.identifier(.bcp47))
                                     ?? Strings.Inspection.TextPreview.languageNameFallback,
-                                store.configuration.baseLocale.identifier(.bcp47)
+                                configuration.baseLocale.identifier(.bcp47)
                             )
                         ),
-                        content: Text(localizedValueWithHighlightedPlaceholders(locale: store.configuration.baseLocale))
+                        content: Text(localizedValueWithHighlightedPlaceholders(locale: configuration.baseLocale))
                     )
 
-                    if store.locale != store.configuration.baseLocale {
+                    if store.locale != configuration.baseLocale {
                         HorizontalRule()
 
                         TextPreviewSectionView(

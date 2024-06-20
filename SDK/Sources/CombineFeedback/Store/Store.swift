@@ -22,13 +22,13 @@ open class Store<State, Event> {
     }
 
     public init<Dependencies>(
-        initial: State,
+        initialState: State,
         feedbacks: [Feedback<State, Event, Dependencies>],
         reducer: Reducer<State, Event>,
         dependencies: Dependencies
     ) {
         self.box = RootStoreBox(
-            initial: initial,
+            initial: initialState,
             feedbacks: feedbacks,
             reducer: reducer,
             dependencies: dependencies

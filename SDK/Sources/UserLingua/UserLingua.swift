@@ -12,26 +12,20 @@ public final class UserLingua {
     public static let shared = UserLingua()
 
     public let viewModel = UserLinguaObservable()
+    public private(set) var configuration: ConfigurationProtocol = Configuration()
     private let windowService: WindowServiceProtocol = WindowService()
     private let contentSizeCategoryService: ContentSizeCategoryServiceProtocol = ContentSizeCategoryService()
     private let suggestionsRepository: SuggestionsRepositoryProtocol = SuggestionsRepository()
     private let stringsRepository: StringsRepositoryProtocol = StringsRepository()
 
-    private lazy var store: StoreOf<RootFeature> = .init(
-        initialState: .init(),
-        reducer: {
-            RootFeature(
-                onForeground: onForeground,
-                onBackground: onBackground
-            )
-        },
-        withDependencies: {
-            $0[UserLinguaObservableDependency.self] = self.viewModel
-            $0[WindowServiceDependency.self] = self.windowService
-            $0[ContentSizeCategoryServiceDependency.self] = self.contentSizeCategoryService
-            $0[SuggestionsRepositoryDependency.self] = self.suggestionsRepository
-            $0[StringsRepositoryDependency.self] = self.stringsRepository
-        }
+    private lazy var store = RootFeature.store(
+        initialState: .disabled,
+        dependencies: .init(
+            notificationCenter: .default,
+            windowService: windowService,
+            onForeground: onForeground,
+            onBackground: onBackground
+        )
     )
 
     private let stringExtractor: StringExtractorProtocol = StringExtractor()
@@ -46,31 +40,21 @@ public final class UserLingua {
         windowService.setRootView(RootFeatureView(store: store))
     }
 
-    public var configuration: Configuration {
-        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            store.configuration
-        }
-    }
-
     var isTakingScreenshot: Bool {
-        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            switch store.mode {
-            case let .visible(state):
-                state.recognition.isTakingScreenshot
-            default:
-                false
-            }
+        switch store.state {
+        case let .visible(state):
+            state.recognition.isTakingScreenshot
+        default:
+            false
         }
     }
 
     var appContentSizeCategory: UIContentSizeCategory {
-        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            switch store.mode {
-            case .visible:
-                contentSizeCategoryService.appContentSizeCategory
-            default:
-                contentSizeCategoryService.systemContentSizeCategory
-            }
+        switch store.state {
+        case .visible:
+            contentSizeCategoryService.appContentSizeCategory
+        default:
+            contentSizeCategoryService.systemContentSizeCategory
         }
     }
 
@@ -79,15 +63,11 @@ public final class UserLingua {
     }
 
     var isEnabled: Bool {
-        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            store.mode != .disabled
-        }
+        store.state != .disabled
     }
 
     var isRecording: Bool {
-        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            store.mode == .recording
-        }
+        store.state == .recording
     }
 
     public func enable() {
@@ -102,7 +82,7 @@ public final class UserLingua {
     }
 
     public func configure(_ configuration: Configuration) {
-        store.send(.configure(configuration))
+        self.configuration = configuration
     }
 
     private func onForeground() {
@@ -129,65 +109,46 @@ public final class UserLingua {
     }
 
     func processLocalizedStringKey(_ key: LocalizedStringKey) -> String {
-        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            let formattedString = stringExtractor.formattedString(
-                localizedStringKey: key,
-                tableName: nil,
-                bundle: nil,
-                comment: nil
-            )
+        let formattedString = stringExtractor.formattedString(
+            localizedStringKey: key,
+            tableName: nil,
+            bundle: nil,
+            comment: nil
+        )
 
-            if isRecording {
-                stringsRepository.record(formatted: formattedString)
-            }
-
-            return displayString(for: formattedString)
+        if isRecording {
+            stringsRepository.record(formatted: formattedString)
         }
+
+        return displayString(for: formattedString)
     }
 
     func processString(_ string: String) -> String {
-        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            if isRecording {
-                stringsRepository.record(string: string)
-            }
-
-            return displayString(for: FormattedString(string))
+        if isRecording {
+            stringsRepository.record(string: string)
         }
+
+        return displayString(for: FormattedString(string))
     }
 
     func displayString(for formattedString: FormattedString) -> String {
-        _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-            if isTakingScreenshot {
-                // if we've recorded this string, make the most detailed record
-                // uniquely recognizable in the UI by scrambling it
-                if let recordedString = stringsRepository.recordedString(formatted: formattedString) {
-                    return recordedString.recognizable
-                }
-                return formattedString.value
+        if isTakingScreenshot {
+            // if we've recorded this string, make the most detailed record
+            // uniquely recognizable in the UI by scrambling it
+            if let recordedString = stringsRepository.recordedString(formatted: formattedString) {
+                return recordedString.recognizable
             }
-
-            if case let .visible(state) = store.mode, let state = state.inspection,
-               !state.isTransitioning && state.recognizedString.value == formattedString.value {
-                // we're currently inspecting this string so display the
-                // suggestion the user is making if there is one
-                if let suggestion = state.suggestion {
-                    return suggestion.newValue
-                }
-
-                // if there exists a localized record of this string, use that,
-                // as the formattedString we have passed in might not be localized
-                if let recordedString = stringsRepository.recordedString(formatted: formattedString) {
-                    return recordedString.localizedValue(locale: state.locale)
-                }
-
-                // otherwise just display what we're given but localized
-                // according to the current locale set in the inspector
-                return formattedString.localizedValue(locale: state.locale)
-            }
-
-            // we're not currently interacting with this string so just display it
             return formattedString.value
         }
+
+        if case let .visible(state) = store.state, let state = state.inspection,
+           !state.isTransitioning && state.recognizedString.value == formattedString.value {
+            // we're currently inspecting this string so display the contents of the suggestion field
+            return state.suggestionValue
+        }
+
+        // we're not currently interacting with this string so just display it
+        return formattedString.value
     }
 
     func formattedString(

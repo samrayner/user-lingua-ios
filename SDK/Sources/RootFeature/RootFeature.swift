@@ -16,6 +16,18 @@ package enum RootFeature: Feature {
         let windowService: any WindowServiceProtocol
         let onForeground: () -> Void
         let onBackground: () -> Void
+
+        package init(
+            notificationCenter: NotificationCenter,
+            windowService: any WindowServiceProtocol,
+            onForeground: @escaping () -> Void,
+            onBackground: @escaping () -> Void
+        ) {
+            self.notificationCenter = notificationCenter
+            self.windowService = windowService
+            self.onForeground = onForeground
+            self.onBackground = onBackground
+        }
     }
 
     package enum State: Equatable {

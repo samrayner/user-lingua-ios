@@ -48,17 +48,16 @@ package enum InspectionFeature: Feature {
 
     package struct State: Equatable {
         package internal(set) var recognizedString: RecognizedString
+        package var locale = Locale.current
+        package var suggestionValue: String
         var isInDarkMode: Bool
-        var suggestionValue: String
         var presentation: PresentationState
         var recognition = RecognitionFeature.State()
-        var configuration = Configuration() // TODO: Move to global reference type
         var previewMode: PreviewMode = .app
         var focusedField: Field?
         var keyboardHeight: CGFloat = 0
         var viewportFrame: CGRect = .zero
         var isFullScreen = false
-        var locale = Locale.current
 
         package var isTransitioning: Bool {
             presentation != .presented
