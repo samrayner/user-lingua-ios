@@ -289,7 +289,7 @@ extension Publishers {
 
             func cancel() {
                 lock.lock()
-                guard let t = cancellable else {
+                guard let timer = cancellable else {
                     lock.unlock()
                     return
                 }
@@ -302,16 +302,16 @@ extension Publishers {
                 lock.unlock()
 
                 // cancel the timer
-                t.cancel()
+                timer.cancel()
             }
 
-            func request(_ n: Subscribers.Demand) {
+            func request(_ number: Subscribers.Demand) {
                 lock.lock()
                 defer { lock.unlock() }
                 guard parent != nil else {
                     return
                 }
-                demand += n
+                demand += number
             }
 
             @objc

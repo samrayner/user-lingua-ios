@@ -58,6 +58,7 @@ private struct _Bind<ModelValue: _Bindable, ViewValue: _Bindable>: ViewModifier
     }
 }
 
+// swiftlint:disable:next type_name
 public protocol _Bindable {
     associatedtype Value
     var wrappedValue: Value { get nonmutating set }

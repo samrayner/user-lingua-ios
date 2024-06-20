@@ -51,10 +51,10 @@ public func XCTFail(_ message: String = "") {
 /// - Parameter message: An optional description of the assertion, for inclusion in test
 ///   results.
 public func XCTFail(_ message: String = "", file: StaticString, line: UInt) {
-    guard let _XCTFailureHandler
+    guard let failureHandler
     else { return }
 
-    _XCTFailureHandler(nil, true, "\(file)", line, "\(message.isEmpty ? "failed" : message)", nil)
+    failureHandler(nil, true, "\(file)", line, "\(message.isEmpty ? "failed" : message)", nil)
 }
 
 private typealias XCTFailureHandler = @convention(c) (
@@ -64,7 +64,7 @@ private let XCTest = NSClassFromString("XCTest")
     .flatMap(Bundle.init(for:))
     .flatMap { $0.executablePath }
     .flatMap { dlopen($0, RTLD_NOW) }
-private let _XCTFailureHandler =
+private let failureHandler =
     XCTest
         .flatMap { dlsym($0, "_XCTFailureHandler") }
         .map { unsafeBitCast($0, to: XCTFailureHandler.self) }

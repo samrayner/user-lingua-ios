@@ -10,7 +10,7 @@ class RootStoreBox<State, Event>: StoreBoxBase<State, Event> {
     private let inputObserver: (Event) -> Void
     private var bag = Set<AnyCancellable>()
 
-    override var _current: State {
+    override var currentState: State {
         subject.value
     }
 
@@ -18,7 +18,7 @@ class RootStoreBox<State, Event>: StoreBoxBase<State, Event> {
         subject.eraseToAnyPublisher()
     }
 
-    public init<Dependencies>(
+    init<Dependencies>(
         initial: State,
         feedbacks: [Feedback<State, Event, Dependencies>],
         reducer: Reducer<State, Event>,
@@ -61,8 +61,8 @@ class ScopedStoreBox<RootState, RootEvent, ScopedState, ScopedEvent>: StoreBoxBa
     private let getValue: (RootState) -> ScopedState
     private let eventTransform: (ScopedEvent) -> RootEvent
 
-    override var _current: ScopedState {
-        getValue(parent._current)
+    override var currentState: ScopedState {
+        getValue(parent.currentState)
     }
 
     override var publisher: AnyPublisher<ScopedState, Never> {
@@ -85,21 +85,20 @@ class ScopedStoreBox<RootState, RootEvent, ScopedState, ScopedEvent>: StoreBoxBa
 
     override func scoped<S, E>(
         getValue: @escaping (ScopedState) -> S,
-        event: @escaping (E) -> ScopedEvent
+        event scopeEvent: @escaping (E) -> ScopedEvent
     ) -> StoreBoxBase<S, E> {
         ScopedStoreBox<RootState, RootEvent, S, E>(
             parent: parent
         ) { rootState in
             getValue(self.getValue(rootState))
-        } event: { e in
-            self.eventTransform(event(e))
+        } event: { event in
+            self.eventTransform(scopeEvent(event))
         }
     }
 }
 
 class StoreBoxBase<State, Event> {
-    /// Loop Internal SPI
-    var _current: State { subclassMustImplement() }
+    var currentState: State { subclassMustImplement() }
 
     var publisher: AnyPublisher<State, Never> { subclassMustImplement() }
 
@@ -123,7 +122,7 @@ class StoreBoxBase<State, Event> {
         optional scope: KeyPath<State, S?>,
         event: @escaping (E) -> Event
     ) -> StoreBoxBase<S, E>? {
-        guard let childState = _current[keyPath: scope] else { return nil }
+        guard let childState = currentState[keyPath: scope] else { return nil }
         return scoped(
             getValue: { state in
                 state[keyPath: scope] ?? childState

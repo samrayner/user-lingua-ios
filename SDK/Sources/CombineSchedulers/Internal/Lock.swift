@@ -21,9 +21,9 @@ typealias Lock = os_unfair_lock_t
 @available(macOS 10.12, iOS 10.0, tvOS 10.0, watchOS 3.0, *)
 extension UnsafeMutablePointer where Pointee == os_unfair_lock_s {
     init() {
-        let l = UnsafeMutablePointer.allocate(capacity: 1)
-        l.initialize(to: os_unfair_lock())
-        self = l
+        let lock = UnsafeMutablePointer.allocate(capacity: 1)
+        lock.initialize(to: os_unfair_lock())
+        self = lock
     }
 
     func cleanupLock() {

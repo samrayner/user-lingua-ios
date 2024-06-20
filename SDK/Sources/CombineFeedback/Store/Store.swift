@@ -10,7 +10,7 @@ open class Store<State, Event> {
     private let box: StoreBoxBase<State, Event>
 
     public var state: State {
-        box._current
+        box.currentState
     }
 
     var publisher: AnyPublisher<State, Never> {

@@ -21,8 +21,8 @@ public class FeedbackEventConsumer<Event> {
 }
 
 extension FeedbackEventConsumer {
-    func pullback<LocalEvent>(_ f: @escaping (LocalEvent) -> Event) -> FeedbackEventConsumer<LocalEvent> {
-        PullBackConsumer(upstream: self, pull: f)
+    func pullback<LocalEvent>(_ pull: @escaping (LocalEvent) -> Event) -> FeedbackEventConsumer<LocalEvent> {
+        PullBackConsumer(upstream: self, pull: pull)
     }
 }
 

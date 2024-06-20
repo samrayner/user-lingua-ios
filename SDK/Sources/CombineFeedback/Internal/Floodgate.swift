@@ -96,7 +96,7 @@ final class Floodgate<State, Event, S: Subscriber, Dependencies>: FeedbackEventC
     }
 
     override func dequeueAllEvents(for token: Token) {
-        queue.modify { $0.events.removeAll(where: { _, t in t == token }) }
+        queue.modify { $0.events.removeAll(where: { $0.1 == token }) }
     }
 
     private func enqueue(_ event: Event, for token: Token) {

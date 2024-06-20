@@ -2,6 +2,7 @@
 
 import Foundation
 
+// swiftlint:disable:next static_operator
 public func == (lhs: Error, rhs: Error) -> Bool {
     guard type(of: lhs) == type(of: rhs) else { return false }
     let error1 = lhs as NSError

@@ -15,7 +15,7 @@ public final class ViewStore<State, Event>: ObservableObject {
         store: StoreBoxBase<State, Event>,
         removeDuplicates isDuplicate: @escaping (State, State) -> Bool
     ) {
-        self.state = store._current
+        self.state = store.currentState
         self.send = store.send
         store.publisher
             .removeDuplicates(by: isDuplicate)
