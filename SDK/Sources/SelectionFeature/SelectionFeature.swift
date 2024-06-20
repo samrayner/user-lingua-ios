@@ -99,10 +99,10 @@ package enum SelectionFeature: Feature {
                 .send(.delegate(.dismiss))
             },
             .event(/Event.onAppear) { _, _, _ in
-                .run { send in
-                    send(.recognition(.start))
-                    send(.observeOrientation)
-                }
+                .send(
+                    .recognition(.start),
+                    .observeOrientation
+                )
             },
             .event(/Event.observeOrientation) { _, _, dependencies in
                 .publish(

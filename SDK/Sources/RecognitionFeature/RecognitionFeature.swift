@@ -79,9 +79,7 @@ package enum RecognitionFeature: Feature {
                 switch stage {
                 case .preparingFacade:
                     guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
-                        return .run { send in
-                            send(.didFinish(.failure(.screenshotFailed)))
-                        }
+                        return .send(.didFinish(.failure(.screenshotFailed)))
                     }
 
                     let appYOffset = dependencies.windowService.appYOffset
@@ -95,9 +93,7 @@ package enum RecognitionFeature: Feature {
                         return .send(.didFinish(.failure(.screenshotFailed)))
                     }
 
-                    return .run { send in
-                        send(.didPrepareApp(screenshot: screenshot))
-                    }
+                    return .send(.didPrepareApp(screenshot: screenshot))
                 case let .recognizingStrings(screenshot):
                     return .publish(
                         dependencies.stringRecognizer

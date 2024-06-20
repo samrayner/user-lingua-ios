@@ -4,28 +4,23 @@ import CasePaths
 import Combine
 
 public struct Feedback<State, Event, Dependencies> {
-    public enum Action {
-        public static func send(_ event: Event) -> Self {
-            .run { send in
-                send(event)
-            }
+    public enum Effect {
+        public static func send(_ events: Event...) -> Self {
+            .send(events)
         }
 
         case publish(AnyPublisher<Event, Never>)
-        case run(((Event) -> Void) -> Void)
+        case send([Event])
         case none
 
         var publisher: AnyPublisher<Event, Never> {
             switch self {
             case let .publish(publisher):
-                return publisher
-            case let .run(closure):
-                let subject = PassthroughSubject<Event, Never>()
-                closure(subject.send)
-                subject.send(completion: .finished)
-                return subject.eraseToAnyPublisher()
+                publisher
+            case let .send(events):
+                events.publisher.eraseToAnyPublisher()
             case .none:
-                return Empty().eraseToAnyPublisher()
+                Empty().eraseToAnyPublisher()
             }
         }
     }
@@ -86,7 +81,7 @@ public struct Feedback<State, Event, Dependencies> {
     public static func state<Value: Equatable>(
         _ scope: @escaping (State) -> Value,
         removeDuplicates: Bool = true,
-        action: @escaping (Value, State, Dependencies) -> Action
+        effect: @escaping (Value, State, Dependencies) -> Effect
     ) -> Feedback {
         compacting(
             input: {
@@ -103,7 +98,7 @@ public struct Feedback<State, Event, Dependencies> {
                 }
             },
             events: { input, dependencies -> AnyPublisher<Event, Never> in
-                action(input.value, input.state, dependencies)
+                effect(input.value, input.state, dependencies)
                     .publisher
                     .eraseToAnyPublisher()
             }
@@ -117,13 +112,13 @@ public struct Feedback<State, Event, Dependencies> {
     /// the previous one would automatically be cancelled.
     public static func state(
         removeDuplicates: Bool = true,
-        action: @escaping (State, Dependencies) -> Action
+        effect: @escaping (State, Dependencies) -> Effect
     ) -> Feedback where State: Equatable {
         state(
             { $0 },
             removeDuplicates: removeDuplicates,
-            action: { _, state, dependencies in
-                action(state, dependencies)
+            effect: { _, state, dependencies in
+                effect(state, dependencies)
             }
         )
     }
@@ -140,14 +135,14 @@ public struct Feedback<State, Event, Dependencies> {
     ///              that eventually affect the state.
     public static func state(
         predicate: @escaping (State) -> Bool,
-        action: @escaping (State, Dependencies) -> Action
+        effect: @escaping (State, Dependencies) -> Effect
     ) -> Feedback {
         firstValueAfterNil(
             { state -> State? in
                 predicate(state) ? state : nil
             },
             events: { state, dependencies -> AnyPublisher<Event, Never> in
-                action(state, dependencies)
+                effect(state, dependencies)
                     .publisher
                     .eraseToAnyPublisher()
             }
@@ -167,7 +162,7 @@ public struct Feedback<State, Event, Dependencies> {
     ///              the state.
     public static func event<Payload>(
         _ transform: @escaping (Event) -> Payload?,
-        action: @escaping (Payload, State, Dependencies) -> Action
+        effect: @escaping (Payload, State, Dependencies) -> Effect
     ) -> Feedback {
         custom { input, output, dependencies in
             // NOTE: `observe(on:)` should be applied on the inner producers, so
@@ -179,7 +174,7 @@ public struct Feedback<State, Event, Dependencies> {
                     return (state, payload)
                 }
                 .flatMapLatest { state, payload in
-                    action(payload, state, dependencies).publisher
+                    effect(payload, state, dependencies).publisher
                 }
                 .enqueue(to: output)
         }
@@ -226,10 +221,10 @@ public struct Feedback<State, Event, Dependencies> {
 
     public static func state<Value>(
         firstAfterNil transform: @escaping (State) -> Value?,
-        action: @escaping (Value, Dependencies) -> Action
+        effect: @escaping (Value, Dependencies) -> Effect
     ) -> Feedback {
         firstValueAfterNil(transform) { value, dependencies in
-            action(value, dependencies)
+            effect(value, dependencies)
                 .publisher
                 .eraseToAnyPublisher()
         }
@@ -238,7 +233,7 @@ public struct Feedback<State, Event, Dependencies> {
 
 extension Feedback {
     /// Transforms a Feedback that works on local state, event, and dependencies into one that works on
-    /// global state, action and dependencies. It accomplishes this by providing 3 transformations to
+    /// global state, event and dependencies. It accomplishes this by providing 3 transformations to
     /// the method:
     ///
     ///   * A key path that can get a piece of local state from the global state.
@@ -264,7 +259,7 @@ extension Feedback {
     }
 
     /// Transforms a Feedback that works on local state, event, and dependencies into one that works on
-    /// global state, action and dependencies. It accomplishes this by providing 3 transformations to
+    /// global state, event and dependencies. It accomplishes this by providing 3 transformations to
     /// the method:
     ///
     /// An application may model parts of its state with enums. For example, app state may differ if a
