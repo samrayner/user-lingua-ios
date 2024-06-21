@@ -1,8 +1,10 @@
 // RootFeature.swift
 
 import CasePaths
+import Combine
 import CombineFeedback
 import Core
+import Dependencies
 import Foundation
 import InspectionFeature
 import RecognitionFeature
@@ -14,20 +16,9 @@ package enum RootFeature: Feature {
     package struct Dependencies {
         let notificationCenter: NotificationCenter
         let windowService: any WindowServiceProtocol
-        let onForeground: () -> Void
-        let onBackground: () -> Void
+        let swizzler: any SwizzlerProtocol
 
-        package init(
-            notificationCenter: NotificationCenter,
-            windowService: any WindowServiceProtocol,
-            onForeground: @escaping () -> Void,
-            onBackground: @escaping () -> Void
-        ) {
-            self.notificationCenter = notificationCenter
-            self.windowService = windowService
-            self.onForeground = onForeground
-            self.onBackground = onBackground
-        }
+        let selection: SelectionFeature.Dependencies
     }
 
     package enum State: Equatable {
@@ -73,14 +64,20 @@ package enum RootFeature: Feature {
                 }
             }
         )
+        .logging()
     }
 
-    package static func feedback() -> FeedbackOf<Self> {
+    package static var feedback: FeedbackOf<Self> {
         .combine(
+            SelectionFeature.feedback.pullback(
+                state: /State.visible,
+                event: /Event.selection,
+                dependencies: \.selection
+            ),
             .state { state, dependencies in
                 switch state {
                 case .recording:
-                    dependencies.onBackground()
+                    dependencies.swizzler.unswizzleForForeground()
                     dependencies.windowService.hideWindow()
                     return .publish(
                         dependencies.notificationCenter
@@ -90,7 +87,7 @@ package enum RootFeature: Feature {
                     )
                 case .visible:
                     dependencies.windowService.showWindow()
-                    dependencies.onForeground()
+                    dependencies.swizzler.swizzleForForeground()
                     return .none
                 case .disabled:
                     return .none
@@ -119,5 +116,15 @@ package struct RootFeatureView: View {
             .foregroundColor(.theme(\.text))
             .tint(.theme(\.tint))
         }
+    }
+}
+
+extension RootFeature.Dependencies {
+    package init(dependencies: AllDependencies) {
+        self.notificationCenter = dependencies.notificationCenter
+        self.windowService = dependencies.windowService
+        self.swizzler = dependencies.swizzler
+
+        self.selection = .init(dependencies: dependencies)
     }
 }

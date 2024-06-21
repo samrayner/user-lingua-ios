@@ -1,28 +1,12 @@
 configurations:
     - sources:
-        - SDK/Sources/Core
+        - SDK/Sources/Dependencies
       templates:
         - SourceryTemplates/AutoMockable.stencil
-      output: SDK/Sources/Core/Sourcery
+      output: SDK/Sources/Dependencies/Sourcery
       args:
         hideVersionHeader: true
         autoMockableImports:
           - Combine
           - SwiftUI
-    - sources:
-        - SDK/Sources/RecognitionFeature
-      templates:
-        - SourceryTemplates/AutoMockable.stencil
-      output: SDK/Sources/RecognitionFeature/Sourcery
-      args:
-        hideVersionHeader: true
-        autoMockableImports:
           - Core
-          - Combine
-    - sources:
-        - SDK/Sources/UserLingua
-      templates:
-        - SourceryTemplates/AutoMockable.stencil
-      output: SDK/Sources/UserLingua/Sourcery
-      args:
-        hideVersionHeader: true

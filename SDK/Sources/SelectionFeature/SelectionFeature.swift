@@ -4,6 +4,7 @@ import CasePaths
 import Combine
 import CombineFeedback
 import Core
+import Dependencies
 import Foundation
 import InspectionFeature
 import RecognitionFeature
@@ -15,6 +16,9 @@ package enum SelectionFeature: Feature {
         let windowService: any WindowServiceProtocol
         let contentSizeCategoryService: any ContentSizeCategoryServiceProtocol
         let orientationService: any OrientationServiceProtocol
+
+        let inspection: InspectionFeature.Dependencies
+        let recognition: RecognitionFeature.Dependencies
     }
 
     package struct State: Equatable {
@@ -81,7 +85,7 @@ package enum SelectionFeature: Feature {
         )
     }
 
-    package static func feedback() -> FeedbackOf<Self> {
+    private static var eventFeedback: FeedbackOf<Self> {
         .combine(
             .event(/Event.didSelectString) { recognizedString, _, dependencies in
                 ThemeFont.scaleFactor = dependencies.contentSizeCategoryService.systemContentSizeCategory.fontScaleFactor
@@ -115,6 +119,22 @@ package enum SelectionFeature: Feature {
             .event(/Event.orientationDidChange) { _, _, _ in
                 .send(.recognition(.start))
             }
+        )
+    }
+
+    package static var feedback: FeedbackOf<Self> {
+        .combine(
+            RecognitionFeature.feedback.pullback(
+                state: \.recognition,
+                event: /Event.recognition,
+                dependencies: \.recognition
+            ),
+            InspectionFeature.feedback.optional().pullback(
+                state: \.inspection,
+                event: /Event.inspection,
+                dependencies: \.inspection
+            ),
+            eventFeedback
         )
     }
 }
@@ -159,7 +179,9 @@ package struct SelectionFeatureView: View {
             .background {
                 RecognitionFeatureView(store: self.store.scoped(to: \.recognition, event: Event.recognition))
             }
-            .onAppear { store.send(.onAppear) }
+            .onAppear {
+                store.send(.onAppear)
+            }
             .fullScreenCover(
                 item: self.store.scopeBinding(get: \.inspection, set: Event.setInspection, event: Event.inspection),
                 onDismiss: { store.send(.inspectionDidDismiss) }
@@ -201,5 +223,16 @@ private struct RecognizedStringHighlight: View {
         }
         .onAppear { isVisible = true }
         .onDisappear { isVisible = false }
+    }
+}
+
+extension SelectionFeature.Dependencies {
+    package init(dependencies: AllDependencies) {
+        self.windowService = dependencies.windowService
+        self.contentSizeCategoryService = dependencies.contentSizeCategoryService
+        self.orientationService = dependencies.orientationService
+
+        self.inspection = .init(dependencies: dependencies)
+        self.recognition = .init(dependencies: dependencies)
     }
 }

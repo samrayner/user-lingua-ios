@@ -3,7 +3,7 @@
 import Foundation
 
 package struct StringFormat: Equatable {
-    static let placeholderRegex: NSRegularExpression = {
+    package static let placeholderRegex: NSRegularExpression = {
         let int = "(?:h|hh|l|ll|q|z|t|j)?([dioux])"
         // valid flags for float
         let float = "[aefg]"

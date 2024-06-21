@@ -27,7 +27,7 @@ let package = Package(
         .target(
             name: "UserLingua",
             dependencies: [
-                "Core",
+                "Dependencies",
                 "SystemAPIAliases",
                 "Macros",
                 "RootFeature"
@@ -54,6 +54,12 @@ let package = Package(
         .target(
             name: "SystemAPIAliases",
             dependencies: []
+        ),
+        .target(
+            name: "Dependencies",
+            dependencies: [
+                "Core"
+            ]
         ),
         .target(
             name: "Diff",
@@ -89,8 +95,8 @@ let package = Package(
         .target(
             name: "RootFeature",
             dependencies: [
-                "Core",
                 "CombineFeedback",
+                "Dependencies",
                 "Theme",
                 "SelectionFeature"
             ]
@@ -98,15 +104,15 @@ let package = Package(
         .target(
             name: "RecognitionFeature",
             dependencies: [
-                "Core",
-                "CombineFeedback"
+                "CombineFeedback",
+                "Dependencies"
             ]
         ),
         .target(
             name: "SelectionFeature",
             dependencies: [
-                "Core",
                 "CombineFeedback",
+                "Dependencies",
                 "Strings",
                 "Theme",
                 "RecognitionFeature",
@@ -116,8 +122,8 @@ let package = Package(
         .target(
             name: "InspectionFeature",
             dependencies: [
-                "Core",
                 "CombineFeedback",
+                "Dependencies",
                 "Strings",
                 "Theme",
                 "RecognitionFeature",

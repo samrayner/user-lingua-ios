@@ -2,6 +2,7 @@
 
 import CombineFeedback
 import Core
+import Dependencies
 import RootFeature
 import SwiftUI
 import UIKit
@@ -10,36 +11,31 @@ public typealias UserLinguaConfiguration = Core.Configuration
 
 public final class UserLingua {
     public static let shared = UserLingua()
-
-    public let viewModel = UserLinguaObservable()
-    public private(set) var configuration: any ConfigurationProtocol = Configuration()
-    private let windowService: WindowServiceProtocol = WindowService()
-    private let contentSizeCategoryService: ContentSizeCategoryServiceProtocol = ContentSizeCategoryService()
-    private let suggestionsRepository: SuggestionsRepositoryProtocol = SuggestionsRepository()
-    private let stringsRepository: StringsRepositoryProtocol = StringsRepository()
+    private let dependencies: AllDependencies
+    public private(set) var configuration: Configuration = Configuration()
 
     private lazy var store = RootFeature.store(
         initialState: .disabled,
-        dependencies: .init(
-            notificationCenter: .default,
-            windowService: windowService,
-            onForeground: onForeground,
-            onBackground: onBackground
-        )
+        dependencies: .init(dependencies: dependencies)
     )
-
-    private let stringExtractor: StringExtractorProtocol = StringExtractor()
-    private let swizzler: SwizzlerProtocol = Swizzler()
 
     private var inPreviewsOrTests: Bool {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
             || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 
-    private init() {
-        windowService.setRootView(
+    public var viewModel: UserLinguaObservable {
+        dependencies.appViewModel
+    }
+
+    private init(
+        dependencies: AllDependencies = LiveDependencies(swizzler: Swizzler())
+    ) {
+        self.dependencies = dependencies
+
+        dependencies.windowService.setRootView(
             RootFeatureView(store: store)
-                .environmentObject(configuration)
+                .environmentObject(ObservableWrapper(configuration))
         )
     }
 
@@ -55,14 +51,14 @@ public final class UserLingua {
     var appContentSizeCategory: UIContentSizeCategory {
         switch store.state {
         case .visible:
-            contentSizeCategoryService.appContentSizeCategory
+            dependencies.contentSizeCategoryService.appContentSizeCategory
         default:
-            contentSizeCategoryService.systemContentSizeCategory
+            dependencies.contentSizeCategoryService.systemContentSizeCategory
         }
     }
 
     var window: UIWindow {
-        windowService.userLinguaWindow
+        dependencies.windowService.userLinguaWindow
     }
 
     var isEnabled: Bool {
@@ -75,44 +71,36 @@ public final class UserLingua {
 
     public func enable() {
         guard !inPreviewsOrTests else { return }
-        swizzler.swizzleForBackground()
+        dependencies.swizzler.swizzleForBackground()
         store.send(.enable)
     }
 
     public func disable() {
         store.send(.disable)
-        swizzler.unswizzleForBackground()
+        dependencies.swizzler.unswizzleForBackground()
     }
 
     public func configure(_ configuration: Configuration) {
         self.configuration = configuration
     }
 
-    private func onForeground() {
-        swizzler.swizzleForForeground()
-    }
-
-    private func onBackground() {
-        swizzler.unswizzleForForeground()
-    }
-
     func record(formatted: FormattedString) {
         guard isRecording else { return }
-        stringsRepository.record(formatted: formatted)
+        dependencies.stringsRepository.record(formatted: formatted)
     }
 
     func record(localized: LocalizedString) {
         guard isRecording else { return }
-        stringsRepository.record(localized: localized)
+        dependencies.stringsRepository.record(localized: localized)
     }
 
     func record(string: String) {
         guard isRecording else { return }
-        stringsRepository.record(string: string)
+        dependencies.stringsRepository.record(string: string)
     }
 
     func processLocalizedStringKey(_ key: LocalizedStringKey) -> String {
-        let formattedString = stringExtractor.formattedString(
+        let formattedString = dependencies.stringExtractor.formattedString(
             localizedStringKey: key,
             tableName: nil,
             bundle: nil,
@@ -120,7 +108,7 @@ public final class UserLingua {
         )
 
         if isRecording {
-            stringsRepository.record(formatted: formattedString)
+            dependencies.stringsRepository.record(formatted: formattedString)
         }
 
         return displayString(for: formattedString)
@@ -128,7 +116,7 @@ public final class UserLingua {
 
     func processString(_ string: String) -> String {
         if isRecording {
-            stringsRepository.record(string: string)
+            dependencies.stringsRepository.record(string: string)
         }
 
         return displayString(for: FormattedString(string))
@@ -138,7 +126,7 @@ public final class UserLingua {
         if isTakingScreenshot {
             // if we've recorded this string, make the most detailed record
             // uniquely recognizable in the UI by scrambling it
-            if let recordedString = stringsRepository.recordedString(formatted: formattedString) {
+            if let recordedString = dependencies.stringsRepository.recordedString(formatted: formattedString) {
                 return recordedString.recognizable
             }
             return formattedString.value
@@ -160,7 +148,7 @@ public final class UserLingua {
         bundle: Bundle?,
         comment: String?
     ) -> FormattedString {
-        stringExtractor.formattedString(
+        dependencies.stringExtractor.formattedString(
             localizedStringKey: localizedStringKey,
             tableName: tableName,
             bundle: bundle,

@@ -5,7 +5,7 @@ public protocol Feature<State, Event, Dependencies> {
     associatedtype Event
     associatedtype Dependencies
     static func reducer() -> ReducerOf<Self>
-    static func feedback() -> FeedbackOf<Self>
+    static var feedback: FeedbackOf<Self> { get }
 }
 
 extension Feature {
@@ -15,7 +15,7 @@ extension Feature {
     ) -> Store<State, Event> {
         StoreOf<Self>(
             initialState: initialState,
-            feedbacks: [feedback()],
+            feedbacks: [feedback],
             reducer: reducer(),
             dependencies: dependencies
         )

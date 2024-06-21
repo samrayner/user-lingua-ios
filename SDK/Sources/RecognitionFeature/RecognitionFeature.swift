@@ -4,6 +4,7 @@ import CasePaths
 import Combine
 import CombineFeedback
 import Core
+import Dependencies
 import Foundation
 import SwiftUI
 import UIKit
@@ -16,7 +17,7 @@ package enum RecognitionFeature: Feature {
 
     package struct Dependencies {
         let windowService: any WindowServiceProtocol
-        let appViewModel: any UserLinguaObservableProtocol
+        let appViewModel: UserLinguaObservable
         let stringRecognizer: any StringRecognizerProtocol
     }
 
@@ -73,9 +74,9 @@ package enum RecognitionFeature: Feature {
         }
     }
 
-    package static func feedback() -> FeedbackOf<Self> {
+    package static var feedback: FeedbackOf<Self> {
         .combine(
-            .state(\.stage) { stage, _, dependencies in
+            .state(\.stage) { stage, dependencies in
                 switch stage {
                 case .preparingFacade:
                     guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
@@ -132,5 +133,13 @@ package struct RecognitionFeatureView: View {
                     .ignoresSafeArea()
             }
         }
+    }
+}
+
+extension RecognitionFeature.Dependencies {
+    package init(dependencies: AllDependencies) {
+        self.windowService = dependencies.windowService
+        self.appViewModel = dependencies.appViewModel
+        self.stringRecognizer = dependencies.stringRecognizer
     }
 }

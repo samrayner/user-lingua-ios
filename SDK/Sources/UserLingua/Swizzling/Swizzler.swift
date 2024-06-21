@@ -1,15 +1,8 @@
 // Swizzler.swift
 
+import Dependencies
 import Foundation
 import UIKit
-
-// sourcery: AutoMockable
-protocol SwizzlerProtocol {
-    func swizzleForForeground()
-    func unswizzleForForeground()
-    func swizzleForBackground()
-    func unswizzleForBackground()
-}
 
 final class Swizzler: SwizzlerProtocol {
     private var isSwizzledForForeground = false
