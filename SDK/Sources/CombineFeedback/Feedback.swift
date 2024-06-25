@@ -131,14 +131,16 @@ public struct Feedback<State, Event, Dependencies> {
     ) -> Feedback {
         compacting(
             state: { state in
-                if let removeDuplicates {
-                    state.map(scope)
-                        .removeDuplicates { removeDuplicates($0) == removeDuplicates($1) }
-                        .eraseToAnyPublisher()
-                } else {
-                    state.map(scope)
-                        .eraseToAnyPublisher()
-                }
+                state.map(scope)
+                    .removeDuplicates {
+                        if let removeDuplicates {
+                            removeDuplicates($0) == removeDuplicates($1)
+                        } else {
+                            false
+                        }
+                    }
+                    .dropFirst() // don't emit initial state
+                    .eraseToAnyPublisher()
             },
             effects: { scopedState, dependencies in
                 effects(scopedState, dependencies).publisher
@@ -159,13 +161,16 @@ public struct Feedback<State, Event, Dependencies> {
     ) -> Feedback where State: Equatable {
         compacting(
             state: { state in
-                if let removeDuplicates {
-                    state
-                        .removeDuplicates { removeDuplicates($0) == removeDuplicates($1) }
-                        .eraseToAnyPublisher()
-                } else {
-                    state
-                }
+                state
+                    .removeDuplicates {
+                        if let removeDuplicates {
+                            removeDuplicates($0) == removeDuplicates($1)
+                        } else {
+                            false
+                        }
+                    }
+                    .dropFirst() // don't emit initial state
+                    .eraseToAnyPublisher()
             },
             effects: { state, dependencies in
                 effects(state, dependencies).publisher
@@ -280,11 +285,17 @@ public struct Feedback<State, Event, Dependencies> {
         _ effects: @escaping (State, Event?, Dependencies) -> Effect
     ) -> Feedback {
         custom { input, output, dependencies in
-            input.flatMapLatest {
-                effects($0, $1, dependencies)
-                    .publisher
-                    .enqueue(to: output)
-            }
+            input
+                .compactMap { state, event -> (State, Event)? in
+                    // filter out initial state (nil event)
+                    guard let event else { return nil }
+                    return (state, event)
+                }
+                .flatMapLatest {
+                    effects($0, $1, dependencies)
+                        .publisher
+                        .enqueue(to: output)
+                }
         }
     }
 }
