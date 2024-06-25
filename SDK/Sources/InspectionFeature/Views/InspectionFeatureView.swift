@@ -2,15 +2,18 @@
 
 import CombineFeedback
 import Core
+import Dependencies
 import Foundation
 import Strings
 import SwiftUI
 import Theme
 
 package struct InspectionFeatureView: View {
+    @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var orientationService: ViewDependency<OrientationServiceProtocol>
+
     private let store: StoreOf<InspectionFeature>
     @FocusState private var focusedField: InspectionFeature.Field?
-    @Environment(\.dismiss) var dismiss
 
     package init(store: StoreOf<InspectionFeature>) {
         self.store = store
@@ -69,6 +72,16 @@ package struct InspectionFeatureView: View {
             .onReceive(store.publisher(for: \.presentation)) {
                 guard case .dismissing = $0 else { return }
                 dismiss()
+            }
+            .onReceive(orientationService.dependency.orientationDidChange()) {
+                store.send(.orientationDidChange($0))
+            }
+            .onReceive(
+                NotificationCenter.default
+                    .publisher(for: .swizzled(UIResponder.keyboardWillChangeFrameNotification))
+                    .compactMap { KeyboardNotification(userInfo: $0.userInfo) }
+            ) {
+                store.send(.keyboardWillChangeFrame($0))
             }
         }
     }

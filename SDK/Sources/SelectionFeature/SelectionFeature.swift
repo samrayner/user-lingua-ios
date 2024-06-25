@@ -104,8 +104,9 @@ package enum SelectionFeature: Feature {
             .event(/Event.onAppear) { _, _, _ in
                 .send(.recognition(.start))
             },
-            .event(/Event.orientationDidChange) { _, _, _ in
-                .send(.recognition(.start), after: 0.1)
+            .event(/Event.orientationDidChange) { _, state, _ in
+                guard state.inspection == nil else { return .none }
+                return .send(.recognition(.start), after: 0.1)
             }
         )
     }

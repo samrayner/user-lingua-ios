@@ -126,11 +126,10 @@ package enum InspectionFeature: Feature {
         case setFocusedField(Field?)
         case saveSuggestion
         case setLocale(identifier: String)
-        case observeOrientation
+        case orientationDidChange(UIDeviceOrientation)
         case viewportFrameDidChange(CGRect)
         case focusViewport(fromZeroPosition: Bool = false)
         case keyboardWillChangeFrame(KeyboardNotification)
-        case observeKeyboardWillChangeFrame
         case recognition(RecognitionFeature.Event)
     }
 
@@ -193,9 +192,8 @@ package enum InspectionFeature: Feature {
                 case .didTapIncreaseTextSize,
                      .didTapDecreaseTextSize,
                      .onAppear,
-                     .observeOrientation,
+                     .orientationDidChange,
                      .focusViewport,
-                     .observeKeyboardWillChangeFrame,
                      .saveSuggestion,
                      .recognition:
                     return
@@ -247,22 +245,8 @@ package enum InspectionFeature: Feature {
                 dependencies.contentSizeCategoryService.decrementAppContentSizeCategory()
                 return .none
             },
-            .event(/Event.observeOrientation) { _, _, dependencies in
-                .publish(
-                    dependencies.orientationService
-                        .orientationDidChange()
-                        .map { _ in .recognition(.start) }
-                        .eraseToAnyPublisher()
-                )
-            },
-            .event(/Event.observeKeyboardWillChangeFrame) { _, _, dependencies in
-                .publish(
-                    dependencies.notificationCenter
-                        .publisher(for: .swizzled(UIResponder.keyboardWillChangeFrameNotification))
-                        .compactMap { KeyboardNotification(userInfo: $0.userInfo) }
-                        .map { .keyboardWillChangeFrame($0) }
-                        .eraseToAnyPublisher()
-                )
+            .event(/Event.orientationDidChange) { _, _, _ in
+                .send(.recognition(.start), after: 0.1)
             },
             .event(/Event.focusViewport) { fromZeroPosition, state, dependencies in
                 if fromZeroPosition {
@@ -278,13 +262,7 @@ package enum InspectionFeature: Feature {
                 return .none
             },
             .event(/Event.onAppear) { _, _, _ in
-                .publish(
-                    Publishers.Merge(
-                        [Event.observeKeyboardWillChangeFrame, Event.observeOrientation].publisher,
-                        Just(Event.didAppear).delay(for: .seconds(.AnimationDuration.screenTransition), scheduler: RunLoop.main)
-                    )
-                    .eraseToAnyPublisher()
-                )
+                .send(.didAppear, after: .AnimationDuration.screenTransition)
             },
             .event(/Event.saveSuggestion) { _, state, dependencies in
                 dependencies.suggestionsRepository.saveSuggestion(state.makeSuggestion())
