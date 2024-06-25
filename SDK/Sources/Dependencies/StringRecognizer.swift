@@ -29,55 +29,49 @@ final class StringRecognizer: StringRecognizerProtocol {
             .eraseToAnyPublisher()
     }
 
-    private func recognizeLines(in image: UIImage) -> AnyPublisher<[RecognizedLine], StringRecognizerError> {
-        guard let cgImage = image.cgImage else {
-            return Fail(error: .invalidImage).eraseToAnyPublisher()
-        }
-
-        let requestHandler = VNImageRequestHandler(cgImage: cgImage)
-
-        let subject = PassthroughSubject<[RecognizedLine], StringRecognizerError>()
-
-        let request = VNRecognizeTextRequest { request, error in
-            if let error {
-                subject.send(
-                    completion: .failure(.recognitionRequestFailed(error))
-                )
+    private func recognizeLines(in image: UIImage) -> Future<[RecognizedLine], StringRecognizerError> {
+        Future { fulfill in
+            guard let cgImage = image.cgImage else {
+                fulfill(.failure(.invalidImage))
                 return
             }
 
-            guard let observations = request.results as? [VNRecognizedTextObservation]
-            else {
-                subject.send([])
-                subject.send(completion: .finished)
-                return
-            }
+            let requestHandler = VNImageRequestHandler(cgImage: cgImage)
 
-            let recognizedText = observations
-                .compactMap { observation in
-                    observation.topCandidates(1).first
+            let request = VNRecognizeTextRequest { request, error in
+                if let error {
+                    fulfill(.failure(.recognitionRequestFailed(error)))
+                    return
                 }
-                .map(RecognizedLine.init)
 
-            subject.send(recognizedText)
-            subject.send(completion: .finished)
+                guard let observations = request.results as? [VNRecognizedTextObservation]
+                else {
+                    fulfill(.success([]))
+                    return
+                }
+
+                let recognizedText = observations
+                    .compactMap { observation in
+                        observation.topCandidates(1).first
+                    }
+                    .map(RecognizedLine.init)
+
+                fulfill(.success(recognizedText))
+            }
+
+            request.recognitionLevel = .fast
+            request.automaticallyDetectsLanguage = false
+            request.usesLanguageCorrection = false
+
+            let minimumTextPixelHeight: Double = 6
+            request.minimumTextHeight = Float(minimumTextPixelHeight / image.size.height)
+
+            do {
+                try requestHandler.perform([request])
+            } catch {
+                fulfill(.failure(.recognitionRequestFailed(error)))
+            }
         }
-
-        request.recognitionLevel = .fast
-        request.automaticallyDetectsLanguage = false
-        request.usesLanguageCorrection = false
-
-        let minimumTextPixelHeight: Double = 6
-        request.minimumTextHeight = Float(minimumTextPixelHeight / image.size.height)
-
-        do {
-            try requestHandler.perform([request])
-        } catch {
-            return Fail(error: .recognitionRequestFailed(error))
-                .eraseToAnyPublisher()
-        }
-
-        return subject.eraseToAnyPublisher()
     }
 
     func identifyRecognizedLines(_ lines: [RecognizedLine]) -> [RecognizedString] {

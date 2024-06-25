@@ -24,7 +24,7 @@ package enum RecognitionFeature: Feature {
     package enum Stage: Equatable {
         case preparingFacade
         case preparingApp
-        case recognizingStrings(screenshot: UIImage)
+        case recognizingStrings
         case resettingApp(yOffset: CGFloat)
     }
 
@@ -43,7 +43,7 @@ package enum RecognitionFeature: Feature {
     package enum Event {
         case start
         case didPrepareFacade(screenshot: UIImage, appYOffset: CGFloat)
-        case didPrepareApp(screenshot: UIImage)
+        case didPrepareApp
         case didFinish(Result<[RecognizedString], Error>)
         case didResetApp
         case delegate(Delegate)
@@ -62,8 +62,8 @@ package enum RecognitionFeature: Feature {
                 state.appYOffset = appYOffset
                 state.appFacade = screenshot
                 state.stage = .preparingApp
-            case let .didPrepareApp(screenshot):
-                state.stage = .recognizingStrings(screenshot: screenshot)
+            case .didPrepareApp:
+                state.stage = .recognizingStrings
             case .didFinish:
                 state.stage = .resettingApp(yOffset: state.appYOffset)
             case .didResetApp:
@@ -89,13 +89,17 @@ package enum RecognitionFeature: Feature {
                 case .preparingApp:
                     dependencies.windowService.resetAppPosition()
                     dependencies.appViewModel.refresh() // refresh app views with scrambled text
-
+                    return .publish(
+                        Just(Event.didPrepareApp)
+                            // give UI time to refresh (scramble) before recognizing strings
+                            .delay(for: .seconds(0.4), scheduler: RunLoop.main)
+                            .eraseToAnyPublisher()
+                    )
+                case .recognizingStrings:
                     guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
                         return .send(.didFinish(.failure(.screenshotFailed)))
                     }
 
-                    return .send(.didPrepareApp(screenshot: screenshot))
-                case let .recognizingStrings(screenshot):
                     return .publish(
                         dependencies.stringRecognizer
                             .recognizeStrings(in: screenshot)
@@ -107,7 +111,12 @@ package enum RecognitionFeature: Feature {
                 case let .resettingApp(appYOffset):
                     dependencies.windowService.positionApp(yOffset: appYOffset, animationDuration: 0)
                     dependencies.appViewModel.refresh() // refresh app views with unscrambled text
-                    return .send(.didResetApp)
+                    return .publish(
+                        Just(Event.didResetApp)
+                            // give UI time to refresh (unscramble) before removing facade
+                            .delay(for: .seconds(0.4), scheduler: RunLoop.main)
+                            .eraseToAnyPublisher()
+                    )
                 case .none:
                     return .none
                 }

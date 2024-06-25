@@ -64,7 +64,6 @@ package enum RootFeature: Feature {
                 }
             }
         )
-        .logging()
     }
 
     package static var feedback: FeedbackOf<Self> {

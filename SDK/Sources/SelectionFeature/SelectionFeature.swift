@@ -70,6 +70,7 @@ package enum SelectionFeature: Feature {
                         state.recognizedStrings = recognizedStrings
                     case .failure:
                         // TODO: recognition error handling
+                        print("RECOGNITION FAILED")
                         return
                     }
                 case .inspection,
