@@ -89,12 +89,7 @@ package enum RecognitionFeature: Feature {
                 case .preparingApp:
                     dependencies.windowService.resetAppPosition()
                     dependencies.appViewModel.refresh() // refresh app views with scrambled text
-                    return .publish(
-                        Just(Event.didPrepareApp)
-                            // give UI time to refresh (scramble) before recognizing strings
-                            .delay(for: .seconds(0.4), scheduler: RunLoop.main)
-                            .eraseToAnyPublisher()
-                    )
+                    return .send(.didPrepareApp, after: 0.4) // give UI time to refresh (scramble)
                 case .recognizingStrings:
                     guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
                         return .send(.didFinish(.failure(.screenshotFailed)))
@@ -111,12 +106,7 @@ package enum RecognitionFeature: Feature {
                 case let .resettingApp(appYOffset):
                     dependencies.windowService.positionApp(yOffset: appYOffset, animationDuration: 0)
                     dependencies.appViewModel.refresh() // refresh app views with unscrambled text
-                    return .publish(
-                        Just(Event.didResetApp)
-                            // give UI time to refresh (unscramble) before removing facade
-                            .delay(for: .seconds(0.4), scheduler: RunLoop.main)
-                            .eraseToAnyPublisher()
-                    )
+                    return .send(.didResetApp, after: 0.4) // give UI time to refresh (unscramble)
                 case .none:
                     return .none
                 }

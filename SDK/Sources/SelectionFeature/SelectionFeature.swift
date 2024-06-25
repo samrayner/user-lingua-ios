@@ -35,7 +35,6 @@ package enum SelectionFeature: Feature {
         case inspectionDidDismiss
         case setInspection(InspectionFeature.State?)
         case onAppear
-        case observeOrientation
         case orientationDidChange(UIDeviceOrientation)
         case inspection(InspectionFeature.Event)
         case recognition(RecognitionFeature.Event)
@@ -78,8 +77,7 @@ package enum SelectionFeature: Feature {
                      .delegate,
                      .didSelectString,
                      .didTapOverlay,
-                     .inspectionDidDismiss,
-                     .observeOrientation:
+                     .inspectionDidDismiss:
                     return
                 }
             }
@@ -104,21 +102,10 @@ package enum SelectionFeature: Feature {
                 .send(.delegate(.dismiss))
             },
             .event(/Event.onAppear) { _, _, _ in
-                .send(
-                    .recognition(.start),
-                    .observeOrientation
-                )
-            },
-            .event(/Event.observeOrientation) { _, _, dependencies in
-                .publish(
-                    dependencies.orientationService
-                        .orientationDidChange()
-                        .map(Event.orientationDidChange)
-                        .eraseToAnyPublisher()
-                )
+                .send(.recognition(.start))
             },
             .event(/Event.orientationDidChange) { _, _, _ in
-                .send(.recognition(.start))
+                .send(.recognition(.start), after: 0.1)
             }
         )
     }
@@ -143,6 +130,7 @@ package enum SelectionFeature: Feature {
 package struct SelectionFeatureView: View {
     typealias Event = SelectionFeature.Event
 
+    @EnvironmentObject var orientationService: ViewDependency<OrientationServiceProtocol>
     @Environment(\.colorScheme) private var colorScheme
     private let store: StoreOf<SelectionFeature>
     @State private var isVisible = false
@@ -182,6 +170,9 @@ package struct SelectionFeatureView: View {
             }
             .onAppear {
                 store.send(.onAppear)
+            }
+            .onReceive(orientationService.dependency.orientationDidChange()) {
+                store.send(.orientationDidChange($0))
             }
             .fullScreenCover(
                 item: self.store.scopeBinding(get: \.inspection, set: Event.setInspection, event: Event.inspection),

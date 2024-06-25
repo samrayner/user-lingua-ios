@@ -2,23 +2,30 @@
 
 import CasePaths
 import Combine
+import SwiftUI
 
 public struct Feedback<State, Event, Dependencies> {
     public enum Effect {
-        public static func send(_ events: Event...) -> Self {
-            .send(events)
+        public static func send(_ event: Event, after delay: TimeInterval? = nil) -> Self {
+            .send([event], after: delay)
         }
 
         case publish(AnyPublisher<Event, Never>)
-        case send([Event])
+        case send([Event], after: TimeInterval? = nil)
         case none
 
         var publisher: AnyPublisher<Event, Never> {
             switch self {
             case let .publish(publisher):
                 publisher
-            case let .send(events):
-                events.publisher.eraseToAnyPublisher()
+            case let .send(events, delayInterval):
+                if let delayInterval {
+                    events.publisher
+                        .delay(for: .seconds(delayInterval), scheduler: RunLoop.main)
+                        .eraseToAnyPublisher()
+                } else {
+                    events.publisher.eraseToAnyPublisher()
+                }
             case .none:
                 Empty().eraseToAnyPublisher()
             }
