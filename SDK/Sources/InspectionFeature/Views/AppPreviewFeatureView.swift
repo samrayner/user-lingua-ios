@@ -15,7 +15,7 @@ struct AppPreviewFeatureView: View {
     }
 
     var body: some View {
-        WithViewStore(store) { store in
+        WithViewStore(store) { state in
             VStack {
                 Spacer()
 
@@ -40,7 +40,7 @@ struct AppPreviewFeatureView: View {
                     }
 
                     Button(action: { store.send(.didTapToggleFullScreen) }) {
-                        Image.theme(store.isFullScreen ? \.exitFullScreen : \.enterFullScreen)
+                        Image.theme(state.isFullScreen ? \.exitFullScreen : \.enterFullScreen)
                             .padding(.Space.s)
                     }
                 }
@@ -53,7 +53,7 @@ struct AppPreviewFeatureView: View {
                 .padding(.Space.m)
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
-            .environment(\.colorScheme, store.isInDarkMode ? .light : .dark)
+            .environment(\.colorScheme, state.isInDarkMode ? .light : .dark)
         }
     }
 }

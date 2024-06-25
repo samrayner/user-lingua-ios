@@ -5,7 +5,6 @@ import Combine
 import Foundation
 import SwiftUI
 
-@dynamicMemberLookup
 open class Store<State, Event> {
     private let box: StoreBoxBase<State, Event>
 
@@ -64,36 +63,31 @@ open class Store<State, Event> {
     }
 
     public func scoped<S, E>(
-        to scope: KeyPath<State, S>,
+        to scope: @escaping (State) -> S,
         event: @escaping (E) -> Event
     ) -> Store<S, E> {
         Store<S, E>(box: box.scoped(to: scope, event: event))
     }
 
     public func scoped<S, E>(
-        to scope: KeyPath<State, S?>,
+        to scope: @escaping (State) -> S?,
         event: @escaping (E) -> Event
     ) -> Store<S, E>? {
         box.scoped(optional: scope, event: event).map(Store<S, E>.init(box:))
     }
 
-    public func scopeBinding<S, E>(
-        get scope: KeyPath<State, S?>,
-        set: @escaping (S?) -> Event,
-        event: @escaping (E) -> Event
-    ) -> Binding<Store<S, E>?> {
+    public func binding<Value>(
+        get: @escaping (State) -> Value,
+        send event: @escaping (Value) -> Event
+    ) -> Binding<Value> {
         Binding(
             get: {
-                self.scoped(to: scope, event: event)
+                get(self.state)
             },
             set: {
-                self.send(set($0?.state))
+                self.send(event($0))
             }
         )
-    }
-
-    public subscript<U>(dynamicMember keyPath: KeyPath<State, U>) -> U {
-        state[keyPath: keyPath]
     }
 }
 

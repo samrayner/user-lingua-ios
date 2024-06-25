@@ -245,6 +245,10 @@ package enum InspectionFeature: Feature {
                 dependencies.contentSizeCategoryService.decrementAppContentSizeCategory()
                 return .none
             },
+            .event(/Event.didTapIncreaseTextSize) { _, _, dependencies in
+                dependencies.contentSizeCategoryService.incrementAppContentSizeCategory()
+                return .none
+            },
             .event(/Event.orientationDidChange) { _, _, _ in
                 .send(.recognition(.start), after: 0.1)
             },

@@ -9,6 +9,8 @@ import SwiftUI
 import Theme
 
 package struct InspectionFeatureView: View {
+    typealias Event = InspectionFeature.Event
+
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var orientationService: ViewDependency<OrientationServiceProtocol>
 
@@ -20,9 +22,9 @@ package struct InspectionFeatureView: View {
     }
 
     private var ignoredSafeAreaEdges: Edge.Set {
-        if store.isFullScreen {
+        if store.state.isFullScreen {
             .all
-        } else if store.keyboardHeight > 0 {
+        } else if store.state.keyboardHeight > 0 {
             .bottom
         } else {
             []
@@ -30,36 +32,36 @@ package struct InspectionFeatureView: View {
     }
 
     package var body: some View {
-        WithViewStore(store) { store in
+        WithViewStore(store) { state in
             VStack(spacing: 0) {
-                if !store.isFullScreen {
-                    header(store: store)
+                if !state.isFullScreen {
+                    header(state: state)
                         .zIndex(10)
                         .transition(.move(edge: .top))
                 }
 
                 ZStack {
                     Group {
-                        switch store.previewMode {
+                        switch state.previewMode {
                         case .app:
-                            AppPreviewFeatureView(store: self.store)
+                            AppPreviewFeatureView(store: store)
                         case .text:
-                            TextPreviewFeatureView(store: self.store)
+                            TextPreviewFeatureView(store: store)
                         }
                     }
 
-                    viewport(store: store)
+                    viewport(state: state)
                 }
 
-                if !store.isFullScreen {
-                    inspectionPanel(store: store)
+                if !state.isFullScreen {
+                    inspectionPanel(state: state)
                         .zIndex(10)
                         .transition(.move(edge: .bottom))
                 }
             }
             .ignoresSafeArea(edges: ignoredSafeAreaEdges)
             .background {
-                switch store.presentation {
+                switch state.presentation {
                 case let .presenting(appFacade), let .dismissing(appFacade):
                     appFacade.map { Image(uiImage: $0).ignoresSafeArea() }
                 default:
@@ -69,7 +71,7 @@ package struct InspectionFeatureView: View {
             .font(.theme(\.body))
             .clearPresentationBackground()
             .onAppear { store.send(.onAppear) }
-            .onReceive(store.publisher(for: \.presentation)) {
+            .onReceive(state.publisher(for: \.presentation)) {
                 guard case .dismissing = $0 else { return }
                 dismiss()
             }
@@ -87,7 +89,7 @@ package struct InspectionFeatureView: View {
     }
 
     @ViewBuilder
-    func header(store: ViewStoreOf<InspectionFeature>) -> some View {
+    func header(state _: ViewStoreOf<InspectionFeature>) -> some View {
         ZStack {
             Text(Strings.Inspection.title)
                 .font(.theme(\.headerTitle))
@@ -105,7 +107,7 @@ package struct InspectionFeatureView: View {
                     Strings.Inspection.PreviewModePicker.title,
                     selection: store.binding(
                         get: \.previewMode,
-                        send: { .setPreviewMode($0) }
+                        send: Event.setPreviewMode
                     )
                 ) {
                     ForEach(InspectionFeature.PreviewMode.allCases, id: \.self) { previewMode in
@@ -125,21 +127,21 @@ package struct InspectionFeatureView: View {
     }
 
     @ViewBuilder
-    private func viewport(store: ViewStoreOf<InspectionFeature>) -> some View {
+    private func viewport(state: ViewStoreOf<InspectionFeature>) -> some View {
         RoundedRectangle(cornerRadius: .Radius.l)
             .inset(by: -.BorderWidth.xl)
             .strokeBorder(Color.theme(\.background), lineWidth: .BorderWidth.xl)
-            .padding(.horizontal, store.isFullScreen ? 0 : .Space.xs)
+            .padding(.horizontal, state.isFullScreen ? 0 : .Space.xs)
             .ignoresSafeArea(.all)
             .background {
                 GeometryReader { geometry in
                     Color.clear
                         .onChange(of: geometry.frame(in: .global)) { frame in
-                            guard !store.isTransitioning else { return }
+                            guard !state.isTransitioning else { return }
                             store.send(.viewportFrameDidChange(frame))
                         }
-                        .onChange(of: store.isTransitioning) { _ in
-                            guard !store.isTransitioning else { return }
+                        .onChange(of: state.isTransitioning) { _ in
+                            guard !state.isTransitioning else { return }
                             store.send(.viewportFrameDidChange(geometry.frame(in: .global)))
                         }
                 }
@@ -147,7 +149,7 @@ package struct InspectionFeatureView: View {
     }
 
     @ViewBuilder
-    private func inspectionPanel(store: ViewStoreOf<InspectionFeature>) -> some View {
+    private func inspectionPanel(state: ViewStoreOf<InspectionFeature>) -> some View {
         VStack(alignment: .leading, spacing: .Space.m) {
             HStack(spacing: .Space.m) {
                 TextField(
@@ -164,10 +166,10 @@ package struct InspectionFeatureView: View {
                 .focused($focusedField, equals: .suggestion)
                 .frame(maxWidth: .infinity, minHeight: 30)
                 .overlay(alignment: .leading) {
-                    if focusedField != .suggestion && store.suggestionValue == store.localizedValue {
+                    if focusedField != .suggestion && state.suggestionValue == state.localizedValue {
                         Text(
-                            store.recognizedString.localizedValue(
-                                locale: store.locale,
+                            state.recognizedString.localizedValue(
+                                locale: state.locale,
                                 placeholderAttributes: [
                                     .backgroundColor: UIColor.theme(\.placeholderBackground),
                                     .foregroundColor: UIColor.theme(\.placeholderText)
@@ -191,7 +193,7 @@ package struct InspectionFeatureView: View {
             }
 
             VStack(alignment: .leading, spacing: .Space.m) {
-                if store.recognizedString.isLocalized && Bundle.main.preferredLocalizations.count > 1 {
+                if state.recognizedString.isLocalized && Bundle.main.preferredLocalizations.count > 1 {
                     Picker(
                         Strings.Inspection.LocalePicker.title,
                         selection: store.binding(
@@ -206,7 +208,7 @@ package struct InspectionFeatureView: View {
                     .pickerStyle(.segmented)
                 }
 
-                if let localization = store.recognizedString.localization {
+                if let localization = state.recognizedString.localization {
                     VStack(alignment: .leading, spacing: .Space.xs) {
                         (Text("\(Strings.Inspection.Localization.Key.title): ").bold() + Text(localization.key))
                             .padding(.horizontal, .Space.s)
@@ -226,7 +228,7 @@ package struct InspectionFeatureView: View {
                     .font(.theme(\.localizationDetails))
                 }
 
-                if store.suggestionValue != store.localizedValue {
+                if state.suggestionValue != state.localizedValue {
                     Button(action: { store.send(.didTapSubmit) }) {
                         Text(Strings.Inspection.submitButton)
                             .frame(maxWidth: .infinity)
@@ -234,12 +236,12 @@ package struct InspectionFeatureView: View {
                     .buttonStyle(.primary)
                 }
             }
-            .frame(minHeight: store.keyboardHeight)
+            .frame(minHeight: state.keyboardHeight)
         }
         .padding(.top, .Space.m)
         .padding(.bottom, .Space.s)
         .padding(.horizontal, .Space.m)
         .background(Color.theme(\.background))
-        .bind(store.binding(get: \.focusedField, send: { .setFocusedField($0) }), to: $focusedField)
+        .bind(store.binding(get: \.focusedField, send: Event.setFocusedField), to: $focusedField)
     }
 }

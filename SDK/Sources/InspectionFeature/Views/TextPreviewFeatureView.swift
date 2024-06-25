@@ -26,7 +26,7 @@ struct TextPreviewFeatureView: View {
     }
 
     var body: some View {
-        WithViewStore(store) { store in
+        WithViewStore(store) { state in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     TextPreviewSectionView(
@@ -41,19 +41,19 @@ struct TextPreviewFeatureView: View {
                         content: Text(localizedValueWithHighlightedPlaceholders(locale: configuration.baseLocale))
                     )
 
-                    if store.locale != configuration.baseLocale {
+                    if state.locale != configuration.baseLocale {
                         HorizontalRule()
 
                         TextPreviewSectionView(
                             isExpanded: $originalIsExpanded,
                             title: Text(
                                 Strings.Inspection.TextPreview.originalTitle(
-                                    systemLocale.localizedString(forLanguageCode: store.locale.identifier)
+                                    systemLocale.localizedString(forLanguageCode: state.locale.identifier)
                                         ?? Strings.Inspection.TextPreview.languageNameFallback,
-                                    store.locale.identifier
+                                    state.locale.identifier
                                 )
                             ),
-                            content: Text(localizedValueWithHighlightedPlaceholders(locale: store.locale))
+                            content: Text(localizedValueWithHighlightedPlaceholders(locale: state.locale))
                         )
                     }
 
@@ -63,12 +63,12 @@ struct TextPreviewFeatureView: View {
                         isExpanded: $diffIsExpanded,
                         title: Text(
                             Strings.Inspection.TextPreview.diffTitle(
-                                systemLocale.localizedString(forLanguageCode: store.locale.identifier)
-                                    ?? store.locale.identifier,
-                                store.locale.identifier
+                                systemLocale.localizedString(forLanguageCode: state.locale.identifier)
+                                    ?? state.locale.identifier,
+                                state.locale.identifier
                             )
                         ),
-                        content: Text(store.diff)
+                        content: Text(state.diff)
                     )
 
                     HorizontalRule()
@@ -77,12 +77,12 @@ struct TextPreviewFeatureView: View {
                         isExpanded: $suggestionIsExpanded,
                         title: Text(
                             Strings.Inspection.TextPreview.suggestionTitle(
-                                systemLocale.localizedString(forLanguageCode: store.locale.identifier)
-                                    ?? store.locale.identifier,
-                                store.locale.identifier
+                                systemLocale.localizedString(forLanguageCode: state.locale.identifier)
+                                    ?? state.locale.identifier,
+                                state.locale.identifier
                             )
                         ),
-                        content: Text(store.suggestionValue)
+                        content: Text(state.suggestionValue)
                     )
                 }
             }
@@ -92,7 +92,7 @@ struct TextPreviewFeatureView: View {
     }
 
     private func localizedValueWithHighlightedPlaceholders(locale: Locale) -> AttributedString {
-        store.recognizedString.localizedValue(
+        store.state.recognizedString.localizedValue(
             locale: locale,
             placeholderAttributes: [
                 .backgroundColor: UIColor.theme(\.placeholderBackground),

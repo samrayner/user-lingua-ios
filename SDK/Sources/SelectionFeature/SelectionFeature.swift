@@ -141,9 +141,9 @@ package struct SelectionFeatureView: View {
     }
 
     package var body: some View {
-        WithViewStore(store) { store in
+        WithViewStore(store) { state in
             ZStack(alignment: .topLeading) {
-                if store.recognizedStrings != nil {
+                if state.recognizedStrings != nil {
                     Color.theme(\.overlay)
                         .opacity(isVisible ? .Opacity.light : .Opacity.transparent)
                         .mask {
@@ -167,7 +167,7 @@ package struct SelectionFeatureView: View {
             }
             .ignoresSafeArea()
             .background {
-                RecognitionFeatureView(store: self.store.scoped(to: \.recognition, event: Event.recognition))
+                RecognitionFeatureView(store: store.scoped(to: \.recognition, event: Event.recognition))
             }
             .onAppear {
                 store.send(.onAppear)
@@ -176,8 +176,11 @@ package struct SelectionFeatureView: View {
                 store.send(.orientationDidChange($0))
             }
             .fullScreenCover(
-                item: self.store.scopeBinding(get: \.inspection, set: Event.setInspection, event: Event.inspection),
-                onDismiss: { store.send(.inspectionDidDismiss) }
+                store: store,
+                get: \.inspection,
+                set: Event.setInspection,
+                event: Event.inspection,
+                onDismiss: Event.inspectionDidDismiss
             ) { store in
                 InspectionFeatureView(store: store)
                     .preferredColorScheme(colorScheme == .light ? .dark : .light)
@@ -187,7 +190,7 @@ package struct SelectionFeatureView: View {
 
     func highlights(color: Color, onSelectString: @escaping (RecognizedString) -> Void = { _ in }) -> some View {
         ZStack(alignment: .topLeading) {
-            ForEach(store.recognizedStrings ?? []) { recognizedString in
+            ForEach(store.state.recognizedStrings ?? []) { recognizedString in
                 RecognizedStringHighlight(
                     recognizedString: recognizedString,
                     color: color

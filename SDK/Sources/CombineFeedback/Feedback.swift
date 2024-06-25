@@ -2,6 +2,7 @@
 
 import CasePaths
 import Combine
+import CombineSchedulers
 import SwiftUI
 
 public struct Feedback<State, Event, Dependencies> {
@@ -21,7 +22,7 @@ public struct Feedback<State, Event, Dependencies> {
             case let .send(events, delayInterval):
                 if let delayInterval {
                     events.publisher
-                        .delay(for: .seconds(delayInterval), scheduler: RunLoop.main)
+                        .delay(for: .seconds(delayInterval), scheduler: UIScheduler.shared)
                         .eraseToAnyPublisher()
                 } else {
                     events.publisher.eraseToAnyPublisher()
@@ -133,15 +134,15 @@ public struct Feedback<State, Event, Dependencies> {
     ///              the state.
     public static func state<ScopedState: Equatable>(
         _ scope: @escaping (State) -> ScopedState,
-        removeDuplicates: ((ScopedState) -> some Equatable)?,
+        removeDuplicates equalityTransform: ((ScopedState) -> some Equatable)?,
         effects: @escaping (ScopedState, Dependencies) -> Effect
     ) -> Feedback {
         compacting(
             state: { state in
                 state.map(scope)
                     .removeDuplicates {
-                        if let removeDuplicates {
-                            removeDuplicates($0) == removeDuplicates($1)
+                        if let equalityTransform {
+                            equalityTransform($0) == equalityTransform($1)
                         } else {
                             false
                         }
@@ -163,15 +164,15 @@ public struct Feedback<State, Event, Dependencies> {
     }
 
     public static func state(
-        removeDuplicates: ((State) -> some Equatable)?,
+        removeDuplicates equalityTransform: ((State) -> some Equatable)?,
         effects: @escaping (State, Dependencies) -> Effect
     ) -> Feedback where State: Equatable {
         compacting(
             state: { state in
                 state
                     .removeDuplicates {
-                        if let removeDuplicates {
-                            removeDuplicates($0) == removeDuplicates($1)
+                        if let equalityTransform {
+                            equalityTransform($0) == equalityTransform($1)
                         } else {
                             false
                         }
