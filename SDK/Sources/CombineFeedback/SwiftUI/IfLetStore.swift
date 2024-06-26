@@ -16,11 +16,7 @@ public struct IfLetStore<State, Event, Content: View>: View {
             if let state = viewStore[dynamicMember: \State.self] {
                 ViewBuilder.buildEither(
                     first: ifContent(
-                        store.scope(
-                            getValue: {
-                                $0 ?? state
-                            }
-                        )
+                        store.scoped(to: { $0 ?? state })
                     )
                 )
             } else {

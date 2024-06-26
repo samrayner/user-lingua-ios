@@ -14,8 +14,14 @@ struct AppPreviewFeatureView: View {
         self.store = store
     }
 
+    struct BodyState: Equatable, Scoped {
+        typealias Parent = InspectionFeature.State
+        let isFullScreen: Bool
+        let isInDarkMode: Bool
+    }
+
     var body: some View {
-        WithViewStore(store) { state in
+        WithViewStore(store, scope: BodyState.init) { state in
             VStack {
                 Spacer()
 

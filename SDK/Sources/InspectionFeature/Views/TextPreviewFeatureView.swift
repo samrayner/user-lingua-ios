@@ -25,8 +25,15 @@ struct TextPreviewFeatureView: View {
         self.systemLocale = systemLocale
     }
 
+    struct BodyState: Equatable, Scoped {
+        typealias Parent = InspectionFeature.State
+        let locale: Locale
+        let diff: AttributedString
+        let suggestionValue: String
+    }
+
     var body: some View {
-        WithViewStore(store) { state in
+        WithViewStore(store, scope: BodyState.init) { state in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     TextPreviewSectionView(

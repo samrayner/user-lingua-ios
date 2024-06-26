@@ -81,8 +81,8 @@ public struct CaseLetStoreView<GlobalState, GlobalEvent, LocalState, LocalEvent,
     public var body: some View {
         IfLetStore(
             store: store.wrappedValue
-                .scope(
-                    getValue: toLocalState,
+                .scoped(
+                    to: toLocalState,
                     event: fromLocalEvent
                 ),
             then: content

@@ -141,9 +141,9 @@ package struct SelectionFeatureView: View {
     }
 
     package var body: some View {
-        WithViewStore(store) { state in
+        WithViewStore(store, scope: \.recognizedStrings) { recognizedStrings in
             ZStack(alignment: .topLeading) {
-                if state.recognizedStrings != nil {
+                if recognizedStrings.state != nil {
                     Color.theme(\.overlay)
                         .opacity(isVisible ? .Opacity.light : .Opacity.transparent)
                         .mask {

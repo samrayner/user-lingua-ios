@@ -106,7 +106,7 @@ package struct RootFeatureView: View {
     }
 
     package var body: some View {
-        WithViewStore(store) { _ in
+        WithViewStore(store, scope: \.selection) { _ in
             ZStack {
                 if let store = store.scoped(to: \.selection, event: Event.selection) {
                     SelectionFeatureView(store: store)

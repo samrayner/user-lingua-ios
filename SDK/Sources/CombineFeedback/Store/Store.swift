@@ -41,24 +41,22 @@ open class Store<State, Event> {
         ViewStore(store: box, removeDuplicates: isDuplicate)
     }
 
+    @MainActor
+    func viewStore<S: Equatable>(
+        scope: @escaping (State) -> S
+    ) -> ViewStore<S, Event> {
+        ViewStore(store: box, scope: scope)
+    }
+
     open func send(_ event: Event) {
         box.send(event: event)
     }
 
-    public func scope<S>(
-        getValue: @escaping (State) -> S
+    public func scoped<S>(
+        to scope: @escaping (State) -> S
     ) -> Store<S, Event> {
         Store<S, Event>(
-            box: box.scoped(getValue: getValue, event: { $0 })
-        )
-    }
-
-    public func scope<S, E>(
-        getValue: @escaping (State) -> S,
-        event: @escaping (E) -> Event
-    ) -> Store<S, E> {
-        Store<S, E>(
-            box: box.scoped(getValue: getValue, event: event)
+            box: box.scoped(getValue: scope, event: { $0 })
         )
     }
 
@@ -88,6 +86,12 @@ open class Store<State, Event> {
                 self.send(event($0))
             }
         )
+    }
+
+    public func publisher<Value>(for transform: @escaping (State) -> Value) -> AnyPublisher<Value, Never> {
+        publisher
+            .map(transform)
+            .eraseToAnyPublisher()
     }
 }
 
