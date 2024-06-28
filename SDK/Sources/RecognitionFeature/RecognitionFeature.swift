@@ -126,8 +126,8 @@ package struct RecognitionFeatureView: View {
     }
 
     package var body: some View {
-        WithViewStore(store) { store in
-            if let appFacade = store.appFacade {
+        WithViewStore(store, scope: \.appFacade) { appFacade in
+            if let appFacade = appFacade.state {
                 Image(uiImage: appFacade)
                     .ignoresSafeArea()
             }

@@ -68,8 +68,8 @@ package struct InspectionFeatureView: View {
         }
         .ignoresSafeArea(edges: ignoredSafeAreaEdges)
         .background {
-            WithViewStore(store, scope: \.presentation) { viewStore in
-                switch viewStore.state {
+            WithViewStore(store, scope: \.presentation) { presentation in
+                switch presentation.state {
                 case let .presenting(appFacade), let .dismissing(appFacade):
                     appFacade.map { Image(uiImage: $0).ignoresSafeArea() }
                 default:
@@ -152,11 +152,9 @@ package struct InspectionFeatureView: View {
                     GeometryReader { geometry in
                         Color.clear
                             .onChange(of: geometry.frame(in: .global)) { frame in
-                                guard !state.isTransitioning else { return }
                                 store.send(.viewportFrameDidChange(frame))
                             }
                             .onChange(of: state.isTransitioning) { _ in
-                                guard !state.isTransitioning else { return }
                                 store.send(.viewportFrameDidChange(geometry.frame(in: .global)))
                             }
                     }

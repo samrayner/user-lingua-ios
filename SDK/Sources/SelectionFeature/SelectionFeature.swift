@@ -27,6 +27,10 @@ package enum SelectionFeature: Feature {
         var recognizedStrings: [RecognizedString]?
 
         package init() {}
+
+        var isInspecting: Bool {
+            inspection != nil
+        }
     }
 
     package enum Event {
@@ -91,7 +95,7 @@ package enum SelectionFeature: Feature {
                 let inspectionState = InspectionFeature.State(
                     recognizedString: recognizedString,
                     appFacade: dependencies.windowService.screenshotAppWindow(),
-                    isInDarkMode: dependencies.windowService.appUIStyle == .dark
+                    appIsInDarkMode: dependencies.windowService.appUIStyle == .dark
                 )
                 return .send(.setInspection(inspectionState))
             },
@@ -140,10 +144,16 @@ package struct SelectionFeatureView: View {
         self.store = store
     }
 
+    struct BodyState: Equatable, Scoped {
+        typealias Parent = SelectionFeature.State
+        let recognizedStrings: [RecognizedString]?
+        let isInspecting: Bool
+    }
+
     package var body: some View {
-        WithViewStore(store, scope: \.recognizedStrings) { recognizedStrings in
+        WithViewStore(store, scope: BodyState.init) { state in
             ZStack(alignment: .topLeading) {
-                if recognizedStrings.state != nil {
+                if state.recognizedStrings != nil {
                     Color.theme(\.overlay)
                         .opacity(isVisible ? .Opacity.light : .Opacity.transparent)
                         .mask {

@@ -53,7 +53,7 @@ package enum InspectionFeature: Feature {
         package internal(set) var recognizedString: RecognizedString
         package var locale = Locale.current
         package var suggestionValue: String
-        var isInDarkMode: Bool
+        var appIsInDarkMode: Bool
         var presentation: PresentationState
         var recognition = RecognitionFeature.State()
         var previewMode: PreviewMode = .app
@@ -92,12 +92,12 @@ package enum InspectionFeature: Feature {
         package init(
             recognizedString: RecognizedString,
             appFacade: UIImage?,
-            isInDarkMode: Bool
+            appIsInDarkMode: Bool
         ) {
             self.recognizedString = recognizedString
             self.suggestionValue = recognizedString.value
             self.presentation = .presenting(appFacade: appFacade)
-            self.isInDarkMode = isInDarkMode
+            self.appIsInDarkMode = appIsInDarkMode
         }
 
         func makeSuggestion() -> Suggestion {
@@ -147,7 +147,7 @@ package enum InspectionFeature: Feature {
                 case .didTapDoneSuggesting:
                     state.focusedField = nil
                 case .didTapToggleDarkMode:
-                    state.isInDarkMode.toggle()
+                    state.appIsInDarkMode.toggle()
                 case .didTapSubmit:
                     print("SUBMITTED \(state.suggestionValue)")
                 case .didTapToggleFullScreen:
@@ -216,16 +216,19 @@ package enum InspectionFeature: Feature {
                     return .none
                 }
             },
-            .state(\.viewportFrame) { _, _ in
-                .send(.focusViewport())
+            .state(removeDuplicates: \.viewportFrame) { state, _ in
+                guard !state.isTransitioning else { return .none }
+                return .send(.focusViewport())
             },
-            .state(\.recognizedString) { _, _ in
-                .send(.focusViewport(fromZeroPosition: true))
+            .state(removeDuplicates: \.recognizedString) { state, _ in
+                // TODO: Should not fire on second show of inspection
+                print(">>> \(state.recognizedString)")
+                return .send(.focusViewport(fromZeroPosition: true))
             },
             .state(\.suggestionValue) { _, _ in
                 .send(.saveSuggestion) // TODO: debounce
             },
-            .state(\.isInDarkMode) { _, dependencies in
+            .state(\.appIsInDarkMode) { _, dependencies in
                 dependencies.windowService.toggleDarkMode()
                 return .none
             },

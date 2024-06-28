@@ -5,7 +5,7 @@
 extension AppPreviewFeatureView.BodyState {
     init(parent: Parent) {
         self.isFullScreen = parent.isFullScreen
-        self.isInDarkMode = parent.isInDarkMode
+        self.appIsInDarkMode = parent.appIsInDarkMode
     }
 }
 

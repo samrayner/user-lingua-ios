@@ -17,7 +17,7 @@ struct AppPreviewFeatureView: View {
     struct BodyState: Equatable, Scoped {
         typealias Parent = InspectionFeature.State
         let isFullScreen: Bool
-        let isInDarkMode: Bool
+        let appIsInDarkMode: Bool
     }
 
     var body: some View {
@@ -59,7 +59,7 @@ struct AppPreviewFeatureView: View {
                 .padding(.Space.m)
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
-            .environment(\.colorScheme, state.isInDarkMode ? .light : .dark)
+            .environment(\.colorScheme, state.appIsInDarkMode ? .light : .dark)
         }
     }
 }
