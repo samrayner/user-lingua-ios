@@ -18,7 +18,7 @@ final class Floodgate<State, Event, S: Subscriber, Dependencies>: FeedbackEventC
     private let reducerLock = NSLock()
     private var state: State
     private var hasStarted = false
-    private var cancelable: Cancellable?
+    private var cancellable: Cancellable?
 
     private let queue = Atomic(QueueState())
     private let reducer: Reducer<State, Event>
@@ -46,7 +46,7 @@ final class Floodgate<State, Event, S: Subscriber, Dependencies>: FeedbackEventC
 
         guard !hasStarted else { return }
         hasStarted = true
-        cancelable = feedbacks.map {
+        cancellable = feedbacks.map {
             $0.events(stateDidChange.eraseToAnyPublisher(), self, dependencies)
         }
         _ = sink.receive(state)
@@ -58,7 +58,7 @@ final class Floodgate<State, Event, S: Subscriber, Dependencies>: FeedbackEventC
 
     func cancel() {
         stateDidChange.send(completion: .finished)
-        cancelable?.cancel()
+        cancellable?.cancel()
         queue.modify {
             $0.isOuterLifetimeEnded = true
         }
