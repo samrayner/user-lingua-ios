@@ -64,7 +64,7 @@ package enum RootFeature: Feature {
                 }
             }
         )
-        .printChanges()
+        // .printChanges()
     }
 
     package static var feedback: FeedbackOf<Self> {
@@ -74,8 +74,8 @@ package enum RootFeature: Feature {
                 event: /Event.selection,
                 dependencies: \.selection
             ),
-            .state { state, dependencies in
-                switch state {
+            .state { _, new, dependencies in
+                switch new {
                 case .recording:
                     dependencies.swizzler.unswizzleForForeground()
                     dependencies.windowService.hideWindow()

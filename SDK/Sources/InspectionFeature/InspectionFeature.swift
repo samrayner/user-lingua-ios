@@ -204,8 +204,8 @@ package enum InspectionFeature: Feature {
 
     private static var stateFeedback: FeedbackOf<Self> {
         .combine(
-            .state(\.presentation) { presentation, dependencies in
-                switch presentation {
+            .state(\.presentation) { _, new, dependencies in
+                switch new {
                 case .preparingToDismiss:
                     let appFacade = dependencies.windowService.screenshotAppWindow()
                     dependencies.contentSizeCategoryService.resetAppContentSizeCategory()
@@ -216,27 +216,27 @@ package enum InspectionFeature: Feature {
                     return .none
                 }
             },
-            .state(removeDuplicates: \.viewportFrame) { state, _ in
-                guard !state.isTransitioning else { return .none }
+            .state(removeDuplicates: \.viewportFrame) { _, new, _ in
+                guard !new.isTransitioning else { return .none }
                 return .send(.focusViewport())
             },
-            .state(removeDuplicates: \.recognizedString) { state, _ in
-                // TODO: Should not fire on second show of inspection
-                print(">>> \(state.recognizedString)")
+            .state(removeDuplicates: \.recognizedString) { old, new, _ in
+                print(">>> \(old.recognizedString)")
+                print(">>> \(new.recognizedString)")
                 return .send(.focusViewport(fromZeroPosition: true))
             },
-            .state(\.suggestionValue) { _, _ in
+            .state(\.suggestionValue) { _, _, _ in
                 .send(.saveSuggestion) // TODO: debounce
             },
-            .state(\.appIsInDarkMode) { _, dependencies in
+            .state(\.appIsInDarkMode) { _, _, dependencies in
                 dependencies.windowService.toggleDarkMode()
                 return .none
             },
-            .state(removeDuplicates: \.locale) { state, dependencies in
+            .state(removeDuplicates: \.locale) { _, new, dependencies in
                 let suggestionValue = dependencies.suggestionsRepository.suggestion(
-                    for: state.recognizedString.value,
-                    locale: state.locale
-                )?.newValue ?? state.localizedValue
+                    for: new.recognizedString.value,
+                    locale: new.locale
+                )?.newValue ?? new.localizedValue
                 return .send(.setSuggestionValue(suggestionValue))
             }
         )

@@ -135,7 +135,7 @@ public struct Feedback<State, Event, Dependencies> {
     public static func state<ScopedState: Equatable>(
         _ scope: @escaping (State) -> ScopedState,
         removeDuplicates equalityTransform: ((ScopedState) -> some Equatable)?,
-        effects: @escaping (ScopedState, Dependencies) -> Effect
+        effects: @escaping (ScopedState, ScopedState, Dependencies) -> Effect
     ) -> Feedback {
         compacting(
             state: { state in
@@ -147,25 +147,29 @@ public struct Feedback<State, Event, Dependencies> {
                             false
                         }
                     }
-                    .dropFirst() // don't emit initial state
+                    .onlyWithPrevious() // don't emit initial state
                     .eraseToAnyPublisher()
             },
-            effects: { scopedState, dependencies in
-                effects(scopedState, dependencies).publisher
+            effects: { scopedStateChange, dependencies in
+                effects(
+                    scopedStateChange.previous,
+                    scopedStateChange.current,
+                    dependencies
+                ).publisher
             }
         )
     }
 
     public static func state<ScopedState: Equatable>(
         _ scope: @escaping (State) -> ScopedState,
-        effects: @escaping (ScopedState, Dependencies) -> Effect
+        effects: @escaping (ScopedState, ScopedState, Dependencies) -> Effect
     ) -> Feedback {
         state(scope, removeDuplicates: { $0 }, effects: effects)
     }
 
     public static func state(
         removeDuplicates equalityTransform: ((State) -> some Equatable)?,
-        effects: @escaping (State, Dependencies) -> Effect
+        effects: @escaping (State, State, Dependencies) -> Effect
     ) -> Feedback where State: Equatable {
         compacting(
             state: { state in
@@ -177,17 +181,17 @@ public struct Feedback<State, Event, Dependencies> {
                             false
                         }
                     }
-                    .dropFirst() // don't emit initial state
+                    .onlyWithPrevious() // don't emit initial state
                     .eraseToAnyPublisher()
             },
-            effects: { state, dependencies in
-                effects(state, dependencies).publisher
+            effects: { stateChange, dependencies in
+                effects(stateChange.previous, stateChange.current, dependencies).publisher
             }
         )
     }
 
     public static func state(
-        effects: @escaping (State, Dependencies) -> Effect
+        effects: @escaping (State, State, Dependencies) -> Effect
     ) -> Feedback where State: Equatable {
         state(removeDuplicates: { $0 }, effects: effects)
     }
