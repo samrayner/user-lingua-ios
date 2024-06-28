@@ -34,6 +34,10 @@ package enum RootFeature: Feature {
                 nil
             }
         }
+
+        var isVisible: Bool {
+            selection != nil
+        }
     }
 
     package enum Event {
@@ -107,7 +111,7 @@ package struct RootFeatureView: View {
     }
 
     package var body: some View {
-        WithViewStore(store, scope: \.selection) { _ in
+        WithViewStore(store, scope: \.isVisible) { _ in
             ZStack {
                 if let store = store.scoped(to: \.selection, event: Event.selection) {
                     SelectionFeatureView(store: store)

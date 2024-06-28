@@ -137,27 +137,35 @@ public struct Feedback<State, Event, Dependencies> {
         removeDuplicates equalityTransform: ((ScopedState) -> some Equatable)?,
         effects: @escaping (ScopedState, ScopedState, Dependencies) -> Effect
     ) -> Feedback {
-        compacting(
-            state: { state in
-                state.map(scope)
-                    .removeDuplicates {
-                        if let equalityTransform {
-                            equalityTransform($0) == equalityTransform($1)
-                        } else {
-                            false
-                        }
+        custom { input, output, dependencies in
+            // NOTE: `observe(on:)` should be applied on the inner producers, so
+            //       that cancellation due to state changes would be able to
+            //       cancel outstanding events that have already been scheduled.
+            input
+                .map { state, event in
+                    (state: scope(state), event: event)
+                }
+                .removeDuplicates {
+                    if let equalityTransform {
+                        equalityTransform($0.state) == equalityTransform($1.state)
+                    } else {
+                        false
                     }
-                    .onlyWithPrevious() // don't emit initial state
-                    .eraseToAnyPublisher()
-            },
-            effects: { scopedStateChange, dependencies in
-                effects(
-                    scopedStateChange.previous,
-                    scopedStateChange.current,
-                    dependencies
-                ).publisher
-            }
-        )
+                }
+                .onlyWithPrevious() // ignore first initial state
+                .compactMap { previous, current -> (ScopedState, ScopedState)? in
+                    // ignore subsequent initial states
+                    // Note: maybe a bug keeping state Feedback publishers subscribed
+                    // even after the feature they observe has been deallocated?
+                    guard current.event != nil else { return nil }
+                    return (previous.state, current.state)
+                }
+                .flatMapLatest { oldState, newState in
+                    effects(oldState, newState, dependencies)
+                        .publisher
+                        .enqueue(to: output)
+                }
+        }
     }
 
     public static func state<ScopedState: Equatable>(
@@ -171,23 +179,7 @@ public struct Feedback<State, Event, Dependencies> {
         removeDuplicates equalityTransform: ((State) -> some Equatable)?,
         effects: @escaping (State, State, Dependencies) -> Effect
     ) -> Feedback where State: Equatable {
-        compacting(
-            state: { state in
-                state
-                    .removeDuplicates {
-                        if let equalityTransform {
-                            equalityTransform($0) == equalityTransform($1)
-                        } else {
-                            false
-                        }
-                    }
-                    .onlyWithPrevious() // don't emit initial state
-                    .eraseToAnyPublisher()
-            },
-            effects: { stateChange, dependencies in
-                effects(stateChange.previous, stateChange.current, dependencies).publisher
-            }
-        )
+        state({ $0 }, removeDuplicates: equalityTransform, effects: effects)
     }
 
     public static func state(
@@ -210,8 +202,8 @@ public struct Feedback<State, Event, Dependencies> {
         predicate: @escaping (State) -> Bool,
         effects: @escaping (State, Dependencies) -> Effect
     ) -> Feedback {
-        firstNonNil(
-            { predicate($0) ? $0 : nil },
+        state(
+            firstNonNil: { predicate($0) ? $0 : nil },
             effects: effects
         )
     }
@@ -245,8 +237,8 @@ public struct Feedback<State, Event, Dependencies> {
         )
     }
 
-    public static func firstNonNil<Value>(
-        _ transform: @escaping (State) -> Value?,
+    public static func state<Value>(
+        firstNonNil transform: @escaping (State) -> Value?,
         effects: @escaping (Value, Dependencies) -> Effect
     ) -> Feedback {
         .compacting(
@@ -398,13 +390,14 @@ extension Feedback {
 
 extension Feedback {
     public func optional() -> Feedback<State?, Event, Dependencies> {
-        Feedback<State?, Event, Dependencies> { state, output, dependencies in
+        Feedback<State?, Event, Dependencies> { input, output, dependencies in
             self.events(
-                state.filter { stateAndEvent -> Bool in
-                    stateAndEvent.0 != nil
-                }
-                .map { ($0!, $1) }
-                .eraseToAnyPublisher(),
+                input
+                    .compactMap { state, event -> (State, Event?)? in
+                        guard let state else { return nil }
+                        return (state, event)
+                    }
+                    .eraseToAnyPublisher(),
                 output,
                 dependencies
             )
