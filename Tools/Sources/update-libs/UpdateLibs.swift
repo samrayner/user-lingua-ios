@@ -68,77 +68,83 @@ struct UpdateLibs: AsyncParsableCommand {
     }
 
     private func installKSSDiff(version: String) async throws {
-        let kssDiffSource = try await downloadLibrary(
+        let unzipped = try await downloadLibrary(
             .package(url: "https://github.com/klassen-software-solutions/KSSDiff", exact: version)
         )
-        let kssDiff = kssDiffSource.appending(path: "KSSDiff-\(version)/Sources/KSSDiff", directoryHint: .isDirectory)
-        let kssDiffDestination = currentDir.appendingPathComponent("../SDK/Sources/Lib_KSSDiff")
+        let source = unzipped.appending(path: "KSSDiff-\(version)/Sources/KSSDiff", directoryHint: .isDirectory)
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/KSSDiff")
 
-        try? fileManager.removeItem(at: kssDiffDestination)
+        try? fileManager.removeItem(at: destination)
         try fileManager.copyItem(
-            at: kssDiff,
-            to: kssDiffDestination
+            at: source,
+            to: destination
         )
 
-        try editSwiftFiles(at: kssDiffDestination) { swift in
+        try editSwiftFiles(at: destination) { swift in
             swift = swift.replacingOccurrences(of: "import KSSFoundation", with: "")
             swift = swift.replacingOccurrences(of: "duration(1.0, .seconds)", with: "1.0")
         }
     }
 
-    private func installCasePaths(version: String) async throws {
-        let source = try await downloadLibrary(
-            .package(url: "https://github.com/pointfreeco/swift-case-paths", exact: version)
+    private func installPointFreeLibrary(package: String, target: String, version: String) async throws {
+        let unzipped = try await downloadLibrary(
+            .package(url: "https://github.com/pointfreeco/\(package)", exact: version)
         )
-        let casePaths = source.appending(path: "swift-case-paths-\(version)/Sources/CasePaths", directoryHint: .isDirectory)
-        let destination = currentDir.appendingPathComponent("../SDK/Sources/Lib_CasePaths")
+        let source = unzipped.appending(path: "\(package)-\(version)/Sources/\(target)", directoryHint: .isDirectory)
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/\(target)")
+
+        try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
 
         try? fileManager.removeItem(at: destination)
         try fileManager.copyItem(
-            at: casePaths,
+            at: source,
             to: destination
         )
 
-        try editSwiftFiles(at: destination) { swift in
-            swift = swift.replacingOccurrences(of: " CasePaths.", with: " Lib_CasePaths.")
+        try editSwiftFiles(at: destination) { _ in
+            // do nothing
         }
     }
 
-    private func installMobius(version: String) async throws {
-        let source = try await downloadLibrary(
-            .package(url: "https://github.com/spotify/Mobius.swift", exact: version)
+    private func installCasePaths(version: String) async throws {
+        try await installPointFreeLibrary(
+            package: "swift-case-paths",
+            target: "CasePaths",
+            version: version
         )
-        .appending(path: "Mobius.swift-\(version)", directoryHint: .isDirectory)
+    }
 
-        let mobiusCore = source.appending(path: "MobiusCore", directoryHint: .isDirectory)
-        let mobiusExtras = source.appending(path: "MobiusExtras", directoryHint: .isDirectory)
+    private func installCombineSchedulers(version: String) async throws {
+        try await installPointFreeLibrary(
+            package: "combine-schedulers",
+            target: "CombineSchedulers",
+            version: version
+        )
+    }
 
-        let destination = currentDir.appendingPathComponent("../SDK/Sources/Lib_Mobius")
+    private func installCustomDump(version: String) async throws {
+        try await installPointFreeLibrary(
+            package: "swift-custom-dump",
+            target: "CustomDump",
+            version: version
+        )
+    }
 
-        try? fileManager.removeItem(at: destination)
-        try fileManager.createDirectory(at: destination, withIntermediateDirectories: true)
-
-        for source in [mobiusCore, mobiusExtras] {
-            try fileManager.copyItem(
-                at: source.appending(
-                    path: "Source",
-                    directoryHint: .isDirectory
-                ),
-                to: destination.appending(path: source.lastPathComponent)
-            )
-        }
-
-        try editSwiftFiles(at: destination) { swift in
-            swift = swift.replacingOccurrences(of: "import MobiusCore", with: "")
-            swift = swift.replacingOccurrences(of: "import CasePaths", with: "import Lib_CasePaths")
-            swift = swift.replacingOccurrences(of: " CasePaths.", with: " Lib_CasePaths.")
-            swift = swift.replacingOccurrences(of: " MobiusCore.", with: " Lib_Mobius.")
-        }
+    private func installXCTestDynamicOverlay(version: String) async throws {
+        try await installPointFreeLibrary(
+            package: "xctest-dynamic-overlay",
+            target: "XCTestDynamicOverlay",
+            version: version
+        )
     }
 
     mutating func run() async throws {
         try await installKSSDiff(version: "3.0.1")
-        try await installCasePaths(version: "0.10.1")
-        try await installMobius(version: "0.5.2")
+
+        // TCA
+        try await installCasePaths(version: "1.0.0")
+        try await installCombineSchedulers(version: "0.10.0")
+        try await installCustomDump(version: "1.3.0")
+        try await installXCTestDynamicOverlay(version: "1.1.2")
     }
 }

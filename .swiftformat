@@ -1,6 +1,9 @@
 --exclude **/*.generated.swift
 --exclude SDK/Sources/KSSDiff
 --exclude SDK/Sources/CasePaths
+--exclude SDK/Sources/CombineSchedulers
+--exclude SDK/Sources/CustomDump
+--exclude SDK/Sources/XCTestDynamicOverlay
 
 --commas inline
 --funcattributes prev-line

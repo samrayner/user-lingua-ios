@@ -73,7 +73,15 @@ let package = Package(
         ),
         .target(
             name: "CasePaths",
-            dependencies: []
+            dependencies: [
+                "XCTestDynamicOverlay"
+            ]
+        ),
+        .target(
+            name: "CustomDump",
+            dependencies: [
+                "XCTestDynamicOverlay"
+            ]
         ),
         .target(
             name: "XCTestDynamicOverlay",
@@ -89,7 +97,8 @@ let package = Package(
             name: "CombineFeedback",
             dependencies: [
                 "CasePaths",
-                "CombineSchedulers"
+                "CombineSchedulers",
+                "CustomDump"
             ]
         ),
         .target(

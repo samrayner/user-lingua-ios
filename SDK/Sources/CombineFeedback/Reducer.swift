@@ -1,6 +1,7 @@
 // Reducer.swift
 
 import CasePaths
+import CustomDump
 
 public struct Reducer<State, Event> {
     public let reduce: (inout State, Event) -> Void
@@ -65,17 +66,20 @@ public struct Reducer<State, Event> {
         }
     }
 
-    public func logging(
+    public func printChanges(
         printer: @escaping (String) -> Void = { print($0) }
     ) -> Reducer {
         .init { state, event in
+            let oldState = state
+
             self(&state, event)
-            printer("Action: \(event)")
-            printer("Value:")
-            var dumpedNewValue = ""
-            dump(state, to: &dumpedNewValue)
-            printer(dumpedNewValue)
-            printer("---")
+
+            var target = ""
+            target.write("received event:\n")
+            CustomDump.customDump(event, to: &target, indent: 2)
+            target.write("\n")
+            target.write(diff(oldState, state).map { "\($0)\n" } ?? "  (No state changes)\n")
+            printer(target)
         }
     }
 }
