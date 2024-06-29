@@ -78,7 +78,7 @@ public struct Reducer<State, Event> {
             target.write("received event:\n")
             CustomDump.customDump(event, to: &target, indent: 2)
             target.write("\n")
-            target.write(diff(oldState, state).map { "\($0)\n" } ?? "  (No state changes)\n")
+            target.write(diff(oldState, state).map { "state change:\n\($0)\n" } ?? "(No state changes)\n")
             printer(target)
         }
     }

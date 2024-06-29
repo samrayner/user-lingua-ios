@@ -38,6 +38,10 @@ package enum RootFeature: Feature {
         var isVisible: Bool {
             selection != nil
         }
+
+        var isRecording: Bool {
+            self == .recording
+        }
     }
 
     package enum Event {
@@ -78,7 +82,10 @@ package enum RootFeature: Feature {
                 event: /Event.selection,
                 dependencies: \.selection
             ),
-            .state { _, new, dependencies in
+            // all root state changes go through .recording so this
+            // prevents firing when SelectionFeature.State changes
+            // but captures all state transitions otherwise
+            .state(removeDuplicates: \.isRecording) { _, new, dependencies in
                 switch new {
                 case .recording:
                     dependencies.swizzler.unswizzleForForeground()

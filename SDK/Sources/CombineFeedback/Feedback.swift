@@ -152,7 +152,7 @@ public struct Feedback<State, Event, Dependencies> {
                         false
                     }
                 }
-                .onlyWithPrevious() // ignore first initial state
+                .onlyWithPrevious() // we don't care about the initial state anyway
                 .compactMap { previous, current -> (ScopedState, ScopedState)? in
                     // ignore subsequent initial states
                     // Note: maybe a bug keeping state Feedback publishers subscribed

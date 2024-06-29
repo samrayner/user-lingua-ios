@@ -169,6 +169,7 @@ package struct InspectionFeatureView: View {
         let recognizedString: RecognizedString
         let locale: Locale
         let keyboardHeight: CGFloat
+        let focusedField: InspectionFeature.Field?
     }
 
     @ViewBuilder
