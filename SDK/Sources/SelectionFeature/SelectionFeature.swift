@@ -113,7 +113,7 @@ package enum SelectionFeature: Feature {
                 .send(.recognition(.start))
             },
             .event(/Event.orientationDidChange) { _, state, _ in
-                guard state.inspection == nil else { return .none }
+                guard !state.new.isInspecting else { return .none }
                 return .send(.recognition(.start), after: 0.1)
             }
         )

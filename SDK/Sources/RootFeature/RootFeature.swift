@@ -88,8 +88,8 @@ package enum RootFeature: Feature {
             // all root state changes go through .recording so this
             // prevents firing when SelectionFeature.State changes
             // but captures all state transitions otherwise
-            .state(ifChanged: \.isRecording) { _, new, dependencies in
-                switch new {
+            .state(ifChanged: \.isRecording) { state, dependencies in
+                switch state.new {
                 case .recording:
                     dependencies.swizzler.unswizzleForForeground()
                     dependencies.windowService.hideWindow()

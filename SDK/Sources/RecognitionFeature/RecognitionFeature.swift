@@ -78,8 +78,8 @@ package enum RecognitionFeature: Feature {
 
     package static var feedback: FeedbackOf<Self> {
         .combine(
-            .state(scoped: \.stage) { _, new, dependencies in
-                switch new {
+            .state(scoped: \.stage) { state, dependencies in
+                switch state.new {
                 case .preparingFacade:
                     guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
                         return .send(.didFinish(.failure(.screenshotFailed)))

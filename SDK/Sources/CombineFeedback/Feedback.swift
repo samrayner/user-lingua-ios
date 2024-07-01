@@ -83,7 +83,7 @@ public struct Feedback<State, Event, Dependencies> {
     public static func state<ScopedState: Equatable>(
         scoped scope: @escaping (State) -> ScopedState,
         ifChanged equalityTransform: ((ScopedState) -> some Equatable)?,
-        effect: @escaping (ScopedState, ScopedState, Dependencies) -> Effect
+        effect: @escaping ((old: ScopedState, new: ScopedState), Dependencies) -> Effect
     ) -> Feedback {
         custom { input, output, dependencies in
             // NOTE: `observe(on:)` should be applied on the inner producers, so
@@ -109,7 +109,7 @@ public struct Feedback<State, Event, Dependencies> {
                     return (previous.state, current.state)
                 }
                 .flatMapLatest { oldState, newState in
-                    effect(oldState, newState, dependencies)
+                    effect((oldState, newState), dependencies)
                         .publisher
                         .enqueue(to: output)
                 }
@@ -118,40 +118,41 @@ public struct Feedback<State, Event, Dependencies> {
 
     public static func state<ScopedState: Equatable>(
         scoped scope: @escaping (State) -> ScopedState,
-        effect: @escaping (ScopedState, ScopedState, Dependencies) -> Effect
+        effect: @escaping ((old: ScopedState, new: ScopedState), Dependencies) -> Effect
     ) -> Feedback {
         state(scoped: scope, ifChanged: { $0 }, effect: effect)
     }
 
     public static func state(
         ifChanged equalityTransform: ((State) -> some Equatable)?,
-        effect: @escaping (State, State, Dependencies) -> Effect
+        effect: @escaping ((old: State, new: State), Dependencies) -> Effect
     ) -> Feedback where State: Equatable {
         state(scoped: { $0 }, ifChanged: equalityTransform, effect: effect)
     }
 
     public static func state(
-        effect: @escaping (State, State, Dependencies) -> Effect
+        effect: @escaping ((old: State, new: State), Dependencies) -> Effect
     ) -> Feedback where State: Equatable {
         state(ifChanged: { $0 }, effect: effect)
     }
 
     public static func event<Payload>(
         _ extract: @escaping (Event) -> Payload?,
-        effect: @escaping (Payload, State, Dependencies) -> Effect
+        effect: @escaping (Payload, (old: State, new: State), Dependencies) -> Effect
     ) -> Feedback {
         custom { input, output, dependencies in
             // NOTE: `observe(on:)` should be applied on the inner producers, so
             //       that cancellation due to state changes would be able to
             //       cancel outstanding events that have already been scheduled.
             input
-                .compactMap { state, event -> (Payload?, State)? in
-                    guard let event else { return nil }
-                    return (extract(event), state)
+                .onlyWithPrevious() // the first emission always has a nil event anyway
+                .compactMap { previous, current -> (Payload?, State, State)? in
+                    guard let event = current.1 else { return nil }
+                    return (extract(event), previous.0, current.0)
                 }
-                .flatMapLatest { payload, state in
+                .flatMapLatest { payload, oldState, newState in
                     let publisher = if let payload {
-                        effect(payload, state, dependencies).publisher
+                        effect(payload, (oldState, newState), dependencies).publisher
                     } else {
                         Empty<Event, Never>().eraseToAnyPublisher()
                     }

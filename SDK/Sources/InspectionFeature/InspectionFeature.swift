@@ -205,8 +205,8 @@ package enum InspectionFeature: Feature {
 
     private static var stateFeedback: FeedbackOf<Self> {
         .combine(
-            .state(scoped: \.presentation) { _, new, dependencies in
-                switch new {
+            .state(scoped: \.presentation) { state, dependencies in
+                switch state.new {
                 case .preparingToDismiss:
                     let appFacade = dependencies.windowService.screenshotAppWindow()
                     dependencies.contentSizeCategoryService.resetAppContentSizeCategory()
@@ -217,27 +217,25 @@ package enum InspectionFeature: Feature {
                     return .none
                 }
             },
-            .state(ifChanged: \.viewportFrame) { _, new, _ in
-                guard !new.isTransitioning else { return .none }
+            .state(ifChanged: \.viewportFrame) { state, _ in
+                guard !state.new.isTransitioning else { return .none }
                 return .send(.focusViewport())
             },
-            .state(ifChanged: \.recognizedString) { old, new, _ in
-                print(">>> \(old.recognizedString)")
-                print(">>> \(new.recognizedString)")
-                return .send(.focusViewport(fromZeroPosition: true))
+            .state(ifChanged: \.recognizedString) { _, _ in
+                .send(.focusViewport(fromZeroPosition: true))
             },
-            .state(scoped: \.suggestionValue) { _, _, _ in
+            .state(scoped: \.suggestionValue) { _, _ in
                 .send(.saveSuggestion) // TODO: debounce
             },
-            .state(scoped: \.appIsInDarkMode) { _, _, dependencies in
+            .state(scoped: \.appIsInDarkMode) { _, dependencies in
                 dependencies.windowService.toggleDarkMode()
                 return .none
             },
-            .state(ifChanged: \.locale) { _, new, dependencies in
+            .state(ifChanged: \.locale) { state, dependencies in
                 let suggestionValue = dependencies.suggestionsRepository.suggestion(
-                    for: new.recognizedString.value,
-                    locale: new.locale
-                )?.newValue ?? new.localizedValue
+                    for: state.new.recognizedString.value,
+                    locale: state.new.locale
+                )?.newValue ?? state.new.localizedValue
                 return .send(.setSuggestionValue(suggestionValue))
             }
         )
@@ -262,8 +260,8 @@ package enum InspectionFeature: Feature {
                 }
 
                 dependencies.windowService.positionApp(
-                    focusing: state.recognizedString.boundingBoxCenter,
-                    within: state.viewportFrame,
+                    focusing: state.new.recognizedString.boundingBoxCenter,
+                    within: state.new.viewportFrame,
                     animationDuration: .AnimationDuration.quick
                 )
 
@@ -273,7 +271,7 @@ package enum InspectionFeature: Feature {
                 .send(.didAppear, after: .AnimationDuration.screenTransition)
             },
             .event(/Event.saveSuggestion) { _, state, dependencies in
-                dependencies.suggestionsRepository.saveSuggestion(state.makeSuggestion())
+                dependencies.suggestionsRepository.saveSuggestion(state.new.makeSuggestion())
                 dependencies.appViewModel.refresh()
                 return .none
             }
