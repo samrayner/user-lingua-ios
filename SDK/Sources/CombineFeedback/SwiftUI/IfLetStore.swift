@@ -35,7 +35,7 @@ public struct IfLetStore<State, Event, Content: View>: View {
     public var body: some View {
         WithViewStore(
             store,
-            removeDuplicates: { ($0 != nil) == ($1 != nil) },
+            removingDuplicates: { ($0 != nil) == ($1 != nil) },
             content: content
         )
     }

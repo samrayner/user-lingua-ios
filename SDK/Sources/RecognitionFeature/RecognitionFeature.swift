@@ -76,7 +76,7 @@ package enum RecognitionFeature: Feature {
 
     package static var feedback: FeedbackOf<Self> {
         .combine(
-            .state(\.stage) { _, new, dependencies in
+            .state(scoped: \.stage) { _, new, dependencies in
                 switch new {
                 case .preparingFacade:
                     guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
@@ -126,7 +126,7 @@ package struct RecognitionFeatureView: View {
     }
 
     package var body: some View {
-        WithViewStore(store, scope: \.appFacade) { appFacade in
+        WithViewStore(store, scoped: \.appFacade) { appFacade in
             if let appFacade = appFacade.state {
                 Image(uiImage: appFacade)
                     .ignoresSafeArea()

@@ -85,7 +85,7 @@ package enum RootFeature: Feature {
             // all root state changes go through .recording so this
             // prevents firing when SelectionFeature.State changes
             // but captures all state transitions otherwise
-            .state(removeDuplicates: \.isRecording) { _, new, dependencies in
+            .state(ifChanged: \.isRecording) { _, new, dependencies in
                 switch new {
                 case .recording:
                     dependencies.swizzler.unswizzleForForeground()
@@ -118,7 +118,7 @@ package struct RootFeatureView: View {
     }
 
     package var body: some View {
-        WithViewStore(store, scope: \.isVisible) { _ in
+        WithViewStore(store, scoped: \.isVisible) { _ in
             ZStack {
                 if let store = store.scoped(to: \.selection, event: Event.selection) {
                     SelectionFeatureView(store: store)

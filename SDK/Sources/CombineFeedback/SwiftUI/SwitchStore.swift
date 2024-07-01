@@ -31,20 +31,20 @@ import SwiftUI
 public struct SwitchStore<State, Event, Content>: View where Content: View {
     private let store: Store<State, Event>
     private let content: (State) -> Content
-    private let removeDuplicates: (State, State) -> Bool
+    private let isDuplicate: (State, State) -> Bool
 
     public init(
         store: Store<State, Event>,
-        removeDuplicates: @escaping (State, State) -> Bool,
+        removingDuplicates isDuplicate: @escaping (State, State) -> Bool,
         @ViewBuilder content: @escaping (State) -> Content
     ) {
         self.store = store
-        self.removeDuplicates = removeDuplicates
+        self.isDuplicate = isDuplicate
         self.content = content
     }
 
     public var body: some View {
-        WithViewStore(store, removeDuplicates: removeDuplicates) { viewStore in
+        WithViewStore(store, removingDuplicates: isDuplicate) { viewStore in
             content(viewStore[dynamicMember: \State.self])
         }
         .environmentObject(StoreObservableObject(store: store))
@@ -56,7 +56,7 @@ extension SwitchStore where State: Equatable {
         store: Store<State, Event>,
         @ViewBuilder content: @escaping (State) -> Content
     ) {
-        self.init(store: store, removeDuplicates: ==, content: content)
+        self.init(store: store, removingDuplicates: ==, content: content)
     }
 }
 

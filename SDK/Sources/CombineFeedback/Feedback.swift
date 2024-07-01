@@ -69,73 +69,21 @@ public struct Feedback<State, Event, Dependencies> {
     }
 
     /// Creates a Feedback which re-evaluates the given effect every time the
-    /// `Signal` derived from the latest state yields a new value.
-    ///
-    /// If the previous effect is still alive when a new one is about to start,
-    /// the previous one would automatically be cancelled.
-    ///
-    /// - parameters:
-    ///   - transform: The transform which derives a `Signal` of values from the
-    ///                latest state.
-    ///   - effects: The side effect accepting transformed values produced by
-    ///              `transform` and yielding events that eventually affect
-    ///              the state.
-    private static func compacting<U>(
-        state scope: @escaping (AnyPublisher<State, Never>) -> AnyPublisher<U, Never>,
-        effects: @escaping (U, Dependencies) -> AnyPublisher<Event, Never>
-    ) -> Feedback {
-        custom { input, output, dependencies in
-            // NOTE: `observe(on:)` should be applied on the inner producers, so
-            //       that cancellation due to state changes would be able to
-            //       cancel outstanding events that have already been scheduled.
-            scope(
-                input
-                    .map(\.0)
-                    .eraseToAnyPublisher()
-            )
-            .flatMapLatest { scopedState in
-                effects(scopedState, dependencies).enqueue(to: output)
-            }
-        }
-    }
-
-    private static func compacting<Payload>(
-        events extract: @escaping (AnyPublisher<(Event, State), Never>) -> AnyPublisher<(Payload, State), Never>,
-        effects: @escaping (Payload, State, Dependencies) -> AnyPublisher<Event, Never>
-    ) -> Feedback {
-        custom { input, output, dependencies in
-            // NOTE: `observe(on:)` should be applied on the inner producers, so
-            //       that cancellation due to state changes would be able to
-            //       cancel outstanding events that have already been scheduled.
-            extract(
-                input
-                    .compactMap { state, event -> (Event, State)? in
-                        guard let event else { return nil }
-                        return (event, state)
-                    }
-                    .eraseToAnyPublisher()
-            )
-            .flatMapLatest { payload, state in
-                effects(payload, state, dependencies).enqueue(to: output)
-            }
-        }
-    }
-
-    /// Creates a Feedback which re-evaluates the given effect every time the
     /// state changes.
     ///
     /// If the previous effect is still alive when a new one is about to start,
     /// the previous one would automatically be cancelled.
     ///
     /// - parameters:
-    ///   - transform: The transform to apply on the state.
+    ///   - scope: The transform to apply on the state.
+    ///   - removingDuplicates
     ///   - effects: The side effect accepting transformed values produced by
-    ///              `transform` and yielding events that eventually affect
+    ///              `scope` and yielding events that eventually affect
     ///              the state.
     public static func state<ScopedState: Equatable>(
-        _ scope: @escaping (State) -> ScopedState,
-        removeDuplicates equalityTransform: ((ScopedState) -> some Equatable)?,
-        effects: @escaping (ScopedState, ScopedState, Dependencies) -> Effect
+        scoped scope: @escaping (State) -> ScopedState,
+        ifChanged equalityTransform: ((ScopedState) -> some Equatable)?,
+        effect: @escaping (ScopedState, ScopedState, Dependencies) -> Effect
     ) -> Feedback {
         custom { input, output, dependencies in
             // NOTE: `observe(on:)` should be applied on the inner producers, so
@@ -161,7 +109,7 @@ public struct Feedback<State, Event, Dependencies> {
                     return (previous.state, current.state)
                 }
                 .flatMapLatest { oldState, newState in
-                    effects(oldState, newState, dependencies)
+                    effect(oldState, newState, dependencies)
                         .publisher
                         .enqueue(to: output)
                 }
@@ -169,136 +117,45 @@ public struct Feedback<State, Event, Dependencies> {
     }
 
     public static func state<ScopedState: Equatable>(
-        _ scope: @escaping (State) -> ScopedState,
-        effects: @escaping (ScopedState, ScopedState, Dependencies) -> Effect
+        scoped scope: @escaping (State) -> ScopedState,
+        effect: @escaping (ScopedState, ScopedState, Dependencies) -> Effect
     ) -> Feedback {
-        state(scope, removeDuplicates: { $0 }, effects: effects)
+        state(scoped: scope, ifChanged: { $0 }, effect: effect)
     }
 
     public static func state(
-        removeDuplicates equalityTransform: ((State) -> some Equatable)?,
-        effects: @escaping (State, State, Dependencies) -> Effect
+        ifChanged equalityTransform: ((State) -> some Equatable)?,
+        effect: @escaping (State, State, Dependencies) -> Effect
     ) -> Feedback where State: Equatable {
-        state({ $0 }, removeDuplicates: equalityTransform, effects: effects)
+        state(scoped: { $0 }, ifChanged: equalityTransform, effect: effect)
     }
 
     public static func state(
-        effects: @escaping (State, State, Dependencies) -> Effect
+        effect: @escaping (State, State, Dependencies) -> Effect
     ) -> Feedback where State: Equatable {
-        state(removeDuplicates: { $0 }, effects: effects)
+        state(ifChanged: { $0 }, effect: effect)
     }
 
-    /// Creates a Feedback which re-evaluates the given effect every time the
-    /// given predicate passes.
-    ///
-    /// If the previous effect is still alive when a new one is about to start,
-    /// the previous one would automatically be cancelled.
-    ///
-    /// - parameters:
-    ///   - predicate: The predicate to apply on the state.
-    ///   - effects: The side effect accepting the state and yielding events
-    ///              that eventually affect the state.
-    public static func state(
-        predicate: @escaping (State) -> Bool,
-        effects: @escaping (State, Dependencies) -> Effect
-    ) -> Feedback {
-        state(
-            firstNonNil: { predicate($0) ? $0 : nil },
-            effects: effects
-        )
-    }
-
-    /// Creates a Feedback which re-evaluates the given effect every time the
-    /// state changes.
-    ///
-    /// If the previous effect is still alive when a new one is about to start,
-    /// the previous one would automatically be cancelled.
-    ///
-    /// - parameters:
-    ///   - transform: The transform to apply on the state.
-    ///   - effects: The side effect accepting transformed values produced by
-    ///              `transform` and yielding events that eventually affect
-    ///              the state.
     public static func event<Payload>(
         _ extract: @escaping (Event) -> Payload?,
-        effects: @escaping (Payload, State, Dependencies) -> Effect
-    ) -> Feedback {
-        compacting(
-            events: { events in
-                events
-                    .map { event, state in
-                        (extract(event), state)
-                    }
-                    .eraseToAnyPublisher()
-            },
-            effects: { extractedPayload, state, dependencies in
-                extractedPayload.map { effects($0, state, dependencies).publisher } ?? Empty().eraseToAnyPublisher()
-            }
-        )
-    }
-
-    public static func state<Value>(
-        firstNonNil transform: @escaping (State) -> Value?,
-        effects: @escaping (Value, Dependencies) -> Effect
-    ) -> Feedback {
-        .compacting(
-            state: { state -> AnyPublisher<NilEdgeTransition<Value>, Never> in
-                state.scan((lastWasNil: true, output: NilEdgeTransition<Value>?.none)) { acum, state in
-                    var temp = acum
-                    let result = transform(state)
-                    temp.output = nil
-
-                    switch (temp.lastWasNil, result) {
-                    case (true, .none), (false, .some):
-                        return temp
-                    case let (true, .some(value)):
-                        temp.lastWasNil = false
-                        temp.output = .populated(value)
-                    case (false, .none):
-                        temp.lastWasNil = true
-                        temp.output = .cleared
-                    }
-                    return temp
-                }
-                .compactMap(\.output)
-                .eraseToAnyPublisher()
-            },
-            effects: { transition, dependencies in
-                switch transition {
-                case let .populated(value):
-                    effects(value, dependencies).publisher
-                case .cleared:
-                    Empty().eraseToAnyPublisher()
-                }
-            }
-        )
-    }
-
-    /// Redux like Middleware signature Feedback factory method that lets you perform side effects when state changes, also knowing which
-    /// event cased it
-    ///
-    /// If the previous effect is still alive when a new one is about to start,
-    /// the previous one would automatically be cancelled.
-    ///
-    /// Important: State value is coming after reducer with an Event that caused the mutation
-    ///
-    /// - parameters:
-    ///   - effects: The side effect accepting the state and yielding events
-    ///              that eventually affect the state.
-    public static func any(
-        _ effects: @escaping (State, Event?, Dependencies) -> Effect
+        effect: @escaping (Payload, State, Dependencies) -> Effect
     ) -> Feedback {
         custom { input, output, dependencies in
+            // NOTE: `observe(on:)` should be applied on the inner producers, so
+            //       that cancellation due to state changes would be able to
+            //       cancel outstanding events that have already been scheduled.
             input
-                .compactMap { state, event -> (State, Event)? in
-                    // filter out initial state (nil event)
+                .compactMap { state, event -> (Payload?, State)? in
                     guard let event else { return nil }
-                    return (state, event)
+                    return (extract(event), state)
                 }
-                .flatMapLatest {
-                    effects($0, $1, dependencies)
-                        .publisher
-                        .enqueue(to: output)
+                .flatMapLatest { payload, state in
+                    let publisher = if let payload {
+                        effect(payload, state, dependencies).publisher
+                    } else {
+                        Empty<Event, Never>().eraseToAnyPublisher()
+                    }
+                    return publisher.enqueue(to: output)
                 }
         }
     }
@@ -379,7 +236,7 @@ extension Feedback {
         }
     }
 
-    public static var input: (feedback: Feedback, observer: (Event) -> Void) {
+    static var input: (feedback: Feedback, observer: (Event) -> Void) {
         let subject = PassthroughSubject<Event, Never>()
         let feedback = Feedback.custom { _, consumer, _ in
             subject.enqueue(to: consumer)
@@ -411,11 +268,6 @@ extension [Cancellable]: Cancellable {
             element.cancel()
         }
     }
-}
-
-private enum NilEdgeTransition<Value> {
-    case populated(Value)
-    case cleared
 }
 
 public typealias FeedbackOf<F: Feature> = Feedback<F.State, F.Event, F.Dependencies>

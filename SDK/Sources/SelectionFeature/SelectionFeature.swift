@@ -151,7 +151,7 @@ package struct SelectionFeatureView: View {
     }
 
     package var body: some View {
-        WithViewStore(store, scope: BodyState.init) { state in
+        WithViewStore(store, scoped: BodyState.init) { state in
             ZStack(alignment: .topLeading) {
                 if state.recognizedStrings != nil {
                     Color.theme(\.overlay)

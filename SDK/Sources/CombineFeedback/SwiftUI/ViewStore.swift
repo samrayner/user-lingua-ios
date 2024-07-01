@@ -12,7 +12,7 @@ public final class ViewStore<State, Event>: ObservableObject {
 
     init(
         store: StoreBoxBase<State, Event>,
-        removeDuplicates isDuplicate: @escaping (State, State) -> Bool
+        removingDuplicates isDuplicate: @escaping (State, State) -> Bool
     ) {
         self.state = store.currentState
         store.publisher
@@ -24,7 +24,7 @@ public final class ViewStore<State, Event>: ObservableObject {
 
     init<S>(
         store: StoreBoxBase<S, Event>,
-        scope: @escaping (S) -> State
+        scoped scope: @escaping (S) -> State
     ) where State: Equatable {
         self.state = scope(store.currentState)
         store.publisher

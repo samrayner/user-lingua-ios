@@ -38,7 +38,7 @@ package struct InspectionFeatureView: View {
     }
 
     package var body: some View {
-        WithViewStore(store, scope: BodyState.init) { state in
+        WithViewStore(store, scoped: BodyState.init) { state in
             VStack(spacing: 0) {
                 if !state.isFullScreen {
                     header()
@@ -68,7 +68,7 @@ package struct InspectionFeatureView: View {
         }
         .ignoresSafeArea(edges: ignoredSafeAreaEdges)
         .background {
-            WithViewStore(store, scope: \.presentation) { presentation in
+            WithViewStore(store, scoped: \.presentation) { presentation in
                 switch presentation.state {
                 case let .presenting(appFacade), let .dismissing(appFacade):
                     appFacade.map { Image(uiImage: $0).ignoresSafeArea() }
@@ -142,7 +142,7 @@ package struct InspectionFeatureView: View {
 
     @ViewBuilder
     private func viewport() -> some View {
-        WithViewStore(store, scope: ViewportState.init) { state in
+        WithViewStore(store, scoped: ViewportState.init) { state in
             RoundedRectangle(cornerRadius: .Radius.l)
                 .inset(by: -.BorderWidth.xl)
                 .strokeBorder(Color.theme(\.background), lineWidth: .BorderWidth.xl)
@@ -174,7 +174,7 @@ package struct InspectionFeatureView: View {
 
     @ViewBuilder
     private func inspectionPanel() -> some View {
-        WithViewStore(store, scope: InspectionPanelState.init) { state in
+        WithViewStore(store, scoped: InspectionPanelState.init) { state in
             VStack(alignment: .leading, spacing: .Space.m) {
                 HStack(spacing: .Space.m) {
                     TextField(

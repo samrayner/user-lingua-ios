@@ -36,16 +36,16 @@ open class Store<State, Event> {
 
     @MainActor
     func viewStore(
-        removeDuplicates isDuplicate: @escaping (State, State) -> Bool
+        removingDuplicates isDuplicate: @escaping (State, State) -> Bool
     ) -> ViewStore<State, Event> {
-        ViewStore(store: box, removeDuplicates: isDuplicate)
+        ViewStore(store: box, removingDuplicates: isDuplicate)
     }
 
     @MainActor
     func viewStore<S: Equatable>(
-        scope: @escaping (State) -> S
+        scoped scope: @escaping (State) -> S
     ) -> ViewStore<S, Event> {
-        ViewStore(store: box, scope: scope)
+        ViewStore(store: box, scoped: scope)
     }
 
     open func send(_ event: Event) {

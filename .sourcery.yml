@@ -35,3 +35,10 @@ configurations:
     args:
       hideVersionHeader: true
 
+  - sources:
+      - SDK/Sources/RootFeature
+    templates:
+      - SourceryTemplates/Scoped.stencil
+    output: SDK/Sources/RootFeature/Sourcery
+    args:
+      hideVersionHeader: true

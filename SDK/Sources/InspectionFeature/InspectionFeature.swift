@@ -204,7 +204,7 @@ package enum InspectionFeature: Feature {
 
     private static var stateFeedback: FeedbackOf<Self> {
         .combine(
-            .state(\.presentation) { _, new, dependencies in
+            .state(scoped: \.presentation) { _, new, dependencies in
                 switch new {
                 case .preparingToDismiss:
                     let appFacade = dependencies.windowService.screenshotAppWindow()
@@ -216,23 +216,23 @@ package enum InspectionFeature: Feature {
                     return .none
                 }
             },
-            .state(removeDuplicates: \.viewportFrame) { _, new, _ in
+            .state(ifChanged: \.viewportFrame) { _, new, _ in
                 guard !new.isTransitioning else { return .none }
                 return .send(.focusViewport())
             },
-            .state(removeDuplicates: \.recognizedString) { old, new, _ in
+            .state(ifChanged: \.recognizedString) { old, new, _ in
                 print(">>> \(old.recognizedString)")
                 print(">>> \(new.recognizedString)")
                 return .send(.focusViewport(fromZeroPosition: true))
             },
-            .state(\.suggestionValue) { _, _, _ in
+            .state(scoped: \.suggestionValue) { _, _, _ in
                 .send(.saveSuggestion) // TODO: debounce
             },
-            .state(\.appIsInDarkMode) { _, _, dependencies in
+            .state(scoped: \.appIsInDarkMode) { _, _, dependencies in
                 dependencies.windowService.toggleDarkMode()
                 return .none
             },
-            .state(removeDuplicates: \.locale) { _, new, dependencies in
+            .state(ifChanged: \.locale) { _, new, dependencies in
                 let suggestionValue = dependencies.suggestionsRepository.suggestion(
                     for: new.recognizedString.value,
                     locale: new.locale

@@ -12,22 +12,22 @@ public struct WithViewStore<State, ScopedState, Event, Content: View>: View {
 
     public init(
         _ store: Store<State, Event>,
-        removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+        removingDuplicates isDuplicate: @escaping (State, State) -> Bool,
         @ViewBuilder content: @escaping (ViewStore<State, Event>) -> Content
     ) where ScopedState == State {
         self.store = store
         self.content = content
-        self.viewStore = store.viewStore(removeDuplicates: isDuplicate)
+        self.viewStore = store.viewStore(removingDuplicates: isDuplicate)
     }
 
     public init(
         _ store: Store<State, Event>,
-        scope: @escaping (State) -> ScopedState,
+        scoped scope: @escaping (State) -> ScopedState,
         @ViewBuilder content: @escaping (ViewStore<ScopedState, Event>) -> Content
     ) where ScopedState: Equatable {
         self.store = store
         self.content = content
-        self.viewStore = store.viewStore(scope: scope)
+        self.viewStore = store.viewStore(scoped: scope)
     }
 
     public var body: some View {
@@ -40,6 +40,6 @@ extension WithViewStore where State: Equatable {
         _ store: Store<State, Event>,
         @ViewBuilder content: @escaping (ViewStore<State, Event>) -> Content
     ) where ScopedState == State {
-        self.init(store, removeDuplicates: ==, content: content)
+        self.init(store, removingDuplicates: ==, content: content)
     }
 }
