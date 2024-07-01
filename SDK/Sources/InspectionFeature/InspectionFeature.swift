@@ -61,6 +61,7 @@ package enum InspectionFeature: Feature {
         var recognition = RecognitionFeature.State()
         var previewMode: PreviewMode = .app
         var focusedField: Field?
+        var keyboardAnimation: Animation?
         var keyboardHeight: CGFloat = 0
         var viewportFrame: CGRect = .zero
         var isFullScreen = false
@@ -155,9 +156,7 @@ package enum InspectionFeature: Feature {
                     print("SUBMITTED \(state.suggestionValue)")
                 case .didTapToggleFullScreen:
                     state.focusedField = nil
-                    withAnimation(.linear) {
-                        state.isFullScreen.toggle()
-                    }
+                    state.isFullScreen.toggle()
                 case .didAppear:
                     state.presentation = .presented
                 case let .dismiss(appFacade):
@@ -173,11 +172,10 @@ package enum InspectionFeature: Feature {
                 case let .viewportFrameDidChange(frame):
                     state.viewportFrame = frame
                 case let .keyboardWillChangeFrame(notification):
+                    state.keyboardAnimation = notification.animation
                     let newHeight = max(0, UIScreen.main.bounds.height - notification.endFrame.origin.y)
                     if newHeight != state.keyboardHeight {
-                        withAnimation(notification.animation) {
-                            state.keyboardHeight = newHeight
-                        }
+                        state.keyboardHeight = newHeight
                     }
                 case let .recognition(.delegate(.didFinish(result))):
                     switch result {

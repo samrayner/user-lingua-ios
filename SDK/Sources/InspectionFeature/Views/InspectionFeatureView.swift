@@ -21,19 +21,11 @@ package struct InspectionFeatureView: View {
         self.store = store
     }
 
-    private var ignoredSafeAreaEdges: Edge.Set {
-        if store.state.isFullScreen {
-            .all
-        } else if store.state.keyboardHeight > 0 {
-            .bottom
-        } else {
-            []
-        }
-    }
-
     struct BodyState: Equatable, Scoped {
         typealias Parent = InspectionFeature.State
         let isFullScreen: Bool
+        let keyboardHeight: CGFloat
+        let keyboardAnimation: Animation?
         let previewMode: InspectionFeature.PreviewMode
     }
 
@@ -65,8 +57,12 @@ package struct InspectionFeatureView: View {
                         .transition(.move(edge: .bottom))
                 }
             }
+            .ignoresSafeArea(
+                edges: state.isFullScreen ? .all : (state.keyboardHeight > 0 ? .bottom : [])
+            )
+            .animation(.linear, value: state.isFullScreen)
+            .animation(state.keyboardAnimation, value: state.keyboardHeight)
         }
-        .ignoresSafeArea(edges: ignoredSafeAreaEdges)
         .background {
             WithViewStore(store, scoped: \.presentation) { presentation in
                 switch presentation.state {

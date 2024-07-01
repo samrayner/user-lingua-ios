@@ -24,6 +24,8 @@ extension InspectionFeature.Dependencies {
 extension InspectionFeatureView.BodyState {
     internal init(from parent: Parent) {
         self.isFullScreen = parent.isFullScreen
+        self.keyboardHeight = parent.keyboardHeight
+        self.keyboardAnimation = parent.keyboardAnimation
         self.previewMode = parent.previewMode
     }
 }
