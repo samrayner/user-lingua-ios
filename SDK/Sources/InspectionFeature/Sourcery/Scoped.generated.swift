@@ -3,21 +3,33 @@
 
 
 extension AppPreviewFeatureView.BodyState {
-    init(parent: Parent) {
+    internal init(from parent: Parent) {
         self.isFullScreen = parent.isFullScreen
         self.appIsInDarkMode = parent.appIsInDarkMode
     }
 }
 
+extension InspectionFeature.Dependencies {
+    package init(from parent: Parent) {
+        self.notificationCenter = parent.notificationCenter
+        self.windowService = parent.windowService
+        self.appViewModel = parent.appViewModel
+        self.contentSizeCategoryService = parent.contentSizeCategoryService
+        self.orientationService = parent.orientationService
+        self.suggestionsRepository = parent.suggestionsRepository
+        self.recognition = .init(from: parent)
+    }
+}
+
 extension InspectionFeatureView.BodyState {
-    init(parent: Parent) {
+    internal init(from parent: Parent) {
         self.isFullScreen = parent.isFullScreen
         self.previewMode = parent.previewMode
     }
 }
 
 extension InspectionFeatureView.InspectionPanelState {
-    init(parent: Parent) {
+    internal init(from parent: Parent) {
         self.suggestionValue = parent.suggestionValue
         self.localizedValue = parent.localizedValue
         self.recognizedString = parent.recognizedString
@@ -28,14 +40,14 @@ extension InspectionFeatureView.InspectionPanelState {
 }
 
 extension InspectionFeatureView.ViewportState {
-    init(parent: Parent) {
+    internal init(from parent: Parent) {
         self.isFullScreen = parent.isFullScreen
         self.isTransitioning = parent.isTransitioning
     }
 }
 
 extension TextPreviewFeatureView.BodyState {
-    init(parent: Parent) {
+    internal init(from parent: Parent) {
         self.locale = parent.locale
         self.diff = parent.diff
         self.suggestionValue = parent.suggestionValue

@@ -15,7 +15,9 @@ package enum RecognitionFeature: Feature {
         case recognitionFailed(Swift.Error)
     }
 
-    package struct Dependencies {
+    package struct Dependencies: Scoped {
+        package typealias Parent = AllDependencies
+
         let windowService: any WindowServiceProtocol
         let appViewModel: UserLinguaObservable
         let stringRecognizer: any StringRecognizerProtocol
@@ -132,13 +134,5 @@ package struct RecognitionFeatureView: View {
                     .ignoresSafeArea()
             }
         }
-    }
-}
-
-extension RecognitionFeature.Dependencies {
-    package init(dependencies: AllDependencies) {
-        self.windowService = dependencies.windowService
-        self.appViewModel = dependencies.appViewModel
-        self.stringRecognizer = dependencies.stringRecognizer
     }
 }

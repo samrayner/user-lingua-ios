@@ -16,7 +16,7 @@ public final class UserLingua {
 
     private lazy var store = RootFeature.store(
         initialState: .disabled,
-        dependencies: .init(dependencies: dependencies)
+        dependencies: .init(from: dependencies)
     )
 
     private var inPreviewsOrTests: Bool {

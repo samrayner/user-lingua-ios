@@ -12,13 +12,17 @@ import SwiftUI
 import Theme
 
 package enum SelectionFeature: Feature {
-    package struct Dependencies {
+    package struct Dependencies: Scoped {
+        package typealias Parent = AllDependencies
+
         let windowService: any WindowServiceProtocol
         let contentSizeCategoryService: any ContentSizeCategoryServiceProtocol
         let orientationService: any OrientationServiceProtocol
 
+        // sourcery:begin: initFromParent
         let inspection: InspectionFeature.Dependencies
         let recognition: RecognitionFeature.Dependencies
+        // sourcery:end
     }
 
     package struct State: Equatable {
@@ -229,16 +233,5 @@ private struct RecognizedStringHighlight: View {
         }
         .onAppear { isVisible = true }
         .onDisappear { isVisible = false }
-    }
-}
-
-extension SelectionFeature.Dependencies {
-    package init(dependencies: AllDependencies) {
-        self.windowService = dependencies.windowService
-        self.contentSizeCategoryService = dependencies.contentSizeCategoryService
-        self.orientationService = dependencies.orientationService
-
-        self.inspection = .init(dependencies: dependencies)
-        self.recognition = .init(dependencies: dependencies)
     }
 }

@@ -2,9 +2,13 @@
 
 {% for type in types.structs where type.based.Scoped %}
 extension {{ type.name }} {
-    {{ accessLevel type.accessLevel }}init(parent: Parent) {
-    {% for variable in type.allVariables|!definedInExtension %}
+    {{ type.accessLevel }} init(from parent: Parent) {
+    {% for variable in type.variables|instance|!definedInExtension %}
+    {% if variable|annotated:"initFromParent" %}
+        self.{{ variable.name }} = .init(from: parent)
+    {% else %}
         self.{{ variable.name }} = parent.{{ variable.name }}
+    {% endif %}
     {% endfor %}
     }
 }

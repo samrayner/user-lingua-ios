@@ -13,7 +13,9 @@ import SwiftUI
 import Theme
 
 package enum InspectionFeature: Feature {
-    package struct Dependencies {
+    package struct Dependencies: Scoped {
+        package typealias Parent = AllDependencies
+
         let notificationCenter: NotificationCenter
         let windowService: any WindowServiceProtocol
         let appViewModel: UserLinguaObservable
@@ -21,6 +23,7 @@ package enum InspectionFeature: Feature {
         let orientationService: any OrientationServiceProtocol
         let suggestionsRepository: any SuggestionsRepositoryProtocol
 
+        // sourcery: initFromParent
         let recognition: RecognitionFeature.Dependencies
     }
 
@@ -289,18 +292,5 @@ package enum InspectionFeature: Feature {
             stateFeedback,
             eventFeedback
         )
-    }
-}
-
-extension InspectionFeature.Dependencies {
-    package init(dependencies: AllDependencies) {
-        self.notificationCenter = dependencies.notificationCenter
-        self.windowService = dependencies.windowService
-        self.appViewModel = dependencies.appViewModel
-        self.contentSizeCategoryService = dependencies.contentSizeCategoryService
-        self.orientationService = dependencies.orientationService
-        self.suggestionsRepository = dependencies.suggestionsRepository
-
-        self.recognition = .init(dependencies: dependencies)
     }
 }

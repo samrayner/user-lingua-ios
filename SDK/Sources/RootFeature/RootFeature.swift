@@ -13,11 +13,14 @@ import SwiftUI
 import Theme
 
 package enum RootFeature: Feature {
-    package struct Dependencies {
+    package struct Dependencies: Scoped {
+        package typealias Parent = AllDependencies
+
         let notificationCenter: NotificationCenter
         let windowService: any WindowServiceProtocol
         let swizzler: any SwizzlerProtocol
 
+        // sourcery: initFromParent
         let selection: SelectionFeature.Dependencies
     }
 
@@ -127,15 +130,5 @@ package struct RootFeatureView: View {
             .foregroundColor(.theme(\.text))
             .tint(.theme(\.tint))
         }
-    }
-}
-
-extension RootFeature.Dependencies {
-    package init(dependencies: AllDependencies) {
-        self.notificationCenter = dependencies.notificationCenter
-        self.windowService = dependencies.windowService
-        self.swizzler = dependencies.swizzler
-
-        self.selection = .init(dependencies: dependencies)
     }
 }
