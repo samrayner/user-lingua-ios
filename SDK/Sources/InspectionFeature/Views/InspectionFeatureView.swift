@@ -12,7 +12,7 @@ package struct InspectionFeatureView: View {
     typealias Event = InspectionFeature.Event
 
     @Environment(\.dismiss) var dismiss
-    @EnvironmentObject var orientationService: ViewDependency<OrientationServiceProtocol>
+    @EnvironmentObject var deviceOrientationObservable: DeviceOrientationObservable
 
     private let store: StoreOf<InspectionFeature>
     @FocusState private var focusedField: InspectionFeature.Field?
@@ -80,7 +80,7 @@ package struct InspectionFeatureView: View {
             guard case .dismissing = $0 else { return }
             dismiss()
         }
-        .onReceive(orientationService.dependency.orientationDidChange()) {
+        .onReceive(deviceOrientationObservable.didChangePublisher) {
             store.send(.orientationDidChange($0))
         }
         .onReceive(

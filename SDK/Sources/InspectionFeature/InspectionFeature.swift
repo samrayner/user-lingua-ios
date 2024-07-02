@@ -16,11 +16,11 @@ package enum InspectionFeature: Feature {
     package struct Dependencies: Scoped {
         package typealias Parent = AllDependencies
 
-        let notificationCenter: NotificationCenter
-        let windowService: any WindowServiceProtocol
         let appViewModel: UserLinguaObservable
+        let notificationCenter: NotificationCenter
+        let deviceOrientationObservable: DeviceOrientationObservable
+        let windowService: any WindowServiceProtocol
         let contentSizeCategoryService: any ContentSizeCategoryServiceProtocol
-        let orientationService: any OrientationServiceProtocol
         let suggestionsRepository: any SuggestionsRepositoryProtocol
 
         // sourcery: initFromParent
@@ -184,10 +184,12 @@ package enum InspectionFeature: Feature {
                             where: { $0.recordedString.formatted == state.recognizedString.recordedString.formatted }
                         ) else { return }
 
+                        // recognizedString may not be found again on re-recognition
+                        // due to keyboard avoidance in the app hiding it from view
+
                         state.recognizedString = recognizedString
                     case .failure:
-                        // do not update recognizedString as was not found on re-recognition
-                        // this could be because of keyboard avoidance in the app hiding it from view
+                        // recognition failed for some reason, so do nothing
                         return
                     }
                 case .didTapIncreaseTextSize,
@@ -222,6 +224,7 @@ package enum InspectionFeature: Feature {
                 return .send(.focusViewport())
             },
             .state(ifChanged: \.recognizedString) { _, _ in
+                // refocus viewport after re-recognition (i.e. after orientation change)
                 .send(.focusViewport(fromZeroPosition: true))
             },
             .state(scoped: \.suggestionValue) { _, _ in

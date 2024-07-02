@@ -36,7 +36,7 @@ public final class UserLingua {
         dependencies.windowService.setRootView(
             RootFeatureView(store: store)
                 .environmentObject(ViewDependency(configuration))
-                .environmentObject(ViewDependency(dependencies.orientationService))
+                .environmentObject(dependencies.deviceOrientationObservable.started())
         )
     }
 

@@ -2,7 +2,6 @@
 
 import CasePaths
 import Combine
-import CombineSchedulers
 import SwiftUI
 
 public struct Feedback<State, Event, Dependencies> {
@@ -22,7 +21,7 @@ public struct Feedback<State, Event, Dependencies> {
             case let .send(events, delayInterval):
                 if let delayInterval {
                     events.publisher
-                        .delay(for: .seconds(delayInterval), scheduler: UIScheduler.shared)
+                        .delay(for: .seconds(delayInterval), scheduler: RunLoop.main)
                         .eraseToAnyPublisher()
                 } else {
                     events.publisher.eraseToAnyPublisher()

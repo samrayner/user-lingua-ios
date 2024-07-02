@@ -15,9 +15,9 @@ package enum SelectionFeature: Feature {
     package struct Dependencies: Scoped {
         package typealias Parent = AllDependencies
 
+        let deviceOrientationObservable: DeviceOrientationObservable
         let windowService: any WindowServiceProtocol
         let contentSizeCategoryService: any ContentSizeCategoryServiceProtocol
-        let orientationService: any OrientationServiceProtocol
 
         // sourcery:begin: initFromParent
         let inspection: InspectionFeature.Dependencies
@@ -112,9 +112,8 @@ package enum SelectionFeature: Feature {
             .event(/Event.onAppear) { _, _, _ in
                 .send(.recognition(.start))
             },
-            .event(/Event.orientationDidChange) { _, state, _ in
-                guard !state.new.isInspecting else { return .none }
-                return .send(.recognition(.start), after: 0.1)
+            .event(/Event.orientationDidChange) { _, _, _ in
+                .send(.recognition(.start), after: 0.1)
             }
         )
     }
@@ -139,7 +138,7 @@ package enum SelectionFeature: Feature {
 package struct SelectionFeatureView: View {
     typealias Event = SelectionFeature.Event
 
-    @EnvironmentObject var orientationService: ViewDependency<OrientationServiceProtocol>
+    @EnvironmentObject var deviceOrientationObservable: DeviceOrientationObservable
     @Environment(\.colorScheme) private var colorScheme
     private let store: StoreOf<SelectionFeature>
     @State private var isVisible = false
@@ -186,8 +185,10 @@ package struct SelectionFeatureView: View {
             .onAppear {
                 store.send(.onAppear)
             }
-            .onReceive(orientationService.dependency.orientationDidChange()) {
-                store.send(.orientationDidChange($0))
+            .onReceive(deviceOrientationObservable.didChangePublisher) {
+                if !store.state.isInspecting {
+                    store.send(.orientationDidChange($0))
+                }
             }
             .fullScreenCover(
                 store: store,
