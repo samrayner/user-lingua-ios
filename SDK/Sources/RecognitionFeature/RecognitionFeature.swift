@@ -9,40 +9,40 @@ import Foundation
 import SwiftUI
 import UIKit
 
-package enum RecognitionFeature: Feature {
-    package enum Error: Swift.Error, Equatable {
+public enum RecognitionFeature: Feature {
+    public enum Error: Swift.Error, Equatable {
         case screenshotFailed
         case recognitionFailed(Swift.Error)
     }
 
-    package struct Dependencies: Scoped {
-        package typealias Parent = AllDependencies
+    public struct Dependencies: Scoped {
+        public typealias Parent = AllDependencies
 
         let windowService: any WindowServiceProtocol
         let appViewModel: UserLinguaObservable
         let stringRecognizer: any StringRecognizerProtocol
     }
 
-    package enum Stage: Equatable {
+    public enum Stage: Equatable {
         case preparingFacade
         case preparingApp
         case recognizingStrings
         case resettingApp(yOffset: CGFloat)
     }
 
-    package struct State: Equatable {
-        package var stage: Stage?
+    public struct State: Equatable {
+        public var stage: Stage?
         var appFacade: UIImage?
         var appYOffset: CGFloat = 0
 
-        package init() {}
+        public init() {}
 
-        package var isTakingScreenshot: Bool {
+        public var isTakingScreenshot: Bool {
             stage == .preparingApp
         }
     }
 
-    package enum Event {
+    public enum Event {
         case start
         case didPrepareFacade(screenshot: UIImage, appYOffset: CGFloat)
         case didPrepareApp
@@ -50,12 +50,12 @@ package enum RecognitionFeature: Feature {
         case didResetApp
         case delegate(Delegate)
 
-        package enum Delegate {
+        public enum Delegate {
             case didFinish(Result<[RecognizedString], Error>)
         }
     }
 
-    package static func reducer() -> ReducerOf<Self> {
+    public static func reducer() -> ReducerOf<Self> {
         .init { state, event in
             switch event {
             case .start:
@@ -76,7 +76,7 @@ package enum RecognitionFeature: Feature {
         }
     }
 
-    package static var feedback: FeedbackOf<Self> {
+    public static var feedback: FeedbackOf<Self> {
         .combine(
             .state(scoped: \.stage) { state, dependencies in
                 switch state.new {
@@ -120,14 +120,14 @@ package enum RecognitionFeature: Feature {
     }
 }
 
-package struct RecognitionFeatureView: View {
-    package let store: StoreOf<RecognitionFeature>
+public struct RecognitionFeatureView: View {
+    public let store: StoreOf<RecognitionFeature>
 
-    package init(store: StoreOf<RecognitionFeature>) {
+    public init(store: StoreOf<RecognitionFeature>) {
         self.store = store
     }
 
-    package var body: some View {
+    public var body: some View {
         WithViewStore(store, scoped: \.appFacade) { appFacade in
             if let appFacade = appFacade.state {
                 Image(uiImage: appFacade)

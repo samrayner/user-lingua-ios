@@ -10,7 +10,7 @@ extension AppPreviewFeatureView.BodyState {
 }
 
 extension InspectionFeature.Dependencies {
-    package init(from parent: Parent) {
+    public init(from parent: Parent) {
         self.appViewModel = parent.appViewModel
         self.notificationCenter = parent.notificationCenter
         self.deviceOrientationObservable = parent.deviceOrientationObservable

@@ -3,5 +3,5 @@
 import SwiftUI
 
 extension Color {
-    package static let interactableClear = Color.white.opacity(0.001)
+    public static let interactableClear = Color.white.opacity(0.001)
 }

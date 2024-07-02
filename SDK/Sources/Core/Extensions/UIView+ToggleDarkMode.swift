@@ -3,7 +3,7 @@
 import UIKit
 
 extension UIView {
-    package func toggleDarkMode() {
+    public func toggleDarkMode() {
         let uiStyle = if overrideUserInterfaceStyle == .unspecified {
             UIScreen.main.traitCollection.userInterfaceStyle
         } else {

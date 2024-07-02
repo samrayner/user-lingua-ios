@@ -4,7 +4,7 @@ import Combine
 import Foundation
 
 extension Publisher {
-    package func mapToResult() -> AnyPublisher<Result<Output, Failure>, Never> {
+    public func mapToResult() -> AnyPublisher<Result<Output, Failure>, Never> {
         map(Result.success)
             .catch { error in
                 Just(Result.failure(error))

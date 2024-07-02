@@ -3,8 +3,8 @@
 import SwiftUI
 import UIKit
 
-package struct ThemeFont {
-    package static var scaleFactor: CGFloat = 1.0
+public struct ThemeFont {
+    public static var scaleFactor: CGFloat = 1.0
 
     enum Source {
         case system(weight: UIFont.Weight)
@@ -76,7 +76,7 @@ package struct ThemeFont {
 }
 
 extension ThemeFont {
-    package init(_ moduleFont: ModuleFont) {
+    public init(_ moduleFont: ModuleFont) {
         self = Theme.current.theme.fonts[keyPath: moduleFont]
     }
 }

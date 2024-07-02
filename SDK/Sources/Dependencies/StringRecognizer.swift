@@ -6,24 +6,24 @@ import Foundation
 import UIKit
 import Vision
 
-package enum StringRecognizerError: Error {
+public enum StringRecognizerError: Error {
     case invalidImage
     case recognitionRequestFailed(Error)
 }
 
 // sourcery: AutoMockable
-package protocol StringRecognizerProtocol {
+public protocol StringRecognizerProtocol {
     func recognizeStrings(in image: UIImage) -> AnyPublisher<[RecognizedString], StringRecognizerError>
 }
 
-final class StringRecognizer: StringRecognizerProtocol {
+public final class StringRecognizer: StringRecognizerProtocol {
     let stringsRepository: StringsRepositoryProtocol
 
-    package init(stringsRepository: StringsRepositoryProtocol) {
+    public init(stringsRepository: StringsRepositoryProtocol) {
         self.stringsRepository = stringsRepository
     }
 
-    package func recognizeStrings(in image: UIImage) -> AnyPublisher<[RecognizedString], StringRecognizerError> {
+    public func recognizeStrings(in image: UIImage) -> AnyPublisher<[RecognizedString], StringRecognizerError> {
         recognizeLines(in: image)
             .map(identifyRecognizedLines)
             .eraseToAnyPublisher()

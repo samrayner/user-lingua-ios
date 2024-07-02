@@ -3,7 +3,7 @@
 import SwiftUI
 
 extension View {
-    package func clearPresentationBackground() -> some View {
+    public func clearPresentationBackground() -> some View {
         Group {
             if #available(iOS 16.4, *) {
                 presentationBackground(.clear)

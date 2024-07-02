@@ -3,12 +3,12 @@
 import Foundation
 import KSSDiff
 
-package struct DiffAttributes {
+public struct DiffAttributes {
     let insert: [NSAttributedString.Key: Any]
     let delete: [NSAttributedString.Key: Any]
     let same: [NSAttributedString.Key: Any]
 
-    package init(
+    public init(
         insert: [NSAttributedString.Key: Any] = [:],
         delete: [NSAttributedString.Key: Any] = [:],
         same: [NSAttributedString.Key: Any] = [:]
@@ -20,7 +20,7 @@ package struct DiffAttributes {
 }
 
 extension AttributedString {
-    package init(old: String, new: String, diffAttributes: DiffAttributes) {
+    public init(old: String, new: String, diffAttributes: DiffAttributes) {
         let diffs = DiffMatchPatch(diffTimeout: 0)
             .main(Substring(old), Substring(new))
 

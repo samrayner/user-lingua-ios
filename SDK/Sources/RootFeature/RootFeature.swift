@@ -12,9 +12,9 @@ import SelectionFeature
 import SwiftUI
 import Theme
 
-package enum RootFeature: Feature {
-    package struct Dependencies: Scoped {
-        package typealias Parent = AllDependencies
+public enum RootFeature: Feature {
+    public struct Dependencies: Scoped {
+        public typealias Parent = AllDependencies
 
         let notificationCenter: NotificationCenter
         let windowService: any WindowServiceProtocol
@@ -24,7 +24,7 @@ package enum RootFeature: Feature {
         let selection: SelectionFeature.Dependencies
     }
 
-    package enum State: Equatable {
+    public enum State: Equatable {
         case disabled
         case recording
         case visible(SelectionFeature.State)
@@ -47,14 +47,14 @@ package enum RootFeature: Feature {
         }
     }
 
-    package enum Event {
+    public enum Event {
         case enable
         case disable
         case didShake
         case selection(SelectionFeature.Event)
     }
 
-    package static func reducer() -> ReducerOf<Self> {
+    public static func reducer() -> ReducerOf<Self> {
         .combine(
             SelectionFeature.reducer()
                 .pullback(state: /State.visible, event: /Event.selection),
@@ -78,7 +78,7 @@ package enum RootFeature: Feature {
         // .printChanges()
     }
 
-    package static var feedback: FeedbackOf<Self> {
+    public static var feedback: FeedbackOf<Self> {
         .combine(
             SelectionFeature.feedback.pullback(
                 state: /State.visible,
@@ -111,16 +111,16 @@ package enum RootFeature: Feature {
     }
 }
 
-package struct RootFeatureView: View {
+public struct RootFeatureView: View {
     typealias Event = RootFeature.Event
 
     let store: StoreOf<RootFeature>
 
-    package init(store: StoreOf<RootFeature>) {
+    public init(store: StoreOf<RootFeature>) {
         self.store = store
     }
 
-    package var body: some View {
+    public var body: some View {
         WithViewStore(store, scoped: \.isVisible) { _ in
             ZStack {
                 if let store = store.scoped(to: \.selection, event: Event.selection) {

@@ -3,7 +3,7 @@
 
 
 extension RootFeature.Dependencies {
-    package init(from parent: Parent) {
+    public init(from parent: Parent) {
         self.notificationCenter = parent.notificationCenter
         self.windowService = parent.windowService
         self.swizzler = parent.swizzler

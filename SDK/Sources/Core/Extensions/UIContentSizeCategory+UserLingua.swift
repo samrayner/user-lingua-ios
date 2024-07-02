@@ -3,7 +3,7 @@
 import UIKit
 
 extension UIContentSizeCategory {
-    package static var isUserLinguaNotificationUserInfoKey: String { #function }
+    public static var isUserLinguaNotificationUserInfoKey: String { #function }
 
     private var knownCases: [UIContentSizeCategory] {
         [
@@ -22,7 +22,7 @@ extension UIContentSizeCategory {
         ]
     }
 
-    package var fontScaleFactor: CGFloat {
+    public var fontScaleFactor: CGFloat {
         switch self {
         case .extraSmall: 0.6
         case .small: 0.8
@@ -41,7 +41,7 @@ extension UIContentSizeCategory {
         }
     }
 
-    package func incremented() -> Self {
+    public func incremented() -> Self {
         if let index = knownCases.firstIndex(of: self), index < knownCases.endIndex - 1 {
             knownCases[index + 1]
         } else {
@@ -49,7 +49,7 @@ extension UIContentSizeCategory {
         }
     }
 
-    package func decremented() -> Self {
+    public func decremented() -> Self {
         if let index = knownCases.firstIndex(of: self), index > knownCases.startIndex {
             knownCases[index - 1]
         } else {

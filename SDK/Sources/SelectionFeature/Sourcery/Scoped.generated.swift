@@ -3,7 +3,7 @@
 
 
 extension SelectionFeature.Dependencies {
-    package init(from parent: Parent) {
+    public init(from parent: Parent) {
         self.deviceOrientationObservable = parent.deviceOrientationObservable
         self.windowService = parent.windowService
         self.contentSizeCategoryService = parent.contentSizeCategoryService

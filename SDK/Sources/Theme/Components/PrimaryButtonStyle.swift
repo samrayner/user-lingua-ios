@@ -2,8 +2,8 @@
 
 import SwiftUI
 
-package struct PrimaryButtonStyle: ButtonStyle {
-    package func makeBody(configuration: Configuration) -> some View {
+public struct PrimaryButtonStyle: ButtonStyle {
+    public func makeBody(configuration: Configuration) -> some View {
         PrimaryButton(configuration: configuration)
     }
 
@@ -37,7 +37,7 @@ package struct PrimaryButtonStyle: ButtonStyle {
 }
 
 extension ButtonStyle where Self == PrimaryButtonStyle {
-    package static var primary: PrimaryButtonStyle { .init() }
+    public static var primary: PrimaryButtonStyle { .init() }
 }
 
 struct PrimaryButtonStylePreview: PreviewProvider {

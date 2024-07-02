@@ -1,7 +1,7 @@
 // Reflection.swift
 
-package enum Reflection {
-    package static func value(
+public enum Reflection {
+    public static func value(
         _ label: String,
         on object: Any
     ) -> Any? {

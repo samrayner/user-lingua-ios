@@ -8,7 +8,7 @@ import Strings
 import SwiftUI
 import Theme
 
-package struct InspectionFeatureView: View {
+public struct InspectionFeatureView: View {
     typealias Event = InspectionFeature.Event
 
     @Environment(\.dismiss) var dismiss
@@ -17,7 +17,7 @@ package struct InspectionFeatureView: View {
     private let store: StoreOf<InspectionFeature>
     @FocusState private var focusedField: InspectionFeature.Field?
 
-    package init(store: StoreOf<InspectionFeature>) {
+    public init(store: StoreOf<InspectionFeature>) {
         self.store = store
     }
 
@@ -29,7 +29,7 @@ package struct InspectionFeatureView: View {
         let previewMode: InspectionFeature.PreviewMode
     }
 
-    package var body: some View {
+    public var body: some View {
         WithViewStore(store, scoped: BodyState.init) { state in
             VStack(spacing: 0) {
                 if !state.isFullScreen {

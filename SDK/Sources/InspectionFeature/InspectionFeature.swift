@@ -12,9 +12,9 @@ import Strings
 import SwiftUI
 import Theme
 
-package enum InspectionFeature: Feature {
-    package struct Dependencies: Scoped {
-        package typealias Parent = AllDependencies
+public enum InspectionFeature: Feature {
+    public struct Dependencies: Scoped {
+        public typealias Parent = AllDependencies
 
         let appViewModel: UserLinguaObservable
         let notificationCenter: NotificationCenter
@@ -27,11 +27,11 @@ package enum InspectionFeature: Feature {
         let recognition: RecognitionFeature.Dependencies
     }
 
-    package enum Field: String, Hashable {
+    public enum Field: String, Hashable {
         case suggestion
     }
 
-    package enum PreviewMode: String, CaseIterable {
+    public enum PreviewMode: String, CaseIterable {
         case text
         case app
 
@@ -45,17 +45,17 @@ package enum InspectionFeature: Feature {
         }
     }
 
-    package enum PresentationState: Equatable {
+    public enum PresentationState: Equatable {
         case presenting(appFacade: UIImage?)
         case presented
         case preparingToDismiss
         case dismissing(appFacade: UIImage?)
     }
 
-    package struct State: Equatable {
-        package internal(set) var recognizedString: RecognizedString
-        package var locale = Locale.current
-        package var suggestionValue: String
+    public struct State: Equatable {
+        public internal(set) var recognizedString: RecognizedString
+        public var locale = Locale.current
+        public var suggestionValue: String
         var appIsInDarkMode: Bool
         var presentation: PresentationState
         var recognition = RecognitionFeature.State()
@@ -66,7 +66,7 @@ package enum InspectionFeature: Feature {
         var viewportFrame: CGRect = .zero
         var isFullScreen = false
 
-        package var isTransitioning: Bool {
+        public var isTransitioning: Bool {
             presentation != .presented
         }
 
@@ -93,7 +93,7 @@ package enum InspectionFeature: Feature {
             )
         }
 
-        package init(
+        public init(
             recognizedString: RecognizedString,
             appFacade: UIImage?,
             appIsInDarkMode: Bool
@@ -113,7 +113,7 @@ package enum InspectionFeature: Feature {
         }
     }
 
-    package enum Event {
+    public enum Event {
         case didTapSuggestionPreview
         case didTapClose
         case didTapDoneSuggesting
@@ -137,7 +137,7 @@ package enum InspectionFeature: Feature {
         case recognition(RecognitionFeature.Event)
     }
 
-    package static func reducer() -> ReducerOf<Self> {
+    public static func reducer() -> ReducerOf<Self> {
         .combine(
             RecognitionFeature.reducer()
                 .pullback(state: \State.recognition, event: /Event.recognition),
@@ -281,7 +281,7 @@ package enum InspectionFeature: Feature {
         )
     }
 
-    package static var feedback: FeedbackOf<Self> {
+    public static var feedback: FeedbackOf<Self> {
         .combine(
             RecognitionFeature.feedback.pullback(
                 state: \.recognition,

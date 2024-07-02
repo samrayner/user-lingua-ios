@@ -2,14 +2,14 @@
 
 import Foundation
 
-package struct ThemeColors {
-    package let foreground: ThemeColor
-    package let background: ThemeColor
-    package let well: ThemeColor
-    package let surface: ThemeColor
-    package let surfaceDim: ThemeColor
-    package let primary: ThemeColor
-    package let onPrimary: ThemeColor
-    package let positive: ThemeColor
-    package let negative: ThemeColor
+public struct ThemeColors {
+    public let foreground: ThemeColor
+    public let background: ThemeColor
+    public let well: ThemeColor
+    public let surface: ThemeColor
+    public let surfaceDim: ThemeColor
+    public let primary: ThemeColor
+    public let onPrimary: ThemeColor
+    public let positive: ThemeColor
+    public let negative: ThemeColor
 }

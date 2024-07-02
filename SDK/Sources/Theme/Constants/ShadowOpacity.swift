@@ -3,14 +3,14 @@
 import Foundation
 
 extension Double {
-    package enum ShadowOpacity {
+    public enum ShadowOpacity {
         /// 8% opacity
-        package static let low: CGFloat = 0.08
+        public static let low: CGFloat = 0.08
 
         /// 16% opacity
-        package static let medium: CGFloat = 0.16
+        public static let medium: CGFloat = 0.16
 
         /// 24% opacity
-        package static let high: CGFloat = 0.24
+        public static let high: CGFloat = 0.24
     }
 }

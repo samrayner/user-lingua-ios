@@ -3,7 +3,7 @@
 
 
 extension RecognitionFeature.Dependencies {
-    package init(from parent: Parent) {
+    public init(from parent: Parent) {
         self.windowService = parent.windowService
         self.appViewModel = parent.appViewModel
         self.stringRecognizer = parent.stringRecognizer

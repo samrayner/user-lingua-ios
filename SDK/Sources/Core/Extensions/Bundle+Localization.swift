@@ -3,7 +3,7 @@
 import Foundation
 
 extension Bundle {
-    package func localized(localeIdentifier: String) -> Bundle? {
+    public func localized(localeIdentifier: String) -> Bundle? {
         path(
             forResource: localeIdentifier.replacingOccurrences(of: "_", with: "-"),
             ofType: "lproj"

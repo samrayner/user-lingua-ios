@@ -2,8 +2,8 @@
 
 import Foundation
 
-package struct StringFormat: Equatable {
-    package static let placeholderRegex: NSRegularExpression = {
+public struct StringFormat: Equatable {
+    public static let placeholderRegex: NSRegularExpression = {
         let int = "(?:h|hh|l|ll|q|z|t|j)?([dioux])"
         // valid flags for float
         let float = "[aefg]"
@@ -21,34 +21,34 @@ package struct StringFormat: Equatable {
         }
     }()
 
-    package var value: String
-    package var localization: Localization?
+    public var value: String
+    public var localization: Localization?
 
-    package init(value: String, localization: Localization?) {
+    public init(value: String, localization: Localization?) {
         self.value = value
         self.localization = localization
     }
 
-    package var localized: LocalizedString? {
+    public var localized: LocalizedString? {
         localization.map { LocalizedString(value: value, localization: $0) }
     }
 
-    package var isLocalized: Bool {
+    public var isLocalized: Bool {
         localization != nil
     }
 
-    package func localizedValue(locale: Locale) -> String {
+    public func localizedValue(locale: Locale) -> String {
         localization?.value(locale: locale) ?? value
     }
 }
 
 extension StringFormat {
-    package init(_ string: String) {
+    public init(_ string: String) {
         self.value = string
         self.localization = nil
     }
 
-    package init(_ localizedString: LocalizedString) {
+    public init(_ localizedString: LocalizedString) {
         self.value = localizedString.value
         self.localization = localizedString.localization
     }

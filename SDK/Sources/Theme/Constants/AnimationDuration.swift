@@ -3,8 +3,8 @@
 import Foundation
 
 extension TimeInterval {
-    package enum AnimationDuration {
-        package static let quick: TimeInterval = 0.3
-        package static let screenTransition: TimeInterval = 0.4
+    public enum AnimationDuration {
+        public static let quick: TimeInterval = 0.3
+        public static let screenTransition: TimeInterval = 0.4
     }
 }

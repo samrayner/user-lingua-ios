@@ -2,22 +2,22 @@
 
 import Foundation
 
-package struct FormattedString {
-    package var value: String
-    package var format: StringFormat
-    package var arguments: [FormattedStringArgument]
+public struct FormattedString {
+    public var value: String
+    public var format: StringFormat
+    public var arguments: [FormattedStringArgument]
 
-    package init(value: String, format: StringFormat, arguments: [FormattedStringArgument]) {
+    public init(value: String, format: StringFormat, arguments: [FormattedStringArgument]) {
         self.value = value
         self.format = format
         self.arguments = arguments
     }
 
-    package var localization: Localization? {
+    public var localization: Localization? {
         format.localization
     }
 
-    package var isLocalized: Bool {
+    public var isLocalized: Bool {
         localization != nil
     }
 
@@ -25,7 +25,7 @@ package struct FormattedString {
         arguments.map { $0.value(locale: locale) }
     }
 
-    package func localizedValue(locale: Locale) -> String {
+    public func localizedValue(locale: Locale) -> String {
         let localizedFormat = format.localizedValue(locale: locale)
 
         guard !arguments.isEmpty else { return localizedFormat }
@@ -37,7 +37,7 @@ package struct FormattedString {
         )
     }
 
-    package func localizedValue(
+    public func localizedValue(
         locale: Locale,
         placeholderAttributes: [NSAttributedString.Key: Any],
         nonPlaceholderAttributes: [NSAttributedString.Key: Any] = [:],
@@ -102,13 +102,13 @@ package struct FormattedString {
 }
 
 extension FormattedString {
-    package init(_ format: StringFormat) {
+    public init(_ format: StringFormat) {
         self.value = format.value
         self.format = format
         self.arguments = []
     }
 
-    package init(format: StringFormat, arguments: [FormattedStringArgument], locale: Locale = .current) {
+    public init(format: StringFormat, arguments: [FormattedStringArgument], locale: Locale = .current) {
         self.init(
             value: "",
             format: format,
@@ -117,17 +117,17 @@ extension FormattedString {
         self.value = localizedValue(locale: locale)
     }
 
-    package init(_ string: String) {
+    public init(_ string: String) {
         self.init(StringFormat(string))
     }
 
-    package init(_ localizedString: LocalizedString) {
+    public init(_ localizedString: LocalizedString) {
         self.init(StringFormat(localizedString))
     }
 }
 
 extension FormattedString: Equatable {
-    package static func == (lhs: Self, rhs: Self) -> Bool {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.format == rhs.format &&
             lhs.value == rhs.value
         // argument equality is inherently checked

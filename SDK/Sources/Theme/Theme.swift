@@ -8,8 +8,8 @@ protocol ThemeProtocol {
     var images: ThemeImages { get }
 }
 
-package enum Theme: String {
-    package static let current: Theme = .standard
+public enum Theme: String {
+    public static let current: Theme = .standard
 
     case standard
 

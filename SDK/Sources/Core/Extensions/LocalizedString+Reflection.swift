@@ -3,7 +3,7 @@
 import SwiftUI
 
 extension LocalizedStringResource {
-    package var bundle: Bundle? {
+    public var bundle: Bundle? {
         let bundleURL = Reflection.value("_bundleURL", on: self) as? URL
         let localeIdentifier = locale.identifier
 
@@ -13,7 +13,7 @@ extension LocalizedStringResource {
 }
 
 extension String.LocalizationValue {
-    package var key: String? {
+    public var key: String? {
         Reflection.value("key", on: self) as? String
     }
 }

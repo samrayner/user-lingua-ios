@@ -2,12 +2,12 @@
 
 import Foundation
 
-package struct RecognizedString: Equatable {
-    package let id = UUID()
-    package var recordedString: RecordedString
-    package var lines: [RecognizedLine]
+public struct RecognizedString: Equatable {
+    public let id = UUID()
+    public var recordedString: RecordedString
+    public var lines: [RecognizedLine]
 
-    package init(
+    public init(
         recordedString: RecordedString,
         lines: [RecognizedLine]
     ) {
@@ -15,19 +15,19 @@ package struct RecognizedString: Equatable {
         self.lines = lines
     }
 
-    package var localization: Localization? {
+    public var localization: Localization? {
         recordedString.localization
     }
 
-    package var isLocalized: Bool {
+    public var isLocalized: Bool {
         localization != nil
     }
 
-    package var value: String {
+    public var value: String {
         recordedString.value
     }
 
-    package var boundingBox: CGRect {
+    public var boundingBox: CGRect {
         guard let firstLineFrame = lines.first?.boundingBox else { return .zero }
 
         return lines.dropFirst().reduce(into: firstLineFrame) { boundingBox, line in
@@ -35,7 +35,7 @@ package struct RecognizedString: Equatable {
         }
     }
 
-    package var boundingBoxCenter: CGPoint {
+    public var boundingBoxCenter: CGPoint {
         let boundingBox = boundingBox
 
         return CGPoint(
@@ -44,11 +44,11 @@ package struct RecognizedString: Equatable {
         )
     }
 
-    package func localizedValue(locale: Locale) -> String {
+    public func localizedValue(locale: Locale) -> String {
         recordedString.localizedValue(locale: locale)
     }
 
-    package func localizedValue(
+    public func localizedValue(
         locale: Locale,
         placeholderAttributes: [NSAttributedString.Key: Any],
         nonPlaceholderAttributes: [NSAttributedString.Key: Any] = [:],

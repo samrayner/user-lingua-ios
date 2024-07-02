@@ -11,9 +11,9 @@ import RecognitionFeature
 import SwiftUI
 import Theme
 
-package enum SelectionFeature: Feature {
-    package struct Dependencies: Scoped {
-        package typealias Parent = AllDependencies
+public enum SelectionFeature: Feature {
+    public struct Dependencies: Scoped {
+        public typealias Parent = AllDependencies
 
         let deviceOrientationObservable: DeviceOrientationObservable
         let windowService: any WindowServiceProtocol
@@ -25,19 +25,19 @@ package enum SelectionFeature: Feature {
         // sourcery:end
     }
 
-    package struct State: Equatable {
-        package var recognition = RecognitionFeature.State()
-        package var inspection: InspectionFeature.State?
+    public struct State: Equatable {
+        public var recognition = RecognitionFeature.State()
+        public var inspection: InspectionFeature.State?
         var recognizedStrings: [RecognizedString]?
 
-        package init() {}
+        public init() {}
 
         var isInspecting: Bool {
             inspection != nil
         }
     }
 
-    package enum Event {
+    public enum Event {
         case didSelectString(RecognizedString)
         case didTapOverlay
         case inspectionDidDismiss
@@ -48,12 +48,12 @@ package enum SelectionFeature: Feature {
         case recognition(RecognitionFeature.Event)
         case delegate(Delegate)
 
-        package enum Delegate {
+        public enum Delegate {
             case dismiss
         }
     }
 
-    package static func reducer() -> ReducerOf<Self> {
+    public static func reducer() -> ReducerOf<Self> {
         .combine(
             RecognitionFeature.reducer()
                 .pullback(state: \State.recognition, event: /Event.recognition),
@@ -118,7 +118,7 @@ package enum SelectionFeature: Feature {
         )
     }
 
-    package static var feedback: FeedbackOf<Self> {
+    public static var feedback: FeedbackOf<Self> {
         .combine(
             RecognitionFeature.feedback.pullback(
                 state: \.recognition,
@@ -135,7 +135,7 @@ package enum SelectionFeature: Feature {
     }
 }
 
-package struct SelectionFeatureView: View {
+public struct SelectionFeatureView: View {
     typealias Event = SelectionFeature.Event
 
     @EnvironmentObject var deviceOrientationObservable: DeviceOrientationObservable
@@ -143,7 +143,7 @@ package struct SelectionFeatureView: View {
     private let store: StoreOf<SelectionFeature>
     @State private var isVisible = false
 
-    package init(store: StoreOf<SelectionFeature>) {
+    public init(store: StoreOf<SelectionFeature>) {
         self.store = store
     }
 
@@ -153,7 +153,7 @@ package struct SelectionFeatureView: View {
         let isInspecting: Bool
     }
 
-    package var body: some View {
+    public var body: some View {
         WithViewStore(store, scoped: BodyState.init) { state in
             ZStack(alignment: .topLeading) {
                 if state.recognizedStrings != nil {

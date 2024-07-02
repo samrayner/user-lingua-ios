@@ -2,33 +2,33 @@
 
 import Foundation
 
-package struct RecordedString: Equatable {
-    package var formatted: FormattedString
-    package var recognizable: String
-    package var recordedAt: Date = .now
+public struct RecordedString: Equatable {
+    public var formatted: FormattedString
+    public var recognizable: String
+    public var recordedAt: Date = .now
 
-    package init(_ formatted: FormattedString) {
+    public init(_ formatted: FormattedString) {
         self.formatted = formatted
         self.recognizable = formatted.value.tokenized()
     }
 
-    package var localization: Localization? {
+    public var localization: Localization? {
         formatted.localization
     }
 
-    package var isLocalized: Bool {
+    public var isLocalized: Bool {
         localization != nil
     }
 
-    package var value: String {
+    public var value: String {
         formatted.value
     }
 
-    package func localizedValue(locale: Locale) -> String {
+    public func localizedValue(locale: Locale) -> String {
         formatted.localizedValue(locale: locale)
     }
 
-    package func localizedValue(
+    public func localizedValue(
         locale: Locale,
         placeholderAttributes: [NSAttributedString.Key: Any],
         nonPlaceholderAttributes: [NSAttributedString.Key: Any] = [:],
@@ -44,11 +44,11 @@ package struct RecordedString: Equatable {
 }
 
 extension RecordedString {
-    package init(_ localizedString: LocalizedString) {
+    public init(_ localizedString: LocalizedString) {
         self.init(FormattedString(localizedString))
     }
 
-    package init(_ string: String) {
+    public init(_ string: String) {
         self.init(FormattedString(string))
     }
 }
