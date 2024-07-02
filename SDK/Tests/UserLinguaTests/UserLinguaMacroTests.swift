@@ -4,7 +4,7 @@
 // so importing Macros breaks Previews when the SDK package is the target
 // https://forums.swift.org/t/xcode-15-beta-no-such-module-error-with-swiftpm-and-macro/65486
 
-// import Macros
+// import UserLinguaMacros
 // import SwiftSyntaxMacros
 // import SwiftSyntaxMacrosTestSupport
 // import XCTest

@@ -29,7 +29,7 @@ let package = Package(
             dependencies: [
                 "Dependencies",
                 "SystemAPIAliases",
-                "Macros",
+                "UserLinguaMacros",
                 "RootFeature"
             ],
             resources: [
@@ -143,7 +143,7 @@ let package = Package(
             name: "UserLinguaTests",
             dependencies: [
                 "UserLingua",
-                "Macros",
+                "UserLinguaMacros",
                 .product(
                     name: "SwiftSyntaxMacrosTestSupport",
                     package: "swift-syntax"
@@ -151,7 +151,7 @@ let package = Package(
             ]
         ),
         .macro(
-            name: "Macros",
+            name: "UserLinguaMacros",
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
