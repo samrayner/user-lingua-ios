@@ -75,6 +75,10 @@ struct UpdateLibs: AsyncParsableCommand {
                             with: "",
                             options: .regularExpression
                         )
+                        .replacingOccurrences(
+                            of: "\(importedModule).",
+                            with: "UserLingua."
+                        )
                 }
 
                 // public access level that should be internal now

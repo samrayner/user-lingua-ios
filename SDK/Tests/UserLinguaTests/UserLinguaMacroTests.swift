@@ -10,11 +10,11 @@
 // import XCTest
 //
 // final class UserLinguaMacroTests: XCTestCase {
-//    private let macros = ["UserLingua": UserLinguaMacro.self]
+//    private let macros = ["CopyEditable": CopyEditableMacro.self]
 //
 //    func testExpansionAddsNestedMetaEnum() {
 //        assertMacroExpansion("""
-//                             @UserLingua struct MyView: View {
+//                             @CopyEditable struct MyView: View {
 //                             }
 //                             """,
 //                             expandedSource: """

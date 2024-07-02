@@ -1,4 +1,4 @@
-// UserLingua.swift
+// UserLinguaClient.swift
 
 import CombineFeedback
 import Core

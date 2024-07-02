@@ -16,7 +16,7 @@ public enum UserLinguaMacro: MemberMacro {
         }
 
         return [
-            "@ObservedObject private (set) var _userLinguaViewModel = UserLingua.shared.viewModel"
+            "@ObservedObject private (set) var _userLinguaViewModel = UserLinguaClient.shared.viewModel"
         ]
     }
 }
