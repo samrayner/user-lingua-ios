@@ -75,17 +75,13 @@ struct UpdateLibs: AsyncParsableCommand {
                             with: "",
                             options: .regularExpression
                         )
-                        .replacingOccurrences(
-                            of: "\(importedModule).",
-                            with: "UserLingua."
-                        )
                 }
 
                 // public access level that should be internal now
                 if url.lastPathComponent != "PrimaryButtonStyle.swift" {
                     contents = contents
                         .replacingOccurrences(
-                            of: "(@_spi\\(.*\\) )?public\\s{1,}",
+                            of: "(@_spi\\(.*\\) )?public {1,}",
                             with: "",
                             options: .regularExpression
                         )
@@ -109,8 +105,9 @@ struct UpdateLibs: AsyncParsableCommand {
                 // namespaced module-level declarations
                 contents = contents
                     .replacingOccurrences(
-                        of: "CustomDump.customDump(",
-                        with: "customDump("
+                        of: "(CustomDump|CasePaths)\\.",
+                        with: "UserLingua.",
+                        options: .regularExpression
                     )
                     .replacingOccurrences(
                         of: "Core.Configuration",
@@ -131,6 +128,7 @@ struct UpdateLibs: AsyncParsableCommand {
                 let filePath = destination.appendingPathComponent("\(moduleName)_\(url.lastPathComponent)")
                 try contents.write(to: filePath, atomically: false, encoding: encoding)
 
+                // duplicate implementations
                 try? fileManager.removeItem(at: destination.appendingPathComponent("CasePaths_TypeName.swift"))
             }
         }

@@ -90,3 +90,4 @@ fastlane/test_output
 iOSInjectionProject/
 
 FlatSDK/Sources/UserLingua/Modules/
+FlatSDK/Sources/UserLinguaMacros/
