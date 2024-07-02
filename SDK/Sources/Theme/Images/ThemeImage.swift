@@ -6,13 +6,13 @@ import UIKit
 
 public struct ThemeImage {
     enum Source {
-        case resource(ImageResource)
+        case resource(String)
         case symbol(String)
     }
 
     private let source: Source
 
-    static func resource(_ resource: ImageResource) -> Self {
+    static func resource(_ resource: String) -> Self {
         self.init(source: .resource(resource))
     }
 
@@ -32,7 +32,7 @@ public struct ThemeImage {
     fileprivate var uiImage: UIImage {
         switch source {
         case let .resource(resource):
-            UIImage(resource: resource)
+            UIImage(named: resource)!
         case let .symbol(symbol):
             UIImage(systemName: symbol)!
         }

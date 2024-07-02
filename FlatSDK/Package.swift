@@ -22,14 +22,14 @@ let package = Package(
         .target(
             name: "UserLingua",
             dependencies: [
-                "Macros"
+                "UserLinguaMacros"
             ],
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
             ]
         ),
         .macro(
-            name: "Macros",
+            name: "UserLinguaMacros",
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax")

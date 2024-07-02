@@ -48,7 +48,7 @@ struct UpdateLibs: AsyncParsableCommand {
                 let encoding = String.Encoding.utf8
                 var contents = try String(contentsOf: url, encoding: encoding)
 
-                let modules = [
+                let importedModules = [
                     "CasePaths",
                     "CombineSchedulers",
                     "CombineFeedback",
@@ -67,17 +67,67 @@ struct UpdateLibs: AsyncParsableCommand {
                     "XCTestDynamicOverlay"
                 ]
 
-                for module in modules {
-                    contents = contents.replacingOccurrences(
-                        of: "(@_exported )?import \(module)",
-                        with: "",
-                        options: .regularExpression
+                // imports that now live in same module
+                for importedModule in importedModules {
+                    contents = contents
+                        .replacingOccurrences(
+                            of: " *(@[^ ]* )?import \(importedModule)[^\\w]",
+                            with: "",
+                            options: .regularExpression
+                        )
+                }
+
+                // public access level that should be internal now
+                if url.lastPathComponent != "PrimaryButtonStyle.swift" {
+                    contents = contents
+                        .replacingOccurrences(
+                            of: "(@_spi\\(.*\\) )?public\\s{1,}",
+                            with: "",
+                            options: .regularExpression
+                        )
+                }
+
+                // public protocol conformances
+                contents = contents
+                    .replacingOccurrences(
+                        of: "static func == ",
+                        with: "public static func == "
                     )
+                    .replacingOccurrences(
+                        of: "func hash(into hasher:",
+                        with: "public func hash(into hasher:"
+                    )
+                    .replacingOccurrences(
+                        of: "func cancel()",
+                        with: "public func cancel()"
+                    )
+
+                // namespaced module-level declarations
+                contents = contents
+                    .replacingOccurrences(
+                        of: "CustomDump.customDump(",
+                        with: "customDump("
+                    )
+                    .replacingOccurrences(
+                        of: "Core.Configuration",
+                        with: "Configuration"
+                    )
+
+                // duplicate implementations
+                if moduleName == "CasePaths" {
+                    // duplicated in CustomDump
+                    contents = contents
+                        .replacingOccurrences(
+                            of: "_OptionalProtocol",
+                            with: "\(moduleName)_OptionalProtocol"
+                        )
                 }
 
                 try? fileManager.createDirectory(at: destination, withIntermediateDirectories: true)
                 let filePath = destination.appendingPathComponent("\(moduleName)_\(url.lastPathComponent)")
                 try contents.write(to: filePath, atomically: false, encoding: encoding)
+
+                try? fileManager.removeItem(at: destination.appendingPathComponent("CasePaths_TypeName.swift"))
             }
         }
     }
