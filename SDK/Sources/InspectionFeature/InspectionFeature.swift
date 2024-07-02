@@ -213,7 +213,7 @@ public enum InspectionFeature: Feature {
                     let appFacade = dependencies.windowService.screenshotAppWindow()
                     dependencies.contentSizeCategoryService.resetAppContentSizeCategory()
                     dependencies.windowService.resetAppWindow()
-                    dependencies.appViewModel.refresh() // rerun UserLingua.shared.displayString
+                    dependencies.appViewModel.refresh() // rerun UserLinguaClient.shared.displayString
                     return .send(.dismiss(appFacade: appFacade))
                 case .presenting, .presented, .dismissing:
                     return .none

@@ -22,6 +22,6 @@ extension UITraitCollection {
     // and the original method name will call the below implementation.
     @objc
     func unswizzledPreferredContentSizeCategory() -> UIContentSizeCategory {
-        UserLingua.shared.appContentSizeCategory
+        UserLinguaClient.shared.appContentSizeCategory
     }
 }

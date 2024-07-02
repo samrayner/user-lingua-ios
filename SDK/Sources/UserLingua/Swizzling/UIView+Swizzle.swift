@@ -37,7 +37,7 @@ extension UIView {
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] _ in
                     guard let self else { return }
-                    if ![self, window].contains(UserLingua.shared.window) {
+                    if ![self, window].contains(UserLinguaClient.shared.window) {
                         traitCollectionDidChange(nil)
 
                         // hack to force UIButtons to resize text

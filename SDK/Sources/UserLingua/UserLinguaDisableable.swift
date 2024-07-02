@@ -6,7 +6,7 @@ public protocol UserLinguaDisableable {
     var userLinguaDisabled: Bool { get }
 }
 
-extension UserLingua {
+extension UserLinguaClient {
     public static func isDisabled(for uiView: UIResponder) -> Bool {
         var responder: UIResponder? = uiView
         while responder != nil {

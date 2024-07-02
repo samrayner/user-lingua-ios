@@ -46,13 +46,13 @@ extension UILabel {
     // and the original method name will call the below implementation.
     @objc
     func unswizzledSetText(_ text: String?) {
-        guard !UserLingua.isDisabled(for: self) else {
+        guard !UserLinguaClient.isDisabled(for: self) else {
             unswizzledSetText(text)
             return
         }
 
         unprocessedText = text
-        let processedString = text.map { UserLingua.shared.processString($0) }
+        let processedString = text.map { UserLinguaClient.shared.processString($0) }
         unswizzledSetText(processedString)
     }
 
@@ -61,7 +61,7 @@ extension UILabel {
         unswizzledDidMoveToSuperview()
 
         if refreshCancellable == nil {
-            refreshCancellable = UserLingua.shared.viewModel
+            refreshCancellable = UserLinguaClient.shared.viewModel
                 .refreshPublisher
                 .sink { [weak self] in
                     self?.refresh()

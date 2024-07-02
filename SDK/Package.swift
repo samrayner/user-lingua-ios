@@ -31,9 +31,6 @@ let package = Package(
                 "SystemAPIAliases",
                 "UserLinguaMacros",
                 "RootFeature"
-            ],
-            resources: [
-                .copy("Resources/PrivacyInfo.xcprivacy")
             ]
         ),
         .target(

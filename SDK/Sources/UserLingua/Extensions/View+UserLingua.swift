@@ -31,7 +31,7 @@ extension View {
     /// If you have a string literal that you don't want to localize, use
     /// `UL(verbatim:)` instead.
     public func UL(_ key: LocalizedStringKey) -> String {
-        UserLingua.shared.processLocalizedStringKey(key)
+        UserLinguaClient.shared.processLocalizedStringKey(key)
     }
 
     /// Allows suggestions for the given string using UserLingua without localization.
@@ -43,7 +43,7 @@ extension View {
     /// want to display a string variable, use `UL<S: StringProtocol>(_: S)`
     /// which also bypasses localization.
     public func UL(verbatim string: String) -> String {
-        UserLingua.shared.processString(string)
+        UserLinguaClient.shared.processString(string)
     }
 
     /// Allows suggestions for the given string using UserLingua without localization.

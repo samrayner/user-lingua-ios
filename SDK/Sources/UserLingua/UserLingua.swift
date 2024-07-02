@@ -9,8 +9,8 @@ import UIKit
 
 public typealias UserLinguaConfiguration = Core.Configuration
 
-public final class UserLingua {
-    public static let shared = UserLingua()
+public final class UserLinguaClient {
+    public static let shared = UserLinguaClient()
     private let dependencies: AllDependencies
     public private(set) var configuration: Configuration = Configuration()
 

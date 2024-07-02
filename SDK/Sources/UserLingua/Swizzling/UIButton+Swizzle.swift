@@ -82,7 +82,7 @@ extension UIButton {
     // and the original method name will call the below implementation.
     @objc
     func unswizzledSetTitle(_ title: String?, for state: State) {
-        guard !UserLingua.isDisabled(for: self) else {
+        guard !UserLinguaClient.isDisabled(for: self) else {
             unswizzledSetTitle(title, for: state)
             return
         }
@@ -107,7 +107,7 @@ extension UIButton {
             return
         }
 
-        let processedString = title.map { UserLingua.shared.processString($0) }
+        let processedString = title.map { UserLinguaClient.shared.processString($0) }
         unswizzledSetTitle(processedString, for: state)
     }
 
@@ -116,7 +116,7 @@ extension UIButton {
         unswizzledDidMoveToSuperview()
         guard refreshCancellable == nil else { return }
 
-        refreshCancellable = UserLingua.shared.viewModel.refreshPublisher
+        refreshCancellable = UserLinguaClient.shared.viewModel.refreshPublisher
             .sink { [weak self] in
                 self?.refresh()
             }

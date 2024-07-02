@@ -10,7 +10,7 @@ extension String {
         format: String,
         arguments: [CVarArg]
     ) {
-        UserLingua.shared.record(
+        UserLinguaClient.shared.record(
             formatted: .init(
                 value: value,
                 format: .init(format),
@@ -82,7 +82,7 @@ extension String {
         tableName: String?,
         comment: String?
     ) {
-        UserLingua.shared.record(
+        UserLinguaClient.shared.record(
             localized: LocalizedString(
                 value: value,
                 localization: Localization(
