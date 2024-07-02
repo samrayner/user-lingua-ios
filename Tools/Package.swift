@@ -19,6 +19,12 @@ let package = Package(
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "Zip", package: "Zip")
             ]
+        ),
+        .executableTarget(
+            name: "flatten",
+            dependencies: [
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
+            ]
         )
     ]
 )
