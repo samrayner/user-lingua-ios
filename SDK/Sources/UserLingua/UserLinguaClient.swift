@@ -7,12 +7,10 @@ import RootFeature
 import SwiftUI
 import UIKit
 
-public typealias UserLinguaConfiguration = Core.Configuration
-
 public final class UserLinguaClient {
     public static let shared = UserLinguaClient()
     private let dependencies: AllDependencies
-    public private(set) var configuration: Configuration = Configuration()
+    public private(set) var configuration = UserLinguaConfiguration()
 
     private lazy var store = RootFeature.store(
         initialState: .disabled,
@@ -81,7 +79,7 @@ public final class UserLinguaClient {
         dependencies.swizzler.unswizzleForBackground()
     }
 
-    public func configure(_ configuration: Configuration) {
+    public func configure(_ configuration: UserLinguaConfiguration) {
         self.configuration = configuration
     }
 

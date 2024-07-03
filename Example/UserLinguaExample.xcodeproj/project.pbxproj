@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E8639B6B2B7A532000685EEA /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8639B6A2B7A532000685EEA /* UserLingua */; };
 		E8639B6D2B7A53BA00685EEA /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E8639B6C2B7A53BA00685EEA /* Localizable.xcstrings */; };
 		E8639B6F2B7A545400685EEA /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8639B6E2B7A545400685EEA /* TabBarController.swift */; };
 		E8639B712B7A54C000685EEA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8639B702B7A54C000685EEA /* ContentView.swift */; };
@@ -17,10 +16,11 @@
 		E8C95F722B7A516B00FDC7C4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F702B7A516B00FDC7C4 /* Main.storyboard */; };
 		E8C95F742B7A516D00FDC7C4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F732B7A516D00FDC7C4 /* Assets.xcassets */; };
 		E8C95F772B7A516D00FDC7C4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F752B7A516D00FDC7C4 /* LaunchScreen.storyboard */; };
+		E8FB1D622C35996000E4494B /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8FB1D612C35996000E4494B /* UserLingua */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		E8639B682B7A52D400685EEA /* SDK */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SDK; path = ../SDK; sourceTree = "<group>"; };
+		E807A8D02C357BCB0036B45D /* BinarySDK */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = BinarySDK; path = ../BinarySDK; sourceTree = "<group>"; };
 		E8639B6C2B7A53BA00685EEA /* Localizable.xcstrings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		E8639B6E2B7A545400685EEA /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		E8639B702B7A54C000685EEA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -39,7 +39,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8639B6B2B7A532000685EEA /* UserLingua in Frameworks */,
+				E8FB1D622C35996000E4494B /* UserLingua in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -56,7 +56,7 @@
 		E8C95F5E2B7A516B00FDC7C4 = {
 			isa = PBXGroup;
 			children = (
-				E8639B682B7A52D400685EEA /* SDK */,
+				E807A8D02C357BCB0036B45D /* BinarySDK */,
 				E8C95F692B7A516B00FDC7C4 /* UserLinguaExample */,
 				E8C95F682B7A516B00FDC7C4 /* Products */,
 				E8639B692B7A532000685EEA /* Frameworks */,
@@ -106,7 +106,7 @@
 			);
 			name = UserLinguaExample;
 			packageProductDependencies = (
-				E8639B6A2B7A532000685EEA /* UserLingua */,
+				E8FB1D612C35996000E4494B /* UserLingua */,
 			);
 			productName = UserLinguaExample;
 			productReference = E8C95F672B7A516B00FDC7C4 /* UserLinguaExample.app */;
@@ -420,7 +420,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E8639B6A2B7A532000685EEA /* UserLingua */ = {
+		E8FB1D612C35996000E4494B /* UserLingua */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLingua;
 		};

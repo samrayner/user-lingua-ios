@@ -8,7 +8,7 @@ import SwiftUI
 import Theme
 
 struct TextPreviewFeatureView: View {
-    @EnvironmentObject var configuration: ViewDependency<Configuration>
+    @EnvironmentObject var configuration: ViewDependency<UserLinguaConfiguration>
     @Environment(\.colorScheme) private var colorScheme
     private let store: StoreOf<InspectionFeature>
     private let systemLocale: Locale

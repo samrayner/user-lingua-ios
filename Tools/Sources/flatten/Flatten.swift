@@ -56,6 +56,7 @@ struct UpdateLibs: AsyncParsableCommand {
                 .filter { !$0.hasDirectoryPath && $0.pathExtension == "swift" }
 
             for url in swiftFileURLs {
+                let filename = url.lastPathComponent
                 let encoding = String.Encoding.utf8
                 var contents = try String(contentsOf: url, encoding: encoding)
 
@@ -95,7 +96,7 @@ struct UpdateLibs: AsyncParsableCommand {
                     )
 
                 // public access level that should be internal now
-                if url.lastPathComponent != "PrimaryButtonStyle.swift" {
+                if moduleName != "UserLingua" && !["UserLinguaObservable.swift", "UserLinguaConfiguration.swift"].contains(filename) {
                     contents = contents
                         .replacingOccurrences(
                             of: "(@_spi\\(.*\\) )?public {1,}",
@@ -142,7 +143,7 @@ struct UpdateLibs: AsyncParsableCommand {
                 }
 
                 try? fileManager.createDirectory(at: destination, withIntermediateDirectories: true)
-                let filePath = destination.appendingPathComponent("\(moduleName)_\(url.lastPathComponent)")
+                let filePath = destination.appendingPathComponent("\(moduleName)_\(filename)")
                 try contents.write(to: filePath, atomically: false, encoding: encoding)
 
                 // duplicate implementations

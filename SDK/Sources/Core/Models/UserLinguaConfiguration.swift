@@ -1,9 +1,9 @@
-// Configuration.swift
+// UserLinguaConfiguration.swift
 
 import Foundation
 import SwiftUI
 
-public final class Configuration {
+public final class UserLinguaConfiguration {
     public var automaticallyOptInTextViews: Bool
     public var appSupportsDynamicType: Bool
     public var appSupportsDarkMode: Bool

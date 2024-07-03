@@ -37,7 +37,7 @@ message "🏗️ Build XCFrameworks"
   --support-simulators\
   --overwrite\
   --platforms iOS\
-  --enable-library-evolution
-  #--framework-type static
+  --enable-library-evolution\
+  --static
 
 message "✅ Done"

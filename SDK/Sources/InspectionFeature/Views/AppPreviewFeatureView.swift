@@ -7,7 +7,7 @@ import SwiftUI
 import Theme
 
 struct AppPreviewFeatureView: View {
-    @EnvironmentObject var configuration: ViewDependency<Configuration>
+    @EnvironmentObject var configuration: ViewDependency<UserLinguaConfiguration>
     private let store: StoreOf<InspectionFeature>
 
     init(store: StoreOf<InspectionFeature>) {
