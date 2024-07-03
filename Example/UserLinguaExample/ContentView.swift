@@ -4,6 +4,7 @@ import Foundation
 import SwiftUI
 import UserLingua
 
+@CopyEditable
 struct ContentView: View {
     private enum PickerItem: String {
         case one = "ul_segmented_control_1_title"
