@@ -35,6 +35,17 @@ struct UpdateLibs: AsyncParsableCommand {
         for modulePath in sourceDirURLs {
             let moduleName = modulePath.lastPathComponent
 
+            if moduleName == "SystemAPIAliases" {
+                let destination = currentDir.deletingLastPathComponent()
+                    .appendingPathComponent("FlatSDK/Sources/\(moduleName)")
+                try? fileManager.removeItem(at: destination)
+                try fileManager.copyItem(
+                    at: modulePath,
+                    to: destination
+                )
+                return
+            }
+
             let destination = currentDir.deletingLastPathComponent()
                 .appendingPathComponent("FlatSDK/Sources/UserLingua/Modules/\(moduleName)")
             try? fileManager.removeItem(at: destination)
@@ -62,7 +73,6 @@ struct UpdateLibs: AsyncParsableCommand {
                     "RootFeature",
                     "SelectionFeature",
                     "Strings",
-                    "SystemAPIAliases",
                     "Theme",
                     "XCTestDynamicOverlay"
                 ]
@@ -76,6 +86,13 @@ struct UpdateLibs: AsyncParsableCommand {
                             options: .regularExpression
                         )
                 }
+
+                // import that now needs to be @_implementationOnly
+                contents = contents
+                    .replacingOccurrences(
+                        of: "import SystemAPIAliases",
+                        with: "@_implementationOnly import SystemAPIAliases"
+                    )
 
                 // public access level that should be internal now
                 if url.lastPathComponent != "PrimaryButtonStyle.swift" {

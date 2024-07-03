@@ -3,7 +3,7 @@
 import SwiftUI
 
 public struct PrimaryButtonStyle: ButtonStyle {
-    public func makeBody(configuration: Configuration) -> some View {
+    public func makeBody(configuration: ButtonStyle.Configuration) -> some View {
         PrimaryButton(configuration: configuration)
     }
 

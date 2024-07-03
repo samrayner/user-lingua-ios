@@ -22,11 +22,16 @@ let package = Package(
         .target(
             name: "UserLingua",
             dependencies: [
-                "UserLinguaMacros"
+                "UserLinguaMacros",
+                "SystemAPIAliases"
             ],
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
             ]
+        ),
+        .target(
+            name: "SystemAPIAliases",
+            dependencies: []
         ),
         .macro(
             name: "UserLinguaMacros",
