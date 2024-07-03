@@ -7,9 +7,8 @@ SCIPIO_GIT_URL=https://github.com/giginet/Scipio.git
 SCIPIO_GIT_TAG=0.18.2
 SCIPIO_GIT_DIR="$BASE_DIR/.build/scipio"
 SCIPIO_BIN="$SCIPIO_GIT_DIR/.build/release/scipio"
-SDK_DIR="$BASE_DIR/SDK"
+SDK_DIR="$BASE_DIR/FlatSDK"
 FRAMEWORKS_DIR="$BASE_DIR/Frameworks"
-MACROS_DIR="$BASE_DIR/Macros"
 
 message() {
   echo "\n\033[1;32m▶ $1\033[0m\n"
@@ -39,5 +38,6 @@ message "🏗️ Build XCFrameworks"
   --overwrite\
   --platforms iOS\
   --enable-library-evolution
+  #--framework-type static
 
 message "✅ Done"
