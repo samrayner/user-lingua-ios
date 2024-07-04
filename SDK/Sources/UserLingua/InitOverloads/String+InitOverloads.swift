@@ -90,6 +90,24 @@ extension String {
         self = value
     }
 
+    private init(
+        value: String,
+        keyAndValue: String.LocalizationValue,
+        bundle: Bundle?,
+        tableName: String?,
+        comment: String?
+    ) {
+        UserLinguaClient.shared.record(
+            value: value,
+            keyAndValue: keyAndValue,
+            bundle: bundle,
+            tableName: tableName,
+            comment: comment
+        )
+
+        self = value
+    }
+
     // Takes precedence over Foundation version due to comment
     // argument having a non-optional type.
     public init(
@@ -153,14 +171,9 @@ extension String {
     ) {
         let value = SystemString.initLocalizedOptionsTableBundleLocaleComment(keyAndValue, options, table, bundle, locale, comment)
 
-        guard let key = keyAndValue.key else {
-            self = value
-            return
-        }
-
         self.init(
             value: value,
-            key: key,
+            keyAndValue: keyAndValue,
             bundle: bundle,
             tableName: table,
             comment: comment.description
@@ -178,14 +191,9 @@ extension String {
     ) {
         let value = SystemString.initLocalizedTableBundleLocaleComment(keyAndValue, table, bundle, locale, comment)
 
-        guard let key = keyAndValue.key else {
-            self = value
-            return
-        }
-
         self.init(
             value: value,
-            key: key,
+            keyAndValue: keyAndValue,
             bundle: bundle,
             tableName: table,
             comment: comment.description

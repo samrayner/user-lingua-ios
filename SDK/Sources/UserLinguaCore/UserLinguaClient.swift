@@ -130,6 +130,24 @@ public final class UserLinguaClient {
         dependencies.stringsRepository.record(localized: localizedString)
     }
 
+    package func record(
+        value: String,
+        keyAndValue: String.LocalizationValue,
+        bundle: Bundle?,
+        tableName: String?,
+        comment: String?
+    ) {
+        guard let key = keyAndValue.key else { return }
+
+        record(
+            value: value,
+            key: key,
+            bundle: bundle,
+            tableName: tableName,
+            comment: comment
+        )
+    }
+
     package func record(localizedStringResource: LocalizedStringResource) {
         guard isRecording else { return }
         let formattedString = FormattedString(localizedStringResource)

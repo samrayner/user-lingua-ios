@@ -89,7 +89,8 @@ fastlane/test_output
 
 iOSInjectionProject/
 
-FlatSDK/Sources/UserLingua/Modules/
+FlatSDK/Sources/UserLinguaCore/Modules/
+FlatSDK/Sources/UserLingua/
 FlatSDK/Sources/UserLinguaMacros/
 Frameworks/
 BinarySDK/Sources/UserLinguaMacros/

@@ -10,7 +10,8 @@ let package = Package(
     platforms: [.iOS(.v16), .macOS(.v10_15)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
-        .library(name: "UserLingua", targets: ["UserLingua"])
+        .library(name: "UserLingua", targets: ["UserLingua"]),
+        .library(name: "UserLinguaCore", targets: ["UserLinguaCore"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -23,15 +24,15 @@ let package = Package(
             name: "UserLingua",
             dependencies: [
                 "UserLinguaMacros",
-                "SystemAPIAliases"
-            ],
-            resources: [
-                .copy("Resources/PrivacyInfo.xcprivacy")
+                "UserLinguaCore"
             ]
         ),
         .target(
-            name: "SystemAPIAliases",
-            dependencies: []
+            name: "UserLinguaCore",
+            dependencies: [],
+            resources: [
+                .copy("Resources/PrivacyInfo.xcprivacy")
+            ]
         ),
         .macro(
             name: "UserLinguaMacros",

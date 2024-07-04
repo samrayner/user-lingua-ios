@@ -35,7 +35,7 @@ struct UpdateLibs: AsyncParsableCommand {
         for modulePath in sourceDirURLs {
             let moduleName = modulePath.lastPathComponent
 
-            if moduleName == "SystemAPIAliases" {
+            if moduleName == "UserLingua" {
                 let destination = currentDir.deletingLastPathComponent()
                     .appendingPathComponent("FlatSDK/Sources/\(moduleName)")
                 try? fileManager.removeItem(at: destination)
@@ -43,11 +43,11 @@ struct UpdateLibs: AsyncParsableCommand {
                     at: modulePath,
                     to: destination
                 )
-                return
+                continue
             }
 
             let destination = currentDir.deletingLastPathComponent()
-                .appendingPathComponent("FlatSDK/Sources/UserLingua/Modules/\(moduleName)")
+                .appendingPathComponent("FlatSDK/Sources/UserLinguaCore/Modules/\(moduleName)")
             try? fileManager.removeItem(at: destination)
 
             let swiftFileURLs = fileManager
@@ -64,17 +64,18 @@ struct UpdateLibs: AsyncParsableCommand {
                     "CasePaths",
                     "CombineSchedulers",
                     "CombineFeedback",
-                    "Core",
                     "CustomDump",
                     "Dependencies",
                     "Diff",
                     "InspectionFeature",
                     "KSSDiff",
+                    "Models",
                     "RecognitionFeature",
                     "RootFeature",
                     "SelectionFeature",
                     "Strings",
                     "Theme",
+                    "Utilities",
                     "XCTestDynamicOverlay"
                 ]
 
@@ -88,15 +89,8 @@ struct UpdateLibs: AsyncParsableCommand {
                         )
                 }
 
-                // import that now needs to be @_implementationOnly
-                contents = contents
-                    .replacingOccurrences(
-                        of: "import SystemAPIAliases",
-                        with: "@_implementationOnly import SystemAPIAliases"
-                    )
-
                 // public access level that should be internal now
-                if moduleName != "UserLingua" && !["UserLinguaObservable.swift", "UserLinguaConfiguration.swift"].contains(filename) {
+                if moduleName != "UserLinguaCore" && !["UserLinguaObservable.swift", "UserLinguaConfiguration.swift"].contains(filename) {
                     contents = contents
                         .replacingOccurrences(
                             of: "(@_spi\\(.*\\) )?public {1,}",
@@ -124,12 +118,12 @@ struct UpdateLibs: AsyncParsableCommand {
                 contents = contents
                     .replacingOccurrences(
                         of: "(CustomDump|CasePaths)\\.",
-                        with: "UserLingua.",
+                        with: "UserLinguaCore.",
                         options: .regularExpression
                     )
                     .replacingOccurrences(
-                        of: "Core.Configuration",
-                        with: "Configuration"
+                        of: "public typealias UserLinguaConfiguration = Models.UserLinguaConfiguration",
+                        with: ""
                     )
 
                 // duplicate implementations
