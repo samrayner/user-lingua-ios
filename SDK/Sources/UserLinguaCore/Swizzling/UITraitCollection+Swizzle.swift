@@ -1,6 +1,5 @@
 // UITraitCollection+Swizzle.swift
 
-import Core
 import UIKit
 
 extension UITraitCollection {

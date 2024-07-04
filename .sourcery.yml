@@ -9,7 +9,7 @@ configurations:
       autoMockableImports:
         - Combine
         - SwiftUI
-        - Core
+        - Models
 
   - sources:
       - SDK/Sources/InspectionFeature

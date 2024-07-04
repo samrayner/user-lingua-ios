@@ -10,8 +10,8 @@ let package = Package(
     platforms: [.iOS(.v16), .macOS(.v10_15)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
+        .library(name: "UserLinguaCore", targets: ["UserLinguaCore"]),
         .library(name: "UserLingua", targets: ["UserLingua"]),
-        .library(name: "Core", targets: ["Core"]),
         .library(name: "RootFeature", targets: ["RootFeature"]),
         .library(name: "RecognitionFeature", targets: ["RecognitionFeature"]),
         .library(name: "SelectionFeature", targets: ["SelectionFeature"]),
@@ -25,17 +25,30 @@ let package = Package(
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
-            name: "UserLingua",
+            name: "UserLinguaCore",
             dependencies: [
                 "Dependencies",
-                "SystemAPIAliases",
-                "UserLinguaMacros",
+                "Models",
+                "Utilities",
                 "RootFeature"
             ]
         ),
         .target(
-            name: "Core",
+            name: "UserLingua",
+            dependencies: [
+                "UserLinguaCore",
+                "UserLinguaMacros"
+            ]
+        ),
+        .target(
+            name: "Utilities",
             dependencies: []
+        ),
+        .target(
+            name: "Models",
+            dependencies: [
+                "Utilities"
+            ]
         ),
         .target(
             name: "Theme",
@@ -49,13 +62,10 @@ let package = Package(
             dependencies: []
         ),
         .target(
-            name: "SystemAPIAliases",
-            dependencies: []
-        ),
-        .target(
             name: "Dependencies",
             dependencies: [
-                "Core"
+                "Models",
+                "Utilities"
             ]
         ),
         .target(
@@ -103,6 +113,8 @@ let package = Package(
             dependencies: [
                 "CombineFeedback",
                 "Dependencies",
+                "Models",
+                "Utilities",
                 "Theme",
                 "SelectionFeature"
             ]
@@ -111,7 +123,9 @@ let package = Package(
             name: "RecognitionFeature",
             dependencies: [
                 "CombineFeedback",
-                "Dependencies"
+                "Dependencies",
+                "Models",
+                "Utilities"
             ]
         ),
         .target(
@@ -119,6 +133,8 @@ let package = Package(
             dependencies: [
                 "CombineFeedback",
                 "Dependencies",
+                "Models",
+                "Utilities",
                 "Strings",
                 "Theme",
                 "RecognitionFeature",
@@ -130,6 +146,8 @@ let package = Package(
             dependencies: [
                 "CombineFeedback",
                 "Dependencies",
+                "Models",
+                "Utilities",
                 "Strings",
                 "Theme",
                 "RecognitionFeature",
@@ -139,7 +157,7 @@ let package = Package(
         .testTarget(
             name: "UserLinguaTests",
             dependencies: [
-                "UserLingua",
+                "UserLinguaCore",
                 "UserLinguaMacros",
                 .product(
                     name: "SwiftSyntaxMacrosTestSupport",

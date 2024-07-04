@@ -1,7 +1,7 @@
 // NotificationCenter+Swizzle.swift
 
-import Core
 import UIKit
+import Utilities
 
 extension NotificationCenter {
     static func swizzle() {

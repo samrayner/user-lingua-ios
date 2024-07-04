@@ -1,10 +1,11 @@
 // AppPreviewFeatureView.swift
 
 import CombineFeedback
-import Core
 import Foundation
+import Models
 import SwiftUI
 import Theme
+import Utilities
 
 struct AppPreviewFeatureView: View {
     @EnvironmentObject var configuration: ViewDependency<UserLinguaConfiguration>

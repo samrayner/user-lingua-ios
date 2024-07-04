@@ -1,8 +1,8 @@
 // StringRecognizer.swift
 
 import Combine
-import Core
 import Foundation
+import Models
 import UIKit
 import Vision
 

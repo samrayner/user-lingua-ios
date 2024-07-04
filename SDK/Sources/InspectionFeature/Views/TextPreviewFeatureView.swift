@@ -1,11 +1,12 @@
 // TextPreviewFeatureView.swift
 
 import CombineFeedback
-import Core
 import Foundation
+import Models
 import Strings
 import SwiftUI
 import Theme
+import Utilities
 
 struct TextPreviewFeatureView: View {
     @EnvironmentObject var configuration: ViewDependency<UserLinguaConfiguration>

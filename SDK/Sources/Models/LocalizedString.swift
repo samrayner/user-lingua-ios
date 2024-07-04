@@ -1,6 +1,7 @@
 // LocalizedString.swift
 
 import Foundation
+import Utilities
 
 public struct LocalizedString {
     public var value: String
@@ -33,6 +34,15 @@ extension LocalizedString {
         self.init(
             value: localization.value(),
             localization: localization
+        )
+    }
+
+    public init(_ localizedStringResource: LocalizedStringResource) {
+        self.init(
+            localizedStringResource.key,
+            tableName: localizedStringResource.table,
+            bundle: localizedStringResource.bundle,
+            comment: nil
         )
     }
 }

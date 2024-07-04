@@ -1,11 +1,14 @@
 // UserLinguaClient.swift
 
 import CombineFeedback
-import Core
 import Dependencies
+import Models
 import RootFeature
 import SwiftUI
 import UIKit
+import Utilities
+
+public typealias UserLinguaConfiguration = Models.UserLinguaConfiguration
 
 public final class UserLinguaClient {
     public static let shared = UserLinguaClient()
@@ -60,11 +63,15 @@ public final class UserLinguaClient {
         dependencies.windowService.userLinguaWindow
     }
 
-    var isEnabled: Bool {
+    public var automaticallyOptInTextViews: Bool {
+        configuration.automaticallyOptInTextViews
+    }
+
+    public var isEnabled: Bool {
         store.state != .disabled
     }
 
-    var isRecording: Bool {
+    public var isRecording: Bool {
         store.state == .recording
     }
 
@@ -83,19 +90,70 @@ public final class UserLinguaClient {
         self.configuration = configuration
     }
 
-    func record(formatted: FormattedString) {
+    package func record(
+        localizedStringKey: LocalizedStringKey,
+        tableName: String?,
+        bundle: Bundle?,
+        comment: String?
+    ) {
         guard isRecording else { return }
-        dependencies.stringsRepository.record(formatted: formatted)
+
+        let formattedString = dependencies.stringExtractor.formattedString(
+            localizedStringKey: localizedStringKey,
+            tableName: tableName,
+            bundle: bundle,
+            comment: comment
+        )
+
+        dependencies.stringsRepository.record(formatted: formattedString)
     }
 
-    func record(localized: LocalizedString) {
+    package func record(
+        value: String,
+        key: String,
+        bundle: Bundle?,
+        tableName: String?,
+        comment: String?
+    ) {
         guard isRecording else { return }
-        dependencies.stringsRepository.record(localized: localized)
+
+        let localizedString = LocalizedString(
+            value: value,
+            localization: Localization(
+                key: key,
+                bundle: bundle,
+                tableName: tableName,
+                comment: comment
+            )
+        )
+
+        dependencies.stringsRepository.record(localized: localizedString)
     }
 
-    func record(string: String) {
+    package func record(localizedStringResource: LocalizedStringResource) {
+        guard isRecording else { return }
+        let formattedString = FormattedString(localizedStringResource)
+        dependencies.stringsRepository.record(formatted: formattedString)
+    }
+
+    package func record(string: String) {
         guard isRecording else { return }
         dependencies.stringsRepository.record(string: string)
+    }
+
+    package func record(
+        value: String,
+        format: String,
+        arguments: [CVarArg]
+    ) {
+        guard isRecording else { return }
+
+        let formattedString = FormattedString(
+            value: value,
+            format: .init(format),
+            arguments: arguments.map { .cVarArg($0) }
+        )
+        dependencies.stringsRepository.record(formatted: formattedString)
     }
 
     func processLocalizedStringKey(_ key: LocalizedStringKey) -> String {
@@ -113,7 +171,7 @@ public final class UserLinguaClient {
         return displayString(for: formattedString)
     }
 
-    func processString(_ string: String) -> String {
+    package func processString(_ string: String) -> String {
         if isRecording {
             dependencies.stringsRepository.record(string: string)
         }
@@ -121,7 +179,28 @@ public final class UserLinguaClient {
         return displayString(for: FormattedString(string))
     }
 
-    func displayString(for formattedString: FormattedString) -> String {
+    package func displayString(
+        localizedStringKey: LocalizedStringKey,
+        tableName: String?,
+        bundle: Bundle?,
+        comment: String?
+    ) -> String {
+        let formattedString = dependencies.stringExtractor.formattedString(
+            localizedStringKey: localizedStringKey,
+            tableName: tableName,
+            bundle: bundle,
+            comment: comment
+        )
+
+        return displayString(for: formattedString)
+    }
+
+    package func displayString(localizedStringResource: LocalizedStringResource) -> String {
+        let formattedString = FormattedString(localizedStringResource)
+        return displayString(for: formattedString)
+    }
+
+    private func displayString(for formattedString: FormattedString) -> String {
         if isTakingScreenshot {
             // if we've recorded this string, make the most detailed record
             // uniquely recognizable in the UI by scrambling it
@@ -139,19 +218,5 @@ public final class UserLinguaClient {
 
         // we're not currently interacting with this string so just display it
         return formattedString.value
-    }
-
-    func formattedString(
-        localizedStringKey: LocalizedStringKey,
-        tableName: String?,
-        bundle: Bundle?,
-        comment: String?
-    ) -> FormattedString {
-        dependencies.stringExtractor.formattedString(
-            localizedStringKey: localizedStringKey,
-            tableName: tableName,
-            bundle: bundle,
-            comment: comment
-        )
     }
 }

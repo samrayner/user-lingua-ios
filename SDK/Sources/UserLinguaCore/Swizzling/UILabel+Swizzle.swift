@@ -1,7 +1,6 @@
 // UILabel+Swizzle.swift
 
 import Combine
-import Core
 import UIKit
 
 extension UILabel {

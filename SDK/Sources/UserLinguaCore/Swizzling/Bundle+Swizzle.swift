@@ -1,6 +1,6 @@
 // Bundle+Swizzle.swift
 
-import Core
+import Models
 import UIKit
 
 extension Bundle {
@@ -25,10 +25,11 @@ extension Bundle {
         let value = unswizzledLocalizedString(forKey: key, value: value, table: table)
 
         UserLinguaClient.shared.record(
-            localized: LocalizedString(
-                value: value,
-                localization: Localization(key: key, bundle: self, tableName: table, comment: nil)
-            )
+            value: value,
+            key: key,
+            bundle: self,
+            tableName: table,
+            comment: nil
         )
 
         return value

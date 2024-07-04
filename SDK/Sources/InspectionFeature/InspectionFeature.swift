@@ -3,14 +3,15 @@
 import CasePaths
 import Combine
 import CombineFeedback
-import Core
 import Dependencies
 import Diff
 import Foundation
+import Models
 import RecognitionFeature
 import Strings
 import SwiftUI
 import Theme
+import Utilities
 
 public enum InspectionFeature: Feature {
     public struct Dependencies: Scoped {

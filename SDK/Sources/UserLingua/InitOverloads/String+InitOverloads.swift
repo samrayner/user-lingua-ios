@@ -1,8 +1,7 @@
 // String+InitOverloads.swift
 
-import Core
 import Foundation
-import SystemAPIAliases
+@_exported import UserLinguaCore
 
 extension String {
     private init(
@@ -11,11 +10,9 @@ extension String {
         arguments: [CVarArg]
     ) {
         UserLinguaClient.shared.record(
-            formatted: .init(
-                value: value,
-                format: .init(format),
-                arguments: arguments.map { .cVarArg($0) }
-            )
+            value: value,
+            format: format,
+            arguments: arguments
         )
 
         self = value
@@ -83,15 +80,11 @@ extension String {
         comment: String?
     ) {
         UserLinguaClient.shared.record(
-            localized: LocalizedString(
-                value: value,
-                localization: Localization(
-                    key: key,
-                    bundle: bundle,
-                    tableName: tableName,
-                    comment: comment
-                )
-            )
+            value: value,
+            key: key,
+            bundle: bundle,
+            tableName: tableName,
+            comment: comment
         )
 
         self = value

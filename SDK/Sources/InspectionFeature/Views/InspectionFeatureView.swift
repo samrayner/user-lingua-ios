@@ -1,12 +1,13 @@
 // InspectionFeatureView.swift
 
 import CombineFeedback
-import Core
 import Dependencies
 import Foundation
+import Models
 import Strings
 import SwiftUI
 import Theme
+import Utilities
 
 public struct InspectionFeatureView: View {
     typealias Event = InspectionFeature.Event

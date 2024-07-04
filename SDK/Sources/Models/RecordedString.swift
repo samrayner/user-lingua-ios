@@ -1,6 +1,7 @@
 // RecordedString.swift
 
 import Foundation
+import Utilities
 
 public struct RecordedString: Equatable {
     public var formatted: FormattedString

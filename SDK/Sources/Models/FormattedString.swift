@@ -124,6 +124,10 @@ extension FormattedString {
     public init(_ localizedString: LocalizedString) {
         self.init(StringFormat(localizedString))
     }
+
+    public init(_ localizedStringResource: LocalizedStringResource) {
+        self.init(LocalizedString(localizedStringResource))
+    }
 }
 
 extension FormattedString: Equatable {
