@@ -86,6 +86,10 @@ public final class UserLinguaClient {
         dependencies.swizzler.unswizzleForBackground()
     }
 
+    public func show() {
+        store.send(.show)
+    }
+
     public func configure(_ configuration: UserLinguaConfiguration) {
         self.configuration = configuration
     }

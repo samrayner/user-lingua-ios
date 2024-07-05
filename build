@@ -21,7 +21,7 @@ message "🔨Flatten SDK"
 
 message "📋 Copy macros"
 
-cp -R "${SOURCE_DIR}/Sources/UserLinguaMacros" "${DESTINATION_DIR}/Sources/UserLinguaMacros"
+cp -R "${SOURCE_DIR}/Sources/UserLinguaMacros" "${DESTINATION_DIR}/Sources"
 
 message "🧹 Prepare build directory"
 

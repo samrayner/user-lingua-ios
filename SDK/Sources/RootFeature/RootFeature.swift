@@ -51,6 +51,7 @@ public enum RootFeature: Feature {
     public enum Event {
         case enable
         case disable
+        case show
         case didShake
         case selection(SelectionFeature.Event)
     }
@@ -66,12 +67,12 @@ public enum RootFeature: Feature {
                     state = .recording
                 case .disable:
                     state = .disabled
-                case .didShake:
-                    guard state == .recording else { return }
+                case .show:
+                    guard state.isRecording else { return }
                     state = .visible(.init())
                 case .selection(.delegate(.dismiss)):
                     state = .recording
-                case .selection:
+                case .selection, .didShake:
                     return
                 }
             }
@@ -106,6 +107,13 @@ public enum RootFeature: Feature {
                     return .none
                 case .disabled:
                     return .none
+                }
+            },
+            .event(/Event.didShake) { _, state, _ in
+                if state.old.isRecording {
+                    .send(.show)
+                } else {
+                    .none
                 }
             }
         )

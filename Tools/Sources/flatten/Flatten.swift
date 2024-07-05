@@ -93,7 +93,7 @@ struct UpdateLibs: AsyncParsableCommand {
                 if moduleName != "UserLinguaCore" && !["UserLinguaObservable.swift", "UserLinguaConfiguration.swift"].contains(filename) {
                     contents = contents
                         .replacingOccurrences(
-                            of: "(@_spi\\(.*\\) )?public {1,}",
+                            of: "(@_spi\\(.*\\) )?(public|open) {1,}",
                             with: "",
                             options: .regularExpression
                         )
