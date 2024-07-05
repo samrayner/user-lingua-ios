@@ -11,7 +11,8 @@ let package = Package(
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(name: "UserLingua", targets: ["UserLingua"]),
-        .library(name: "UserLinguaCore", targets: ["UserLinguaCore"])
+        .library(name: "UserLinguaCore", targets: ["UserLinguaCore"]),
+        .library(name: "UserLinguaMacros", targets: ["UserLinguaMacros"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -23,7 +24,6 @@ let package = Package(
         .target(
             name: "UserLingua",
             dependencies: [
-                "UserLinguaMacros",
                 "UserLinguaCore"
             ]
         ),
@@ -34,8 +34,14 @@ let package = Package(
                 .copy("Resources/PrivacyInfo.xcprivacy")
             ]
         ),
-        .macro(
+        .target(
             name: "UserLinguaMacros",
+            dependencies: [
+                "UserLinguaExternalMacros"
+            ]
+        ),
+        .macro(
+            name: "UserLinguaExternalMacros",
             dependencies: [
                 // .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 // .product(name: "SwiftCompilerPlugin", package: "swift-syntax")

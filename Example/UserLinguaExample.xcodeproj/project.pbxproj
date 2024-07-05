@@ -16,8 +16,9 @@
 		E8C95F722B7A516B00FDC7C4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F702B7A516B00FDC7C4 /* Main.storyboard */; };
 		E8C95F742B7A516D00FDC7C4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F732B7A516D00FDC7C4 /* Assets.xcassets */; };
 		E8C95F772B7A516D00FDC7C4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F752B7A516D00FDC7C4 /* LaunchScreen.storyboard */; };
-		E8EC4DDA2C38269700A32B7F /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8EC4DD92C38269700A32B7F /* UserLingua */; };
-		E8EC4DDC2C38269700A32B7F /* UserLinguaCore in Frameworks */ = {isa = PBXBuildFile; productRef = E8EC4DDB2C38269700A32B7F /* UserLinguaCore */; };
+		E8CD15FD2C38313E00B394F8 /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8CD15FC2C38313E00B394F8 /* UserLingua */; };
+		E8CD15FF2C38313E00B394F8 /* UserLinguaCore in Frameworks */ = {isa = PBXBuildFile; productRef = E8CD15FE2C38313E00B394F8 /* UserLinguaCore */; };
+		E8CD16012C38313E00B394F8 /* UserLinguaMacros in Frameworks */ = {isa = PBXBuildFile; productRef = E8CD16002C38313E00B394F8 /* UserLinguaMacros */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,8 +41,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8EC4DDC2C38269700A32B7F /* UserLinguaCore in Frameworks */,
-				E8EC4DDA2C38269700A32B7F /* UserLingua in Frameworks */,
+				E8CD15FF2C38313E00B394F8 /* UserLinguaCore in Frameworks */,
+				E8CD16012C38313E00B394F8 /* UserLinguaMacros in Frameworks */,
+				E8CD15FD2C38313E00B394F8 /* UserLingua in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,8 +110,9 @@
 			);
 			name = UserLinguaExample;
 			packageProductDependencies = (
-				E8EC4DD92C38269700A32B7F /* UserLingua */,
-				E8EC4DDB2C38269700A32B7F /* UserLinguaCore */,
+				E8CD15FC2C38313E00B394F8 /* UserLingua */,
+				E8CD15FE2C38313E00B394F8 /* UserLinguaCore */,
+				E8CD16002C38313E00B394F8 /* UserLinguaMacros */,
 			);
 			productName = UserLinguaExample;
 			productReference = E8C95F672B7A516B00FDC7C4 /* UserLinguaExample.app */;
@@ -423,13 +426,17 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E8EC4DD92C38269700A32B7F /* UserLingua */ = {
+		E8CD15FC2C38313E00B394F8 /* UserLingua */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLingua;
 		};
-		E8EC4DDB2C38269700A32B7F /* UserLinguaCore */ = {
+		E8CD15FE2C38313E00B394F8 /* UserLinguaCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLinguaCore;
+		};
+		E8CD16002C38313E00B394F8 /* UserLinguaMacros */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = UserLinguaMacros;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

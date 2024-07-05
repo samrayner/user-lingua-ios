@@ -12,6 +12,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(name: "UserLinguaCore", targets: ["UserLinguaCore"]),
         .library(name: "UserLingua", targets: ["UserLingua"]),
+        .library(name: "UserLinguaMacros", targets: ["UserLinguaMacros"]),
         .library(name: "RootFeature", targets: ["RootFeature"]),
         .library(name: "RecognitionFeature", targets: ["RecognitionFeature"]),
         .library(name: "SelectionFeature", targets: ["SelectionFeature"]),
@@ -36,8 +37,13 @@ let package = Package(
         .target(
             name: "UserLingua",
             dependencies: [
-                "UserLinguaCore",
-                "UserLinguaMacros"
+                "UserLinguaCore"
+            ]
+        ),
+        .target(
+            name: "UserLinguaMacros",
+            dependencies: [
+                "UserLinguaExternalMacros"
             ]
         ),
         .target(
@@ -166,7 +172,7 @@ let package = Package(
             ]
         ),
         .macro(
-            name: "UserLinguaMacros",
+            name: "UserLinguaExternalMacros",
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax")

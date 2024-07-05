@@ -3,6 +3,7 @@
 import Foundation
 import SwiftUI
 import UserLingua
+import UserLinguaMacros
 
 @CopyEditable
 struct ContentView: View {
@@ -36,6 +37,9 @@ struct ContentView: View {
 
                 TextField("ul_text_field_placeholder", text: $textFieldText)
             }
+        }
+        .onAppear {
+            UserLinguaClient.shared.show()
         }
     }
 }

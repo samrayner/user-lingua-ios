@@ -88,5 +88,7 @@ iOSInjectionProject/
 FlatSDK/Sources/UserLinguaCore/Modules/
 FlatSDK/Sources/UserLingua/
 FlatSDK/Sources/UserLinguaMacros/
+FlatSDK/Sources/UserLinguaExternalMacros/
 BinarySDK/Sources/UserLinguaMacros/
+BinarySDK/Sources/UserLinguaExternalMacros/
 BinarySDK/XCFrameworks/
