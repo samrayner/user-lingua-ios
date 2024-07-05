@@ -21,10 +21,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E822F49E2C381E0C006E91C4 /* SDK */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SDK; path = ../SDK; sourceTree = "<group>"; };
 		E8639B6C2B7A53BA00685EEA /* Localizable.xcstrings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		E8639B6E2B7A545400685EEA /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		E8639B702B7A54C000685EEA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		E8A225822C37FA660029DAE6 /* BinarySDK */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = BinarySDK; path = ../BinarySDK; sourceTree = "<group>"; };
 		E8C95F672B7A516B00FDC7C4 /* UserLinguaExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UserLinguaExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8C95F6A2B7A516B00FDC7C4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E8C95F6C2B7A516B00FDC7C4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -58,7 +58,7 @@
 		E8C95F5E2B7A516B00FDC7C4 = {
 			isa = PBXGroup;
 			children = (
-				E8A225822C37FA660029DAE6 /* BinarySDK */,
+				E822F49E2C381E0C006E91C4 /* SDK */,
 				E8C95F692B7A516B00FDC7C4 /* UserLinguaExample */,
 				E8C95F682B7A516B00FDC7C4 /* Products */,
 				E8639B692B7A532000685EEA /* Frameworks */,
