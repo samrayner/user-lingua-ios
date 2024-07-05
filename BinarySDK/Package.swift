@@ -22,11 +22,11 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .binaryTarget(
             name: "UserLingua",
-            path: "../Frameworks/UserLingua.xcframework"
+            path: "XCFrameworks/UserLingua.xcframework"
         ),
         .binaryTarget(
             name: "UserLinguaCore",
-            path: "../Frameworks/UserLinguaCore.xcframework"
+            path: "XCFrameworks/UserLinguaCore.xcframework"
         ),
         .macro(
             name: "UserLinguaMacros",
