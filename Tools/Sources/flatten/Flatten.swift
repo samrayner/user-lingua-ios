@@ -32,6 +32,8 @@ struct UpdateLibs: AsyncParsableCommand {
             )
         }
 
+        let resourcesDestination = currentDir.deletingLastPathComponent().appendingPathComponent("FlatSDK/Sources/UserLinguaCore/Resources")
+
         for modulePath in sourceDirURLs {
             let moduleName = modulePath.lastPathComponent
 
@@ -44,6 +46,23 @@ struct UpdateLibs: AsyncParsableCommand {
                     to: destination
                 )
                 continue
+            }
+
+            let resourcesPath = modulePath.appendingPathComponent("Resources")
+            if fileManager.fileExists(atPath: resourcesPath.path) {
+                let resourceURLs = try fileManager
+                    .contentsOfDirectory(at: resourcesPath, includingPropertiesForKeys: nil)
+                    .filter { !$0.lastPathComponent.starts(with: ".") }
+
+                for url in resourceURLs {
+                    let destination = resourcesDestination.appendingPathComponent(url.lastPathComponent)
+
+                    try? fileManager.removeItem(at: destination)
+                    try fileManager.copyItem(
+                        at: url,
+                        to: destination
+                    )
+                }
             }
 
             let destination = currentDir.deletingLastPathComponent()

@@ -31,7 +31,9 @@ let package = Package(
             name: "UserLinguaCore",
             dependencies: [],
             resources: [
-                .copy("Resources/PrivacyInfo.xcprivacy")
+                .copy("Resources/PrivacyInfo.xcprivacy"),
+                .copy("Resources/Base.lproj"),
+                .copy("Resources/Assets.xcassets")
             ]
         ),
         .target(

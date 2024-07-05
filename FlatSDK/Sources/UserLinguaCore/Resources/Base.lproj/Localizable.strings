@@ -1,0 +1,15 @@
+"sdkName" = "UserLingua";
+
+"inspection.title" = "Suggest Copy";
+"inspection.preview_mode_picker.title" = "Mode";
+"inspection.text_preview.base_title" = "Original %@ (%@) - Base Language";
+"inspection.text_preview.original_title" = "Original %@ (%@)";
+"inspection.text_preview.suggestion_title" = "Suggested %@ (%@)";
+"inspection.text_preview.diff_title" = "Changes from original %@ (%@)";
+"inspection.text_preview.language_name_fallback" = "Language";
+"inspection.suggestion_field.placeholder" = "";
+"inspection.locale_picker.title" = "Language";
+"inspection.localization.key.title" = "Key";
+"inspection.localization.table.title" = "File";
+"inspection.localization.comment.title" = "Comment";
+"inspection.submit_button" = "Submit suggestion";
