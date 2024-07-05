@@ -10,7 +10,8 @@ let package = Package(
     platforms: [.iOS(.v16), .macOS(.v10_15)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
-        .library(name: "UserLingua", targets: ["UserLingua"])
+        .library(name: "UserLingua", targets: ["UserLingua"]),
+        .library(name: "UserLinguaCore", targets: ["UserLinguaCore"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -22,6 +23,10 @@ let package = Package(
         .binaryTarget(
             name: "UserLingua",
             path: "../Frameworks/UserLingua.xcframework"
+        ),
+        .binaryTarget(
+            name: "UserLinguaCore",
+            path: "../Frameworks/UserLinguaCore.xcframework"
         ),
         .macro(
             name: "UserLinguaMacros",

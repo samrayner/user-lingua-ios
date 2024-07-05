@@ -90,7 +90,7 @@ public final class UserLinguaClient {
         self.configuration = configuration
     }
 
-    package func record(
+    public func record(
         localizedStringKey: LocalizedStringKey,
         tableName: String?,
         bundle: Bundle?,
@@ -108,7 +108,7 @@ public final class UserLinguaClient {
         dependencies.stringsRepository.record(formatted: formattedString)
     }
 
-    package func record(
+    public func record(
         value: String,
         key: String,
         bundle: Bundle?,
@@ -130,7 +130,7 @@ public final class UserLinguaClient {
         dependencies.stringsRepository.record(localized: localizedString)
     }
 
-    package func record(
+    public func record(
         value: String,
         keyAndValue: String.LocalizationValue,
         bundle: Bundle?,
@@ -148,18 +148,18 @@ public final class UserLinguaClient {
         )
     }
 
-    package func record(localizedStringResource: LocalizedStringResource) {
+    public func record(localizedStringResource: LocalizedStringResource) {
         guard isRecording else { return }
         let formattedString = FormattedString(localizedStringResource)
         dependencies.stringsRepository.record(formatted: formattedString)
     }
 
-    package func record(string: String) {
+    public func record(string: String) {
         guard isRecording else { return }
         dependencies.stringsRepository.record(string: string)
     }
 
-    package func record(
+    public func record(
         value: String,
         format: String,
         arguments: [CVarArg]
@@ -189,7 +189,7 @@ public final class UserLinguaClient {
         return displayString(for: formattedString)
     }
 
-    package func processString(_ string: String) -> String {
+    public func processString(_ string: String) -> String {
         if isRecording {
             dependencies.stringsRepository.record(string: string)
         }
@@ -197,7 +197,7 @@ public final class UserLinguaClient {
         return displayString(for: FormattedString(string))
     }
 
-    package func displayString(
+    public func displayString(
         localizedStringKey: LocalizedStringKey,
         tableName: String?,
         bundle: Bundle?,
@@ -213,7 +213,7 @@ public final class UserLinguaClient {
         return displayString(for: formattedString)
     }
 
-    package func displayString(localizedStringResource: LocalizedStringResource) -> String {
+    public func displayString(localizedStringResource: LocalizedStringResource) -> String {
         let formattedString = FormattedString(localizedStringResource)
         return displayString(for: formattedString)
     }

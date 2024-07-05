@@ -10,7 +10,8 @@
 		E8639B6D2B7A53BA00685EEA /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E8639B6C2B7A53BA00685EEA /* Localizable.xcstrings */; };
 		E8639B6F2B7A545400685EEA /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8639B6E2B7A545400685EEA /* TabBarController.swift */; };
 		E8639B712B7A54C000685EEA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8639B702B7A54C000685EEA /* ContentView.swift */; };
-		E8B0CA3E2C36E83B007F5CE5 /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8B0CA3D2C36E83B007F5CE5 /* UserLingua */; };
+		E8A225842C37FA730029DAE6 /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8A225832C37FA730029DAE6 /* UserLingua */; };
+		E8A225862C37FA730029DAE6 /* UserLinguaCore in Frameworks */ = {isa = PBXBuildFile; productRef = E8A225852C37FA730029DAE6 /* UserLinguaCore */; };
 		E8C95F6B2B7A516B00FDC7C4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6A2B7A516B00FDC7C4 /* AppDelegate.swift */; };
 		E8C95F6D2B7A516B00FDC7C4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6C2B7A516B00FDC7C4 /* SceneDelegate.swift */; };
 		E8C95F6F2B7A516B00FDC7C4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6E2B7A516B00FDC7C4 /* ViewController.swift */; };
@@ -23,7 +24,7 @@
 		E8639B6C2B7A53BA00685EEA /* Localizable.xcstrings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		E8639B6E2B7A545400685EEA /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		E8639B702B7A54C000685EEA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		E8B0CA3C2C36E82D007F5CE5 /* SDK */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SDK; path = ../SDK; sourceTree = "<group>"; };
+		E8A225822C37FA660029DAE6 /* BinarySDK */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = BinarySDK; path = ../BinarySDK; sourceTree = "<group>"; };
 		E8C95F672B7A516B00FDC7C4 /* UserLinguaExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UserLinguaExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8C95F6A2B7A516B00FDC7C4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E8C95F6C2B7A516B00FDC7C4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -39,7 +40,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8B0CA3E2C36E83B007F5CE5 /* UserLingua in Frameworks */,
+				E8A225862C37FA730029DAE6 /* UserLinguaCore in Frameworks */,
+				E8A225842C37FA730029DAE6 /* UserLingua in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -56,7 +58,7 @@
 		E8C95F5E2B7A516B00FDC7C4 = {
 			isa = PBXGroup;
 			children = (
-				E8B0CA3C2C36E82D007F5CE5 /* SDK */,
+				E8A225822C37FA660029DAE6 /* BinarySDK */,
 				E8C95F692B7A516B00FDC7C4 /* UserLinguaExample */,
 				E8C95F682B7A516B00FDC7C4 /* Products */,
 				E8639B692B7A532000685EEA /* Frameworks */,
@@ -106,7 +108,8 @@
 			);
 			name = UserLinguaExample;
 			packageProductDependencies = (
-				E8B0CA3D2C36E83B007F5CE5 /* UserLingua */,
+				E8A225832C37FA730029DAE6 /* UserLingua */,
+				E8A225852C37FA730029DAE6 /* UserLinguaCore */,
 			);
 			productName = UserLinguaExample;
 			productReference = E8C95F672B7A516B00FDC7C4 /* UserLinguaExample.app */;
@@ -420,9 +423,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E8B0CA3D2C36E83B007F5CE5 /* UserLingua */ = {
+		E8A225832C37FA730029DAE6 /* UserLingua */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLingua;
+		};
+		E8A225852C37FA730029DAE6 /* UserLinguaCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = UserLinguaCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
