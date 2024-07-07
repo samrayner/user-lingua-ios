@@ -15,7 +15,7 @@ message() {
   echo "\n\033[1;32m▶ $1\033[0m\n"
 }
 
-message "🔨Flatten SDK"
+message "🔨 Flatten SDK"
 
 (cd "$BASE_DIR/Tools"; swift run flatten)
 
@@ -38,7 +38,11 @@ if [ ! -d "$SCIPIO_GIT_DIR" ]; then
   (cd "$SCIPIO_GIT_DIR"; swift build -c release)
 fi
 
-message "🏗️ Build XCFrameworks"
+message "🗑️  Delete XCFrameworks"
+rm -rf "$FRAMEWORKS_DIR"
+mkdir "$FRAMEWORKS_DIR"
+
+message "🏗️  Build XCFrameworks"
 "$SCIPIO_BIN" create\
   "$SOURCE_DIR"\
   --output "$FRAMEWORKS_DIR"\
@@ -51,3 +55,6 @@ message "🏗️ Build XCFrameworks"
   --static
 
 message "✅ Done"
+
+message "☢️ Nuking SPM"
+nuke-spm

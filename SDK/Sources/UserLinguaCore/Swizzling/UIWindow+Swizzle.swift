@@ -20,7 +20,6 @@ extension UIWindow {
 
     @objc
     open func unswizzledMotionEnded(_ motion: UIEvent.EventSubtype, with _: UIEvent?) {
-        // unswizzledMotionEnded(motion, with: event)
         guard motion == .motionShake else { return }
         NotificationCenter.default.post(name: .deviceDidShake, object: nil)
     }
