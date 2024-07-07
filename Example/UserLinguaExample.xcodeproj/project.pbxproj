@@ -10,21 +10,22 @@
 		E8639B6D2B7A53BA00685EEA /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E8639B6C2B7A53BA00685EEA /* Localizable.xcstrings */; };
 		E8639B6F2B7A545400685EEA /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8639B6E2B7A545400685EEA /* TabBarController.swift */; };
 		E8639B712B7A54C000685EEA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8639B702B7A54C000685EEA /* ContentView.swift */; };
+		E87C2FE62C3AD2A000B652DF /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E87C2FE52C3AD2A000B652DF /* UserLingua */; };
+		E87C2FE82C3AD2A000B652DF /* UserLinguaCore in Frameworks */ = {isa = PBXBuildFile; productRef = E87C2FE72C3AD2A000B652DF /* UserLinguaCore */; };
+		E87C2FEA2C3AD2A000B652DF /* UserLinguaMacros in Frameworks */ = {isa = PBXBuildFile; productRef = E87C2FE92C3AD2A000B652DF /* UserLinguaMacros */; };
 		E8C95F6B2B7A516B00FDC7C4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6A2B7A516B00FDC7C4 /* AppDelegate.swift */; };
 		E8C95F6D2B7A516B00FDC7C4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6C2B7A516B00FDC7C4 /* SceneDelegate.swift */; };
 		E8C95F6F2B7A516B00FDC7C4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6E2B7A516B00FDC7C4 /* ViewController.swift */; };
 		E8C95F722B7A516B00FDC7C4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F702B7A516B00FDC7C4 /* Main.storyboard */; };
 		E8C95F742B7A516D00FDC7C4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F732B7A516D00FDC7C4 /* Assets.xcassets */; };
 		E8C95F772B7A516D00FDC7C4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F752B7A516D00FDC7C4 /* LaunchScreen.storyboard */; };
-		E8CD15FD2C38313E00B394F8 /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8CD15FC2C38313E00B394F8 /* UserLingua */; };
-		E8CD15FF2C38313E00B394F8 /* UserLinguaCore in Frameworks */ = {isa = PBXBuildFile; productRef = E8CD15FE2C38313E00B394F8 /* UserLinguaCore */; };
-		E8CD16012C38313E00B394F8 /* UserLinguaMacros in Frameworks */ = {isa = PBXBuildFile; productRef = E8CD16002C38313E00B394F8 /* UserLinguaMacros */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		E8639B6C2B7A53BA00685EEA /* Localizable.xcstrings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		E8639B6E2B7A545400685EEA /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		E8639B702B7A54C000685EEA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		E87C2FE42C3AD29100B652DF /* SDK */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SDK; path = ../SDK; sourceTree = "<group>"; };
 		E8C95F672B7A516B00FDC7C4 /* UserLinguaExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UserLinguaExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8C95F6A2B7A516B00FDC7C4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E8C95F6C2B7A516B00FDC7C4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -33,7 +34,6 @@
 		E8C95F732B7A516D00FDC7C4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E8C95F762B7A516D00FDC7C4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E8C95F782B7A516D00FDC7C4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		E8EC4DD82C38268F00A32B7F /* BinarySDK */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = BinarySDK; path = ../BinarySDK; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,9 +41,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8CD15FF2C38313E00B394F8 /* UserLinguaCore in Frameworks */,
-				E8CD16012C38313E00B394F8 /* UserLinguaMacros in Frameworks */,
-				E8CD15FD2C38313E00B394F8 /* UserLingua in Frameworks */,
+				E87C2FE82C3AD2A000B652DF /* UserLinguaCore in Frameworks */,
+				E87C2FEA2C3AD2A000B652DF /* UserLinguaMacros in Frameworks */,
+				E87C2FE62C3AD2A000B652DF /* UserLingua in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,7 +60,7 @@
 		E8C95F5E2B7A516B00FDC7C4 = {
 			isa = PBXGroup;
 			children = (
-				E8EC4DD82C38268F00A32B7F /* BinarySDK */,
+				E87C2FE42C3AD29100B652DF /* SDK */,
 				E8C95F692B7A516B00FDC7C4 /* UserLinguaExample */,
 				E8C95F682B7A516B00FDC7C4 /* Products */,
 				E8639B692B7A532000685EEA /* Frameworks */,
@@ -110,9 +110,9 @@
 			);
 			name = UserLinguaExample;
 			packageProductDependencies = (
-				E8CD15FC2C38313E00B394F8 /* UserLingua */,
-				E8CD15FE2C38313E00B394F8 /* UserLinguaCore */,
-				E8CD16002C38313E00B394F8 /* UserLinguaMacros */,
+				E87C2FE52C3AD2A000B652DF /* UserLingua */,
+				E87C2FE72C3AD2A000B652DF /* UserLinguaCore */,
+				E87C2FE92C3AD2A000B652DF /* UserLinguaMacros */,
 			);
 			productName = UserLinguaExample;
 			productReference = E8C95F672B7A516B00FDC7C4 /* UserLinguaExample.app */;
@@ -426,15 +426,15 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E8CD15FC2C38313E00B394F8 /* UserLingua */ = {
+		E87C2FE52C3AD2A000B652DF /* UserLingua */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLingua;
 		};
-		E8CD15FE2C38313E00B394F8 /* UserLinguaCore */ = {
+		E87C2FE72C3AD2A000B652DF /* UserLinguaCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLinguaCore;
 		};
-		E8CD16002C38313E00B394F8 /* UserLinguaMacros */ = {
+		E87C2FE92C3AD2A000B652DF /* UserLinguaMacros */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLinguaMacros;
 		};

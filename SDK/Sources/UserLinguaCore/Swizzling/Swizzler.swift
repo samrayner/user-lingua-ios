@@ -29,6 +29,7 @@ final class Swizzler: SwizzlerProtocol {
         Bundle.swizzle()
         UILabel.swizzle()
         UIButton.swizzle()
+        UIWindow.swizzle()
     }
 
     func unswizzleForBackground() {
@@ -38,5 +39,6 @@ final class Swizzler: SwizzlerProtocol {
         Bundle.unswizzle()
         UILabel.unswizzle()
         UIButton.unswizzle()
+        UIWindow.unswizzle()
     }
 }
