@@ -11,14 +11,14 @@ extension UIView {
         set { Self.contentSizeCategoryCancellableAssociation[self] = newValue.map(NSObjectWrapper.init) }
     }
 
-    static func swizzleAll() {
+    static func swizzleUIView() {
         swizzle(
             original: #selector(layoutSubviews),
             with: #selector(unswizzledLayoutSubviews)
         )
     }
 
-    static func unswizzleAll() {
+    static func unswizzleUIView() {
         swizzle(
             original: #selector(unswizzledLayoutSubviews),
             with: #selector(layoutSubviews)

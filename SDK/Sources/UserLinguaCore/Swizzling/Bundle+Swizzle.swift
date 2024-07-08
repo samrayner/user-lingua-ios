@@ -4,14 +4,14 @@ import Models
 import UIKit
 
 extension Bundle {
-    static func swizzle() {
+    static func swizzleBundle() {
         swizzle(
             original: #selector(localizedString(forKey:value:table:)),
             with: #selector(unswizzledLocalizedString(forKey:value:table:))
         )
     }
 
-    static func unswizzle() {
+    static func unswizzleBundle() {
         swizzle(
             original: #selector(unswizzledLocalizedString(forKey:value:table:)),
             with: #selector(localizedString(forKey:value:table:))

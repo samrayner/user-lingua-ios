@@ -17,7 +17,7 @@ extension UILabel {
         set { Self.unprocessedTextAssociation[self] = newValue as NSString? }
     }
 
-    static func swizzle() {
+    static func swizzleUILabel() {
         swizzle(
             original: #selector(didMoveToSuperview),
             with: #selector(unswizzledDidMoveToSuperview)
@@ -29,7 +29,7 @@ extension UILabel {
         )
     }
 
-    static func unswizzle() {
+    static func unswizzleUILabel() {
         swizzle(
             original: #selector(unswizzledDidMoveToSuperview),
             with: #selector(didMoveToSuperview)

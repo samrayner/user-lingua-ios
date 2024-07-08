@@ -53,7 +53,7 @@ extension UIButton {
         set { Self.unprocessedReservedTitleAssociation[self] = newValue as NSString? }
     }
 
-    static func swizzle() {
+    static func swizzleUIButton() {
         swizzle(
             original: #selector(didMoveToSuperview),
             with: #selector(unswizzledDidMoveToSuperview)
@@ -65,7 +65,7 @@ extension UIButton {
         )
     }
 
-    static func unswizzle() {
+    static func unswizzleUIButton() {
         swizzle(
             original: #selector(unswizzledDidMoveToSuperview),
             with: #selector(didMoveToSuperview)
