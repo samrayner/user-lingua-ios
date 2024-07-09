@@ -19,8 +19,9 @@ message "🔨 Flatten SDK"
 
 (cd "$BASE_DIR/Tools"; swift run flatten)
 
-message "📋 Copy macros"
+message "📋 Copy source modules"
 
+cp -R "${SOURCE_DIR}/Sources/UserLingua" "${DESTINATION_DIR}/Sources"
 cp -R "${SOURCE_DIR}/Sources/UserLinguaMacros" "${DESTINATION_DIR}/Sources"
 cp -R "${SOURCE_DIR}/Sources/UserLinguaExternalMacros" "${DESTINATION_DIR}/Sources"
 
@@ -54,7 +55,8 @@ message "🏗️  Build XCFrameworks"
   --enable-library-evolution\
   --static
 
-message "✅ Done"
+message "🗑️  Delete unnecessary XCFrameworks"
+rm -rf "${DESTINATION_DIR}/XCFrameworks/UserLingua.xcframework"
+rm -rf "${DESTINATION_DIR}/XCFrameworks/UserLinguaMacros.xcframework"
 
-message "☢️ Nuking SPM"
-nuke-spm
+message "✅ Done"

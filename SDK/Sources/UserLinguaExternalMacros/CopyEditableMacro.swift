@@ -1,4 +1,4 @@
-// UserLinguaMacro.swift
+// CopyEditableMacro.swift
 
 import SwiftCompilerPlugin
 import SwiftSyntax

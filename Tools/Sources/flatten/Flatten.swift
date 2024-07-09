@@ -15,29 +15,18 @@ struct UpdateLibs: AsyncParsableCommand {
 
         let dirURLs = try fileManager
             .contentsOfDirectory(at: sourcesPath, includingPropertiesForKeys: nil)
-
-        let macrosDirURLs = dirURLs
-            .filter { $0.hasDirectoryPath && $0.lastPathComponent.hasSuffix("Macros") }
-
-        let sourceDirURLs = dirURLs
-            .filter { $0.hasDirectoryPath && !$0.lastPathComponent.hasSuffix("Macros") }
-
-        for url in macrosDirURLs {
-            let destination = currentDir.deletingLastPathComponent().appendingPathComponent("FlatSDK/Sources/\(url.lastPathComponent)")
-
-            try? fileManager.removeItem(at: destination)
-            try fileManager.copyItem(
-                at: url,
-                to: destination
-            )
-        }
+            .filter(\.hasDirectoryPath)
 
         let resourcesDestination = currentDir.deletingLastPathComponent().appendingPathComponent("FlatSDK/Sources/UserLinguaCore/Resources")
 
-        for modulePath in sourceDirURLs {
+        let sourceModules = ["UserLingua", "UserLinguaAuto", "UserLinguaMacros", "UserLinguaExternalMacros"]
+        let userLinguaModules = sourceModules + ["UserLinguaCore"]
+        let importedModules = Set(dirURLs.map(\.lastPathComponent)).subtracting(userLinguaModules)
+
+        for modulePath in dirURLs {
             let moduleName = modulePath.lastPathComponent
 
-            if moduleName == "UserLingua" {
+            if sourceModules.contains(moduleName) {
                 let destination = currentDir.deletingLastPathComponent()
                     .appendingPathComponent("FlatSDK/Sources/\(moduleName)")
                 try? fileManager.removeItem(at: destination)
@@ -78,25 +67,6 @@ struct UpdateLibs: AsyncParsableCommand {
                 let filename = url.lastPathComponent
                 let encoding = String.Encoding.utf8
                 var contents = try String(contentsOf: url, encoding: encoding)
-
-                let importedModules = [
-                    "CasePaths",
-                    "CombineSchedulers",
-                    "CombineFeedback",
-                    "CustomDump",
-                    "Dependencies",
-                    "Diff",
-                    "InspectionFeature",
-                    "KSSDiff",
-                    "Models",
-                    "RecognitionFeature",
-                    "RootFeature",
-                    "SelectionFeature",
-                    "Strings",
-                    "Theme",
-                    "Utilities",
-                    "XCTestDynamicOverlay"
-                ]
 
                 // imports that now live in same module
                 for importedModule in importedModules {

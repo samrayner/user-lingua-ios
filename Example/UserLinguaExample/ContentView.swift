@@ -3,7 +3,6 @@
 import Foundation
 import SwiftUI
 import UserLingua
-import UserLinguaMacros
 
 @CopyEditable
 struct ContentView: View {
