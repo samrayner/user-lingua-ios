@@ -10,16 +10,16 @@
 		E8639B6D2B7A53BA00685EEA /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E8639B6C2B7A53BA00685EEA /* Localizable.xcstrings */; };
 		E8639B6F2B7A545400685EEA /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8639B6E2B7A545400685EEA /* TabBarController.swift */; };
 		E8639B712B7A54C000685EEA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8639B702B7A54C000685EEA /* ContentView.swift */; };
-		E8C0DB082C3D538B00E65E9A /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8C0DB072C3D538B00E65E9A /* UserLingua */; };
-		E8C0DB0A2C3D538B00E65E9A /* UserLinguaAuto in Frameworks */ = {isa = PBXBuildFile; productRef = E8C0DB092C3D538B00E65E9A /* UserLinguaAuto */; };
-		E8C0DB0C2C3D538B00E65E9A /* UserLinguaCore in Frameworks */ = {isa = PBXBuildFile; productRef = E8C0DB0B2C3D538B00E65E9A /* UserLinguaCore */; };
-		E8C0DB0E2C3D538B00E65E9A /* UserLinguaMacros in Frameworks */ = {isa = PBXBuildFile; productRef = E8C0DB0D2C3D538B00E65E9A /* UserLinguaMacros */; };
 		E8C95F6B2B7A516B00FDC7C4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6A2B7A516B00FDC7C4 /* AppDelegate.swift */; };
 		E8C95F6D2B7A516B00FDC7C4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6C2B7A516B00FDC7C4 /* SceneDelegate.swift */; };
 		E8C95F6F2B7A516B00FDC7C4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6E2B7A516B00FDC7C4 /* ViewController.swift */; };
 		E8C95F722B7A516B00FDC7C4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F702B7A516B00FDC7C4 /* Main.storyboard */; };
 		E8C95F742B7A516D00FDC7C4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F732B7A516D00FDC7C4 /* Assets.xcassets */; };
 		E8C95F772B7A516D00FDC7C4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F752B7A516D00FDC7C4 /* LaunchScreen.storyboard */; };
+		E8DF32B42C3D727400EB5CB5 /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8DF32B32C3D727400EB5CB5 /* UserLingua */; };
+		E8DF32B62C3D727400EB5CB5 /* UserLinguaAuto in Frameworks */ = {isa = PBXBuildFile; productRef = E8DF32B52C3D727400EB5CB5 /* UserLinguaAuto */; };
+		E8DF32B82C3D727400EB5CB5 /* UserLinguaCore in Frameworks */ = {isa = PBXBuildFile; productRef = E8DF32B72C3D727400EB5CB5 /* UserLinguaCore */; };
+		E8DF32BA2C3D727400EB5CB5 /* UserLinguaMacros in Frameworks */ = {isa = PBXBuildFile; productRef = E8DF32B92C3D727400EB5CB5 /* UserLinguaMacros */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,10 +42,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8C0DB0E2C3D538B00E65E9A /* UserLinguaMacros in Frameworks */,
-				E8C0DB0A2C3D538B00E65E9A /* UserLinguaAuto in Frameworks */,
-				E8C0DB0C2C3D538B00E65E9A /* UserLinguaCore in Frameworks */,
-				E8C0DB082C3D538B00E65E9A /* UserLingua in Frameworks */,
+				E8DF32BA2C3D727400EB5CB5 /* UserLinguaMacros in Frameworks */,
+				E8DF32B62C3D727400EB5CB5 /* UserLinguaAuto in Frameworks */,
+				E8DF32B82C3D727400EB5CB5 /* UserLinguaCore in Frameworks */,
+				E8DF32B42C3D727400EB5CB5 /* UserLingua in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,10 +112,10 @@
 			);
 			name = UserLinguaExample;
 			packageProductDependencies = (
-				E8C0DB072C3D538B00E65E9A /* UserLingua */,
-				E8C0DB092C3D538B00E65E9A /* UserLinguaAuto */,
-				E8C0DB0B2C3D538B00E65E9A /* UserLinguaCore */,
-				E8C0DB0D2C3D538B00E65E9A /* UserLinguaMacros */,
+				E8DF32B32C3D727400EB5CB5 /* UserLingua */,
+				E8DF32B52C3D727400EB5CB5 /* UserLinguaAuto */,
+				E8DF32B72C3D727400EB5CB5 /* UserLinguaCore */,
+				E8DF32B92C3D727400EB5CB5 /* UserLinguaMacros */,
 			);
 			productName = UserLinguaExample;
 			productReference = E8C95F672B7A516B00FDC7C4 /* UserLinguaExample.app */;
@@ -429,19 +429,19 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E8C0DB072C3D538B00E65E9A /* UserLingua */ = {
+		E8DF32B32C3D727400EB5CB5 /* UserLingua */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLingua;
 		};
-		E8C0DB092C3D538B00E65E9A /* UserLinguaAuto */ = {
+		E8DF32B52C3D727400EB5CB5 /* UserLinguaAuto */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLinguaAuto;
 		};
-		E8C0DB0B2C3D538B00E65E9A /* UserLinguaCore */ = {
+		E8DF32B72C3D727400EB5CB5 /* UserLinguaCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLinguaCore;
 		};
-		E8C0DB0D2C3D538B00E65E9A /* UserLinguaMacros */ = {
+		E8DF32B92C3D727400EB5CB5 /* UserLinguaMacros */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLinguaMacros;
 		};

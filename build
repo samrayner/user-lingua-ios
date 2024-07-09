@@ -52,8 +52,7 @@ message "🏗️  Build XCFrameworks"
   --support-simulators\
   --overwrite\
   --platforms iOS\
-  --enable-library-evolution\
-  --static
+  --enable-library-evolution
 
 message "🗑️  Delete unnecessary XCFrameworks"
 rm -rf "${DESTINATION_DIR}/XCFrameworks/UserLingua.xcframework"
