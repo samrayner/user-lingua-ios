@@ -15,16 +15,16 @@ public struct Localization: Equatable {
         self.comment = comment
     }
 
-    public var isInApp: Bool? {
-        bundle?.bundleURL.absoluteString.lowercased().contains("/containers/bundle/application/")
+    public var shouldIgnore: Bool {
+        bundle?.shouldIgnore == true
     }
 
-    public func value() -> String {
-        Bundle.main.localizedString(forKey: key, value: key, table: tableName)
+    public func value() -> String? {
+        bundle?.localizedString(forKey: key, value: key, table: tableName)
     }
 
     public func value(locale: Locale) -> String? {
-        Bundle.main.localized(localeIdentifier: locale.identifier)?
+        bundle?.localized(localeIdentifier: locale.identifier)?
             .localizedString(forKey: key, value: key, table: tableName)
     }
 }

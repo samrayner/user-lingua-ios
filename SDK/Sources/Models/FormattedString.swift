@@ -21,6 +21,10 @@ public struct FormattedString {
         localization != nil
     }
 
+    public var shouldIgnore: Bool {
+        format.localization?.shouldIgnore == true
+    }
+
     private func formattedArguments(locale: Locale) -> [CVarArg] {
         arguments.map { $0.value(locale: locale) }
     }

@@ -7,6 +7,10 @@ public struct LocalizedString {
     public var value: String
     public var localization: Localization
 
+    public var shouldIgnore: Bool {
+        localization.shouldIgnore
+    }
+
     public init(value: String, localization: Localization) {
         self.value = value
         self.localization = localization
@@ -32,7 +36,7 @@ extension LocalizedString {
         )
 
         self.init(
-            value: localization.value(),
+            value: localization.value() ?? key,
             localization: localization
         )
     }

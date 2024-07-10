@@ -215,19 +215,22 @@ public struct InspectionFeatureView: View {
                 }
 
                 VStack(alignment: .leading, spacing: .Space.m) {
-                    if state.recognizedString.isLocalized && Bundle.main.preferredLocalizations.count > 1 {
-                        Picker(
-                            Strings.Inspection.LocalePicker.title,
-                            selection: store.binding(
-                                get: { $0.locale.identifier(.bcp47) },
-                                send: { .setLocale(identifier: $0) }
-                            )
-                        ) {
-                            ForEach(Bundle.main.preferredLocalizations, id: \.self) { identifier in
-                                Text(identifier)
+                    if state.recognizedString.hasAlternativeLocalizations {
+                        ScrollView(.horizontal) {
+                            Picker(
+                                Strings.Inspection.LocalePicker.title,
+                                selection: store.binding(
+                                    get: { $0.locale.identifier(.bcp47) },
+                                    send: { .setLocale(identifier: $0) }
+                                )
+                            ) {
+                                ForEach(state.recognizedString.localization?.bundle?.localizations ?? [], id: \.self) { identifier in
+                                    Text(identifier)
+                                }
                             }
+                            .pickerStyle(.segmented)
+                            .fixedSize()
                         }
-                        .pickerStyle(.segmented)
                     }
 
                     if let localization = state.recognizedString.localization {

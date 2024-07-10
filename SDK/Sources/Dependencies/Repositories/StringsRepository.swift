@@ -22,7 +22,7 @@ public final class StringsRepository: StringsRepositoryProtocol {
     }
 
     public func record(formatted formattedString: FormattedString) {
-        guard formattedString.localization?.isInApp != false else { return }
+        guard !formattedString.shouldIgnore else { return }
 
         var formattedString = formattedString
 
@@ -75,7 +75,7 @@ public final class StringsRepository: StringsRepositoryProtocol {
     }
 
     public func record(localized localizedString: LocalizedString) {
-        guard localizedString.localization.isInApp != false else { return }
+        guard !localizedString.shouldIgnore else { return }
 
         stringRecord[localizedString.value, default: []].append(
             RecordedString(localizedString)
