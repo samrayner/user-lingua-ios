@@ -19,7 +19,7 @@ extension UIResponder {
     }
 
     @objc
-    open func unswizzledMotionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
+    func unswizzledMotionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
         unswizzledMotionEnded(motion, with: event)
         guard motion == .motionShake else { return }
         NotificationCenter.default.post(name: .deviceDidShake, object: nil)
