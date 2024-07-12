@@ -25,7 +25,7 @@ public final class StringRecognizer: StringRecognizerProtocol {
 
     public func recognizeStrings(in image: UIImage) -> AnyPublisher<[RecognizedString], StringRecognizerError> {
         recognizeLines(in: image)
-            .map(identifyRecognizedLines)
+            .flatMap(identifyRecognizedLines)
             .eraseToAnyPublisher()
     }
 
@@ -74,56 +74,61 @@ public final class StringRecognizer: StringRecognizerProtocol {
         }
     }
 
-    func identifyRecognizedLines(_ lines: [RecognizedLine]) -> [RecognizedString] {
-        let recordedStrings = stringsRepository.recordedStrings()
-        var lines = lines
-        var recognizedStrings: [RecognizedString] = []
+    func identifyRecognizedLines(_ lines: [RecognizedLine]) -> AnyPublisher<[RecognizedString], Never> {
+        let recognizedStringsSubject: CurrentValueSubject<[RecognizedString], Never> = .init([])
+        let recordedStrings = stringsRepository.recordedStrings().suffix(1000)
 
-        // loop recognized lines
-        while var line = lines.first {
-            var recordedStringFoundForLine = false
+        Task {
+            var lines = lines
+            // loop recognized lines
+            while var line = lines.first {
+                var recordedStringFoundForLine = false
 
-            for recordedString in recordedStrings {
-                var tokenized = recordedString.recognizable
-                var recognizedString = RecognizedString(recordedString: recordedString, lines: [])
+                for recordedString in recordedStrings {
+                    var tokenized = recordedString.recognizable
+                    var recognizedString = RecognizedString(recordedString: recordedString, lines: [])
 
-                defer {
-                    if !recognizedString.lines.isEmpty {
-                        recognizedStrings.append(recognizedString)
+                    defer {
+                        if !recognizedString.lines.isEmpty {
+                            recognizedStringsSubject.send(recognizedStringsSubject.value + [recognizedString])
+                        }
+                    }
+
+                    // while the line is found at the start of the token
+                    while let foundPrefix = tokenized.fuzzyFindPrefix(line.string) {
+                        recordedStringFoundForLine = true
+
+                        // remove the line from start of the token
+                        tokenized = tokenized
+                            .dropFirst(foundPrefix.count)
+                            .trimmingCharacters(in: .whitespaces)
+
+                        // assign the line to the token it was found in
+                        // and remove it from the lines we're looking for
+                        recognizedString.lines.append(line)
+
+                        lines.removeFirst()
+
+                        if let nextLine = lines.first {
+                            line = nextLine
+                        } else {
+                            // we've processed all lines, so we're done
+                            recognizedStringsSubject.send(completion: .finished)
+                            return
+                        }
                     }
                 }
 
-                // while the line is found at the start of the token
-                while let foundPrefix = tokenized.fuzzyFindPrefix(line.string) {
-                    recordedStringFoundForLine = true
-
-                    // remove the line from start of the token
-                    tokenized = tokenized
-                        .dropFirst(foundPrefix.count)
-                        .trimmingCharacters(in: .whitespaces)
-
-                    // assign the line to the token it was found in
-                    // and remove it from the lines we're looking for
-                    recognizedString.lines.append(line)
-
+                if !recordedStringFoundForLine {
+                    // no matches found for line, so give up and move onto next
                     lines.removeFirst()
-
-                    if let nextLine = lines.first {
-                        line = nextLine
-                    } else {
-                        // we've processed all lines, so we're done
-                        return recognizedStrings
-                    }
                 }
             }
 
-            if !recordedStringFoundForLine {
-                // no matches found for line, so give up and move onto next
-                lines.removeFirst()
-            }
+            recognizedStringsSubject.send(completion: .finished)
         }
 
-        return recognizedStrings
+        return recognizedStringsSubject.eraseToAnyPublisher()
     }
 }
 

@@ -72,10 +72,13 @@ public enum SelectionFeature: Feature {
                     state.recognizedStrings = []
                 case .orientationDidChange:
                     state.recognizedStrings = []
+                case let .recognition(.delegate(.didRecognizeStrings(recognizedStrings))):
+                    state.recognizedStrings = recognizedStrings
                 case let .recognition(.delegate(.didFinish(result))):
                     switch result {
-                    case let .success(recognizedStrings):
-                        state.recognizedStrings = recognizedStrings
+                    case .success:
+                        // do nothing when recognition finishes
+                        return
                     case .failure:
                         // TODO: recognition error handling
                         print("RECOGNITION FAILED")
@@ -199,7 +202,8 @@ public struct SelectionFeatureView: View {
                 onDismiss: Event.inspectionDidDismiss
             ) { store in
                 InspectionFeatureView(store: store)
-                    .preferredColorScheme(colorScheme == .light ? .dark : .light)
+                // TODO: Why does this crash?
+                // .preferredColorScheme(colorScheme == .light ? .dark : .light)
             }
         }
     }
@@ -231,7 +235,7 @@ private struct RecognizedStringHighlight: View {
                 .position(x: line.boundingBox.midX, y: line.boundingBox.midY)
                 .scaleEffect(isVisible ? 1 : 2)
                 .opacity(isVisible ? .Opacity.opaque : .Opacity.transparent)
-                .animation(.bouncy.delay(.random(in: 0 ... TimeInterval.AnimationDuration.quick)), value: isVisible)
+                .animation(.bouncy, value: isVisible)
         }
         .onAppear { isVisible = true }
         .onDisappear { isVisible = false }

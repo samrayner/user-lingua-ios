@@ -47,12 +47,14 @@ public enum RecognitionFeature: Feature {
         case start
         case didPrepareFacade(screenshot: UIImage, appYOffset: CGFloat)
         case didPrepareApp
-        case didFinish(Result<[RecognizedString], Error>)
+        case didRecognizeStrings([RecognizedString])
+        case didFinish(Result<Void, Error>)
         case didResetApp
         case delegate(Delegate)
 
         public enum Delegate {
-            case didFinish(Result<[RecognizedString], Error>)
+            case didRecognizeStrings([RecognizedString])
+            case didFinish(Result<Void, Error>)
         }
     }
 
@@ -71,7 +73,7 @@ public enum RecognitionFeature: Feature {
                 state.stage = .resettingApp(yOffset: state.appYOffset)
             case .didResetApp:
                 state = .init()
-            case .delegate:
+            case .didRecognizeStrings, .delegate:
                 return
             }
         }
@@ -102,8 +104,10 @@ public enum RecognitionFeature: Feature {
                         dependencies.stringRecognizer
                             .recognizeStrings(in: screenshot)
                             .mapError(Error.recognitionFailed)
-                            .mapToResult()
-                            .map(Event.didFinish)
+                            .map { Event.didRecognizeStrings($0) }
+                            .append(Event.didFinish(.success(())))
+                            .catch { Just(Event.didFinish(.failure($0))) }
+                            .receive(on: RunLoop.main)
                             .eraseToAnyPublisher()
                     )
                 case let .resettingApp(appYOffset):
@@ -113,6 +117,9 @@ public enum RecognitionFeature: Feature {
                 case .none:
                     return .none
                 }
+            },
+            .event(/Event.didRecognizeStrings) { payload, _, _ in
+                .send(.delegate(.didRecognizeStrings(payload)))
             },
             .event(/Event.didFinish) { payload, _, _ in
                 .send(.delegate(.didFinish(payload)))
