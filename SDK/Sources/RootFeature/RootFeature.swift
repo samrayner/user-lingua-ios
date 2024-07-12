@@ -77,11 +77,10 @@ public enum RootFeature: Feature {
                 }
             }
         )
-        // .printChanges()
     }
 
-    public static var feedback: FeedbackOf<Self> {
-        .combine(
+    public static var feedbacks: [FeedbackOf<Self>] {
+        [
             SelectionFeature.feedback.pullback(
                 state: /State.visible,
                 event: /Event.selection,
@@ -116,7 +115,7 @@ public enum RootFeature: Feature {
                     .none
                 }
             }
-        )
+        ]
     }
 }
 

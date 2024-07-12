@@ -5,30 +5,39 @@ import Combine
 import SwiftUI
 
 public struct Feedback<State, Event, Dependencies> {
-    public enum Effect {
-        public static func send(_ event: Event, after delay: TimeInterval? = nil) -> Self {
-            .send([event], after: delay)
+    public struct Effect {
+        public static func send(_ event: Event) -> Self {
+            .init(
+                Just(event).eraseToAnyPublisher()
+            )
         }
 
-        case publish(AnyPublisher<Event, Never>)
-        case send([Event], after: TimeInterval? = nil)
-        case none
+        public static func send(_ event: Event, after delay: TimeInterval) -> Self {
+            .init(
+                Just(event)
+                    .delay(for: .seconds(delay), scheduler: DispatchQueue.main)
+                    .eraseToAnyPublisher()
+            )
+        }
 
-        var publisher: AnyPublisher<Event, Never> {
-            switch self {
-            case let .publish(publisher):
-                publisher
-            case let .send(events, delayInterval):
-                if let delayInterval {
-                    events.publisher
-                        .delay(for: .seconds(delayInterval), scheduler: RunLoop.main)
-                        .eraseToAnyPublisher()
-                } else {
-                    events.publisher.eraseToAnyPublisher()
-                }
-            case .none:
-                Empty().eraseToAnyPublisher()
-            }
+        public static func combine(_ effect: Effect...) -> Self {
+            .init(
+                Publishers.MergeMany(effect.map(\.publisher)).eraseToAnyPublisher()
+            )
+        }
+
+        public static var none: Self {
+            .init(Empty().eraseToAnyPublisher())
+        }
+
+        public static func publish(_ publisher: AnyPublisher<Event, Never>) -> Self {
+            .init(publisher)
+        }
+
+        let publisher: AnyPublisher<Event, Never>
+
+        private init(_ publisher: AnyPublisher<Event, Never>) {
+            self.publisher = publisher
         }
     }
 
@@ -136,7 +145,7 @@ public struct Feedback<State, Event, Dependencies> {
     }
 
     public static func event<Payload>(
-        _ extract: @escaping (Event) -> Payload?,
+        _ casePath: CasePath<Event, Payload>,
         effect: @escaping (Payload, (old: State, new: State), Dependencies) -> Effect
     ) -> Feedback {
         custom { input, output, dependencies in
@@ -144,12 +153,19 @@ public struct Feedback<State, Event, Dependencies> {
             //       that cancellation due to state changes would be able to
             //       cancel outstanding events that have already been scheduled.
             input
+                // if in future we want to cancel in-progress event feedbacks when
+                // when the same event fires before completion, we can add
+                // .removeDuplicates {
+                //    $0.1 != $1.1
+                // }
+                // here and make flatMap below flatMapLatest. This is the method by
+                // which state changes cancel feedback for changes of the same state.
                 .onlyWithPrevious() // the first emission always has a nil event anyway
                 .compactMap { previous, current -> (Payload?, State, State)? in
                     guard let event = current.1 else { return nil }
-                    return (extract(event), previous.0, current.0)
+                    return (casePath.extract(from: event), previous.0, current.0)
                 }
-                .flatMapLatest { payload, oldState, newState in
+                .flatMap { payload, oldState, newState in
                     let publisher = if let payload {
                         effect(payload, (oldState, newState), dependencies).publisher
                     } else {
@@ -226,14 +242,16 @@ extension Feedback {
         })
     }
 
-    public static func combine(
-        _ feedbacks: Feedback...
-    ) -> Feedback {
+    public static func combine(_ feedbacks: [Feedback]) -> Feedback {
         Feedback { state, consumer, dependencies -> Cancellable in
             feedbacks.map { feedback -> Cancellable in
                 feedback.events(state, consumer, dependencies)
             }
         }
+    }
+
+    public static func combine(_ feedbacks: Feedback...) -> Feedback {
+        combine(feedbacks)
     }
 
     static var input: (feedback: Feedback, observer: (Event) -> Void) {

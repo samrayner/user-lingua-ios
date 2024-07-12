@@ -74,16 +74,8 @@ public enum SelectionFeature: Feature {
                     state.recognizedStrings = []
                 case let .recognition(.delegate(.didRecognizeStrings(recognizedStrings))):
                     state.recognizedStrings = recognizedStrings
-                case let .recognition(.delegate(.didFinish(result))):
-                    switch result {
-                    case .success:
-                        // do nothing when recognition finishes
-                        return
-                    case .failure:
-                        // TODO: recognition error handling
-                        print("RECOGNITION FAILED")
-                        return
-                    }
+                case let .recognition(.delegate(.didFinish(.failure(error)))):
+                    print("RECOGNITION FAILED \(error)")
                 case .inspection,
                      .recognition,
                      .delegate,
@@ -96,8 +88,8 @@ public enum SelectionFeature: Feature {
         )
     }
 
-    private static var eventFeedback: FeedbackOf<Self> {
-        .combine(
+    private static var eventFeedbacks: [FeedbackOf<Self>] {
+        [
             .event(/Event.didSelectString) { recognizedString, _, dependencies in
                 ThemeFont.scaleFactor = dependencies.contentSizeCategoryService.systemContentSizeCategory.fontScaleFactor
                 let inspectionState = InspectionFeature.State(
@@ -105,13 +97,19 @@ public enum SelectionFeature: Feature {
                     appFacade: dependencies.windowService.screenshotAppWindow(),
                     appIsInDarkMode: dependencies.windowService.appUIStyle == .dark
                 )
-                return .send(.setInspection(inspectionState))
-            },
-            .event(/Event.didTapOverlay) { _, _, _ in
-                .send(.delegate(.dismiss))
+                return .combine(
+                    .send(.recognition(.cancel)),
+                    .send(.setInspection(inspectionState), after: 0.2)
+                )
             },
             .event(/Event.inspectionDidDismiss) { _, _, _ in
                 .send(.delegate(.dismiss))
+            },
+            .event(/Event.didTapOverlay) { _, _, _ in
+                .combine(
+                    .send(.recognition(.cancel)),
+                    .send(.delegate(.dismiss), after: 0.2)
+                )
             },
             .event(/Event.onAppear) { _, _, _ in
                 .send(.recognition(.start))
@@ -119,11 +117,11 @@ public enum SelectionFeature: Feature {
             .event(/Event.orientationDidChange) { _, _, _ in
                 .send(.recognition(.start), after: 0.1)
             }
-        )
+        ]
     }
 
-    public static var feedback: FeedbackOf<Self> {
-        .combine(
+    public static var feedbacks: [FeedbackOf<Self>] {
+        [
             RecognitionFeature.feedback.pullback(
                 state: \.recognition,
                 event: /Event.recognition,
@@ -133,9 +131,9 @@ public enum SelectionFeature: Feature {
                 state: \.inspection,
                 event: /Event.inspection,
                 dependencies: \.inspection
-            ),
-            eventFeedback
-        )
+            )
+        ] +
+            eventFeedbacks
     }
 }
 

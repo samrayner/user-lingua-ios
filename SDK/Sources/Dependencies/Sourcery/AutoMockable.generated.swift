@@ -209,6 +209,19 @@ public class StringRecognizerProtocolMock: StringRecognizerProtocol {
         }
     }
 
+    //MARK: - cancel
+
+    public var cancelVoidCallsCount = 0
+    public var cancelVoidCalled: Bool {
+        return cancelVoidCallsCount > 0
+    }
+    public var cancelVoidClosure: (() -> Void)?
+
+    public func cancel() {
+        cancelVoidCallsCount += 1
+        cancelVoidClosure?()
+    }
+
 
 }
 public class StringsRepositoryProtocolMock: StringsRepositoryProtocol {

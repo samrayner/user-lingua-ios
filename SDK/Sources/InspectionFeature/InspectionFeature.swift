@@ -182,8 +182,8 @@ public enum InspectionFeature: Feature {
         }
     }
 
-    private static var stateFeedback: FeedbackOf<Self> {
-        .combine(
+    private static var stateFeedbacks: [FeedbackOf<Self>] {
+        [
             .state(scoped: \.presentation) { state, dependencies in
                 switch state.new {
                 case .preparingToDismiss:
@@ -214,11 +214,11 @@ public enum InspectionFeature: Feature {
                 )?.newValue ?? state.new.localizedValue
                 return .send(.setSuggestionValue(suggestionValue))
             }
-        )
+        ]
     }
 
-    private static var eventFeedback: FeedbackOf<Self> {
-        .combine(
+    private static var eventFeedbacks: [FeedbackOf<Self>] {
+        [
             .event(/Event.didTapDecreaseTextSize) { _, _, dependencies in
                 dependencies.contentSizeCategoryService.decrementAppContentSizeCategory()
                 return .none
@@ -248,13 +248,10 @@ public enum InspectionFeature: Feature {
                 dependencies.appViewModel.refresh()
                 return .none
             }
-        )
+        ]
     }
 
-    public static var feedback: FeedbackOf<Self> {
-        .combine(
-            stateFeedback,
-            eventFeedback
-        )
+    public static var feedbacks: [FeedbackOf<Self>] {
+        stateFeedbacks + eventFeedbacks
     }
 }
