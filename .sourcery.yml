@@ -14,7 +14,7 @@ configurations:
   - sources:
       - SDK/Sources/InspectionFeature
     templates:
-      - SourceryTemplates/Scoped.stencil
+      - SourceryTemplates/Child.stencil
     output: SDK/Sources/InspectionFeature/Sourcery
     args:
       hideVersionHeader: true
@@ -22,7 +22,7 @@ configurations:
   - sources:
       - SDK/Sources/RecognitionFeature
     templates:
-      - SourceryTemplates/Scoped.stencil
+      - SourceryTemplates/Child.stencil
     output: SDK/Sources/RecognitionFeature/Sourcery
     args:
       hideVersionHeader: true
@@ -30,7 +30,7 @@ configurations:
   - sources:
       - SDK/Sources/SelectionFeature
     templates:
-      - SourceryTemplates/Scoped.stencil
+      - SourceryTemplates/Child.stencil
     output: SDK/Sources/SelectionFeature/Sourcery
     args:
       hideVersionHeader: true
@@ -38,7 +38,7 @@ configurations:
   - sources:
       - SDK/Sources/RootFeature
     templates:
-      - SourceryTemplates/Scoped.stencil
+      - SourceryTemplates/Child.stencil
     output: SDK/Sources/RootFeature/Sourcery
     args:
       hideVersionHeader: true

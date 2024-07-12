@@ -15,7 +15,7 @@ struct AppPreviewFeatureView: View {
         self.store = store
     }
 
-    struct BodyState: Equatable, Scoped {
+    struct BodyState: Equatable, Child {
         typealias Parent = InspectionFeature.State
         let isFullScreen: Bool
         let appIsInDarkMode: Bool

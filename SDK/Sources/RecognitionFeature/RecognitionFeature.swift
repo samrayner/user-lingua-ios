@@ -16,7 +16,7 @@ public enum RecognitionFeature: Feature {
         case recognitionFailed(Swift.Error)
     }
 
-    public struct Dependencies: Scoped {
+    public struct Dependencies: Child {
         public typealias Parent = AllDependencies
 
         let windowService: any WindowServiceProtocol

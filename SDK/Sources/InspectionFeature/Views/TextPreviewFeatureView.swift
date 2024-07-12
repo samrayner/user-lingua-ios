@@ -26,7 +26,7 @@ struct TextPreviewFeatureView: View {
         self.systemLocale = systemLocale
     }
 
-    struct BodyState: Equatable, Scoped {
+    struct BodyState: Equatable, Child {
         typealias Parent = InspectionFeature.State
         let locale: Locale
         let diff: AttributedString

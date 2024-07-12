@@ -13,7 +13,7 @@ import Theme
 import Utilities
 
 public enum SelectionFeature: Feature {
-    public struct Dependencies: Scoped {
+    public struct Dependencies: Child {
         public typealias Parent = AllDependencies
 
         let deviceOrientationObservable: DeviceOrientationObservable
@@ -151,7 +151,7 @@ public struct SelectionFeatureView: View {
         self.store = store
     }
 
-    struct BodyState: Equatable, Scoped {
+    struct BodyState: Equatable, Child {
         typealias Parent = SelectionFeature.State
         let recognizedStrings: [RecognizedString]?
         let isInspecting: Bool

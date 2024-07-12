@@ -14,7 +14,7 @@ import Theme
 import Utilities
 
 public enum InspectionFeature: Feature {
-    public struct Dependencies: Scoped {
+    public struct Dependencies: Child {
         public typealias Parent = AllDependencies
 
         let appViewModel: UserLinguaObservable

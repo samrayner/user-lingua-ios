@@ -21,7 +21,7 @@ public struct InspectionFeatureView: View {
         self.store = store
     }
 
-    struct BodyState: Equatable, Scoped {
+    struct BodyState: Equatable, Child {
         typealias Parent = InspectionFeature.State
         let isFullScreen: Bool
         let keyboardHeight: CGFloat
@@ -127,7 +127,7 @@ public struct InspectionFeatureView: View {
         }
     }
 
-    struct ViewportState: Equatable, Scoped {
+    struct ViewportState: Equatable, Child {
         typealias Parent = InspectionFeature.State
         let isFullScreen: Bool
         let isTransitioning: Bool
@@ -155,7 +155,7 @@ public struct InspectionFeatureView: View {
         }
     }
 
-    struct InspectionPanelState: Equatable, Scoped {
+    struct InspectionPanelState: Equatable, Child {
         typealias Parent = InspectionFeature.State
         let suggestionValue: String
         let localizedValue: String
