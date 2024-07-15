@@ -120,7 +120,8 @@ let package = Package(
             dependencies: [
                 "CasePaths",
                 "CombineSchedulers",
-                "CustomDump"
+                "CustomDump",
+                "Utilities"
             ]
         ),
         .target(

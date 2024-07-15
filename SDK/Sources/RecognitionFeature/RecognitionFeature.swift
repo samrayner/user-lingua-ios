@@ -115,10 +115,13 @@ public enum RecognitionFeature: Feature {
                         dependencies.stringRecognizer
                             .recognizeStrings(in: screenshot)
                             .mapError(Error.recognitionFailed)
-                            .map { Event.didRecognizeStrings($0) }
-                            // TODO: get recognized strings into success somehow
-                            .append(Event.didFinishRecognizingStrings(.success([])))
-                            .catch { Just(Event.didFinishRecognizingStrings(.failure($0))) }
+                            .mapToEvents(
+                                output: Event.didRecognizeStrings,
+                                failure: { Event.didFinishRecognizingStrings(.failure($0)) },
+                                finished: { lastValue in
+                                    Event.didFinishRecognizingStrings(.success(lastValue ?? []))
+                                }
+                            )
                             .receive(on: DispatchQueue.main)
                             .eraseToAnyPublisher()
                     )

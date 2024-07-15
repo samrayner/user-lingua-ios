@@ -3,6 +3,7 @@
 import CasePaths
 import Combine
 import SwiftUI
+import Utilities
 
 public struct Feedback<State, Event, Dependencies> {
     public struct Effect {
