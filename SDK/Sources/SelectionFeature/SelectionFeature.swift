@@ -72,10 +72,22 @@ public enum SelectionFeature: Feature {
                     state.recognizedStrings = []
                 case .orientationDidChange:
                     state.recognizedStrings = []
-                case let .recognition(.delegate(.didRecognizeStrings(recognizedStrings))):
+                case let .recognition(.delegate(.didRecognizeString(recognizedStrings))):
                     state.recognizedStrings = recognizedStrings
                 case let .recognition(.delegate(.didFinish(.failure(error)))):
-                    print("RECOGNITION FAILED \(error)")
+                    switch error {
+                    case .screenshotFailed:
+                        // TODO: Handle recognition error
+                        print("Recognition failed: screenshot error")
+                        return
+                    case let .recognitionFailed(error):
+                        // TODO: Handle recognition error
+                        print("Recognition failed: \(error)")
+                        return
+                    case .cancelled:
+                        // Do nothing
+                        return
+                    }
                 case .inspection,
                      .recognition,
                      .delegate,

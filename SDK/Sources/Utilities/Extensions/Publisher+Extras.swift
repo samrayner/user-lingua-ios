@@ -42,24 +42,16 @@ extension Publisher {
         map(Emission.emitted)
             .append(.appended)
             .withPrevious()
-            .flatMap { previous, current in
+            .compactMap { previous, current -> Output? in
                 switch (previous, current) {
                 case let (_, .emitted(value)):
-                    Just(value).eraseToAnyPublisher()
+                    value
                 case let (.emitted(lastValue), .appended):
-                    if let toAppend = element(lastValue) {
-                        Just(toAppend).eraseToAnyPublisher()
-                    } else {
-                        Empty().eraseToAnyPublisher()
-                    }
+                    element(lastValue)
                 case (nil, .appended):
-                    if let toAppend = element(nil) {
-                        Just(toAppend).eraseToAnyPublisher()
-                    } else {
-                        Empty().eraseToAnyPublisher()
-                    }
+                    element(nil)
                 case (.appended, .appended):
-                    Empty().eraseToAnyPublisher()
+                    nil
                 }
             }
             .eraseToAnyPublisher()

@@ -16,6 +16,7 @@ public struct InspectionFeatureView: View {
 
     private let store: StoreOf<InspectionFeature>
     @FocusState private var focusedField: InspectionFeature.Field?
+    @EnvironmentObject var deviceOrientationObservable: DeviceOrientationObservable
 
     public init(store: StoreOf<InspectionFeature>) {
         self.store = store
@@ -79,6 +80,9 @@ public struct InspectionFeatureView: View {
         .onReceive(store.publisher(for: \.presentation)) {
             guard case .dismissing = $0 else { return }
             dismiss()
+        }
+        .onReceive(deviceOrientationObservable.didChangePublisher) {
+            store.send(.orientationDidChange($0))
         }
         .onReceive(
             NotificationCenter.default

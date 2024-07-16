@@ -37,7 +37,7 @@ public enum RecognitionFeature: Feature {
         var appFacade: UIImage?
         var appYOffset: CGFloat = 0
         var isCancelling = false
-        var result: Result<[RecognizedString], RecognitionFeature.Error> = .success([])
+        var result: Result<[RecognizedString], RecognitionFeature.Error>?
 
         public init() {}
 
@@ -51,13 +51,13 @@ public enum RecognitionFeature: Feature {
         case cancel
         case didPrepareFacade(screenshot: UIImage, appYOffset: CGFloat)
         case didPrepareApp
-        case didRecognizeStrings([RecognizedString])
+        case didRecognizeString([RecognizedString])
         case didFinishRecognizingStrings(Result<[RecognizedString], Error>)
         case didResetApp
         case delegate(Delegate)
 
         public enum Delegate {
-            case didRecognizeStrings([RecognizedString])
+            case didRecognizeString([RecognizedString])
             case didFinish(Result<[RecognizedString], Error>)
         }
     }
@@ -80,7 +80,7 @@ public enum RecognitionFeature: Feature {
                 state.result = result
             case .didResetApp:
                 state = .init()
-            case .didRecognizeStrings, .delegate:
+            case .didRecognizeString, .delegate:
                 return
             }
         }
@@ -116,7 +116,7 @@ public enum RecognitionFeature: Feature {
                             .recognizeStrings(in: screenshot)
                             .mapError(Error.recognitionFailed)
                             .mapToEvents(
-                                output: Event.didRecognizeStrings,
+                                output: Event.didRecognizeString,
                                 failure: { Event.didFinishRecognizingStrings(.failure($0)) },
                                 finished: { lastValue in
                                     Event.didFinishRecognizingStrings(.success(lastValue ?? []))
@@ -133,11 +133,11 @@ public enum RecognitionFeature: Feature {
                     return .none
                 }
             },
-            .event(/Event.didRecognizeStrings) { payload, _, _ in
-                .send(.delegate(.didRecognizeStrings(payload)))
+            .event(/Event.didRecognizeString) { payload, _, _ in
+                .send(.delegate(.didRecognizeString(payload)))
             },
             .event(/Event.didResetApp) { _, state, _ in
-                .send(.delegate(.didFinish(state.old.result)))
+                .send(.delegate(.didFinish(state.old.result ?? .success([]))))
             },
             .event(/Event.cancel) { _, _, dependencies in
                 dependencies.stringRecognizer.cancel()

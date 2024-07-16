@@ -131,55 +131,79 @@ public enum InspectionFeature: Feature {
         case setFocusedField(Field?)
         case saveSuggestion
         case setLocale(identifier: String)
+        case orientationDidChange(UIDeviceOrientation)
         case viewportFrameDidChange(CGRect)
         case focusViewport(fromZeroPosition: Bool = false)
         case keyboardWillChangeFrame(KeyboardNotification)
+        case recognition(RecognitionFeature.Event)
     }
 
     public static func reducer() -> ReducerOf<Self> {
-        ReducerOf<Self> { state, event in
-            switch event {
-            case .didTapSuggestionPreview:
-                state.focusedField = .suggestion
-            case .didTapClose:
-                state.presentation = .preparingToDismiss
-            case .didTapDoneSuggesting:
-                state.focusedField = nil
-            case .didTapToggleDarkMode:
-                state.appIsInDarkMode.toggle()
-            case .didTapSubmit:
-                print("SUBMITTED \(state.suggestionValue)")
-            case .didTapToggleFullScreen:
-                state.focusedField = nil
-                state.isFullScreen.toggle()
-            case .didAppear:
-                state.presentation = .presented
-            case let .dismiss(appFacade):
-                state.presentation = .dismissing(appFacade: appFacade)
-            case let .setSuggestionValue(value):
-                state.suggestionValue = value
-            case let .setLocale(identifier):
-                state.locale = .init(identifier: identifier)
-            case let .setPreviewMode(previewMode):
-                state.previewMode = previewMode
-            case let .setFocusedField(field):
-                state.focusedField = field
-            case let .viewportFrameDidChange(frame):
-                state.viewportFrame = frame
-            case let .keyboardWillChangeFrame(notification):
-                state.keyboardAnimation = notification.animation
-                let newHeight = max(0, UIScreen.main.bounds.height - notification.endFrame.origin.y)
-                if newHeight != state.keyboardHeight {
-                    state.keyboardHeight = newHeight
+        .combine(
+            RecognitionFeature.reducer()
+                .pullback(state: \State.recognition, event: /Event.recognition),
+
+            ReducerOf<Self> { state, event in
+                switch event {
+                case .didTapSuggestionPreview:
+                    state.focusedField = .suggestion
+                case .didTapClose:
+                    state.presentation = .preparingToDismiss
+                case .didTapDoneSuggesting:
+                    state.focusedField = nil
+                case .didTapToggleDarkMode:
+                    state.appIsInDarkMode.toggle()
+                case .didTapSubmit:
+                    print("SUBMITTED \(state.suggestionValue)")
+                case .didTapToggleFullScreen:
+                    state.focusedField = nil
+                    state.isFullScreen.toggle()
+                case .didAppear:
+                    state.presentation = .presented
+                case let .dismiss(appFacade):
+                    state.presentation = .dismissing(appFacade: appFacade)
+                case let .setSuggestionValue(value):
+                    state.suggestionValue = value
+                case let .setLocale(identifier):
+                    state.locale = .init(identifier: identifier)
+                case let .setPreviewMode(previewMode):
+                    state.previewMode = previewMode
+                case let .setFocusedField(field):
+                    state.focusedField = field
+                case let .viewportFrameDidChange(frame):
+                    state.viewportFrame = frame
+                case let .keyboardWillChangeFrame(notification):
+                    state.keyboardAnimation = notification.animation
+                    let newHeight = max(0, UIScreen.main.bounds.height - notification.endFrame.origin.y)
+                    if newHeight != state.keyboardHeight {
+                        state.keyboardHeight = newHeight
+                    }
+                case let .recognition(.delegate(.didFinish(result))):
+                    switch result {
+                    case let .success(recognizedStrings):
+                        guard let recognizedString = recognizedStrings.first(
+                            where: { $0.recordedString.formatted == state.recognizedString.recordedString.formatted }
+                        ) else { return }
+
+                        // recognizedString may not be found again on re-recognition
+                        // due to keyboard avoidance in the app hiding it from view
+
+                        state.recognizedString = recognizedString
+                    case .failure:
+                        // recognition failed for some reason, so do nothing
+                        return
+                    }
+                case .didTapIncreaseTextSize,
+                     .didTapDecreaseTextSize,
+                     .onAppear,
+                     .orientationDidChange,
+                     .focusViewport,
+                     .saveSuggestion,
+                     .recognition:
+                    return
                 }
-            case .didTapIncreaseTextSize,
-                 .didTapDecreaseTextSize,
-                 .onAppear,
-                 .focusViewport,
-                 .saveSuggestion:
-                return
             }
-        }
+        )
     }
 
     private static var stateFeedbacks: [FeedbackOf<Self>] {
@@ -199,6 +223,10 @@ public enum InspectionFeature: Feature {
             .state(ifChanged: \.viewportFrame) { state, _ in
                 guard !state.new.isTransitioning else { return .none }
                 return .send(.focusViewport())
+            },
+            .state(ifChanged: \.recognizedString) { _, _ in
+                // refocus viewport after re-recognition (i.e. after orientation change)
+                .send(.focusViewport(fromZeroPosition: true))
             },
             .state(scoped: \.suggestionValue) { _, _ in
                 .send(.saveSuggestion) // TODO: debounce
@@ -227,6 +255,9 @@ public enum InspectionFeature: Feature {
                 dependencies.contentSizeCategoryService.incrementAppContentSizeCategory()
                 return .none
             },
+            .event(/Event.orientationDidChange) { _, _, _ in
+                .send(.recognition(.start), after: 0.1)
+            },
             .event(/Event.focusViewport) { fromZeroPosition, state, dependencies in
                 if fromZeroPosition {
                     dependencies.windowService.resetAppPosition()
@@ -252,6 +283,14 @@ public enum InspectionFeature: Feature {
     }
 
     public static var feedbacks: [FeedbackOf<Self>] {
-        stateFeedbacks + eventFeedbacks
+        [
+            RecognitionFeature.feedback.pullback(
+                state: \.recognition,
+                event: /Event.recognition,
+                dependencies: \.recognition
+            )
+        ]
+            + stateFeedbacks
+            + eventFeedbacks
     }
 }
