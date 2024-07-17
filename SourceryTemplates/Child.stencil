@@ -3,7 +3,7 @@
 {% for type in types.structs where type.based.Child %}
 extension {{ type.name }} {
     {{ type.accessLevel }} init(from parent: Parent) {
-    {% for variable in type.variables|instance %}
+    {% for variable in type.variables|instance|stored %}
     {% if variable|annotated:"initFromParent" %}
         self.{{ variable.name }} = .init(from: parent)
     {% else %}

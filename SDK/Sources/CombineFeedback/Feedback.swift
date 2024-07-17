@@ -146,7 +146,7 @@ public struct Feedback<State, Event, Dependencies> {
     }
 
     public static func event<Payload>(
-        _ casePath: CasePath<Event, Payload>,
+        _ extract: @escaping (Event) -> Payload?,
         effect: @escaping (Payload, (old: State, new: State), Dependencies) -> Effect
     ) -> Feedback {
         custom { input, output, dependencies in
@@ -164,7 +164,7 @@ public struct Feedback<State, Event, Dependencies> {
                 .onlyWithPrevious() // the first emission always has a nil event anyway
                 .compactMap { previous, current -> (Payload?, State, State)? in
                     guard let event = current.1 else { return nil }
-                    return (casePath.extract(from: event), previous.0, current.0)
+                    return (extract(event), previous.0, current.0)
                 }
                 .flatMap { payload, oldState, newState in
                     let publisher = if let payload {

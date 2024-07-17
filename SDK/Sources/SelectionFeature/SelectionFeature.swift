@@ -72,8 +72,8 @@ public enum SelectionFeature: Feature {
                     state.recognizedStrings = []
                 case .orientationDidChange:
                     state.recognizedStrings = []
-                case let .recognition(.delegate(.didRecognizeString(recognizedStrings))):
-                    state.recognizedStrings = recognizedStrings
+                case let .recognition(.delegate(.didRecognizeString(recognizedString))):
+                    state.recognizedStrings?.append(recognizedString)
                 case let .recognition(.delegate(.didFinish(.failure(error)))):
                     switch error {
                     case .screenshotFailed:
@@ -83,9 +83,6 @@ public enum SelectionFeature: Feature {
                     case let .recognitionFailed(error):
                         // TODO: Handle recognition error
                         print("Recognition failed: \(error)")
-                        return
-                    case .cancelled:
-                        // Do nothing
                         return
                     }
                 case .inspection,
@@ -111,23 +108,34 @@ public enum SelectionFeature: Feature {
                 )
                 return .combine(
                     .send(.recognition(.cancel)),
-                    .send(.setInspection(inspectionState), after: 0.2)
+                    .send(.setInspection(inspectionState))
                 )
             },
             .event(/Event.inspectionDidDismiss) { _, _, _ in
                 .send(.delegate(.dismiss))
             },
-            .event(/Event.didTapOverlay) { _, _, _ in
-                .combine(
-                    .send(.recognition(.cancel)),
-                    .send(.delegate(.dismiss), after: 0.2)
-                )
+            .event(/Event.didTapOverlay) { _, state, _ in
+                if state.new.recognition.isInProgress {
+                    .combine(
+                        .send(.recognition(.cancel)),
+                        .send(.delegate(.dismiss), after: 0.5)
+                    )
+                } else {
+                    .send(.delegate(.dismiss))
+                }
             },
             .event(/Event.onAppear) { _, _, _ in
                 .send(.recognition(.start))
             },
-            .event(/Event.orientationDidChange) { _, _, _ in
-                .send(.recognition(.start), after: 0.1)
+            .event(/Event.orientationDidChange) { _, state, _ in
+                if state.new.recognition.isInProgress {
+                    .combine(
+                        .send(.recognition(.cancel)),
+                        .send(.recognition(.start), after: 0.5)
+                    )
+                } else {
+                    .send(.recognition(.start))
+                }
             }
         ]
     }

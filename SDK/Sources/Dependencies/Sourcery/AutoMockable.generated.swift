@@ -195,10 +195,10 @@ public class StringRecognizerProtocolMock: StringRecognizerProtocol {
     }
     public var recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorReceivedImage: (UIImage)?
     public var recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorReceivedInvocations: [(UIImage)] = []
-    public var recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorReturnValue: AnyPublisher<[RecognizedString], StringRecognizerError>!
-    public var recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorClosure: ((UIImage) -> AnyPublisher<[RecognizedString], StringRecognizerError>)?
+    public var recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorReturnValue: AnyPublisher<RecognizedString, StringRecognizerError>!
+    public var recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorClosure: ((UIImage) -> AnyPublisher<RecognizedString, StringRecognizerError>)?
 
-    public func recognizeStrings(in image: UIImage) -> AnyPublisher<[RecognizedString], StringRecognizerError> {
+    public func recognizeStrings(in image: UIImage) -> AnyPublisher<RecognizedString, StringRecognizerError> {
         recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorCallsCount += 1
         recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorReceivedImage = image
         recognizeStringsInImageUIImageAnyPublisherRecognizedStringStringRecognizerErrorReceivedInvocations.append(image)

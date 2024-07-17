@@ -7,6 +7,7 @@ import SwiftUI
 
 open class Store<State, Event> {
     private let box: StoreBoxBase<State, Event>
+    private let eventSubject: PassthroughSubject<Event, Never> = .init()
 
     public var state: State {
         box.currentState
@@ -50,6 +51,7 @@ open class Store<State, Event> {
 
     open func send(_ event: Event) {
         box.send(event: event)
+        eventSubject.send(event)
     }
 
     public func scoped<S>(
@@ -88,9 +90,9 @@ open class Store<State, Event> {
         )
     }
 
-    public func publisher<Value>(for transform: @escaping (State) -> Value) -> AnyPublisher<Value, Never> {
+    public func publisher<Value>(for scope: @escaping (State) -> Value) -> AnyPublisher<Value, Never> {
         publisher
-            .map(transform)
+            .map(scope)
             .eraseToAnyPublisher()
     }
 }

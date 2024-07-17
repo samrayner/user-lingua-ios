@@ -9,12 +9,11 @@ import Vision
 public enum StringRecognizerError: Error {
     case invalidImage
     case recognitionRequestFailed(Error)
-    case cancelled
 }
 
 // sourcery: AutoMockable
 public protocol StringRecognizerProtocol {
-    func recognizeStrings(in image: UIImage) -> AnyPublisher<[RecognizedString], StringRecognizerError>
+    func recognizeStrings(in image: UIImage) -> AnyPublisher<RecognizedString, StringRecognizerError>
     func cancel()
 }
 
@@ -33,7 +32,7 @@ public final class StringRecognizer: StringRecognizerProtocol {
         identificationTask = nil
     }
 
-    public func recognizeStrings(in image: UIImage) -> AnyPublisher<[RecognizedString], StringRecognizerError> {
+    public func recognizeStrings(in image: UIImage) -> AnyPublisher<RecognizedString, StringRecognizerError> {
         isCancelled = false
 
         return recognizeLines(in: image)
@@ -86,11 +85,11 @@ public final class StringRecognizer: StringRecognizerProtocol {
         }
     }
 
-    func identifyRecognizedLines(_ lines: [RecognizedLine]) -> AnyPublisher<[RecognizedString], StringRecognizerError> {
-        let recognizedStringsSubject: CurrentValueSubject<[RecognizedString], StringRecognizerError> = .init([])
+    func identifyRecognizedLines(_ lines: [RecognizedLine]) -> AnyPublisher<RecognizedString, StringRecognizerError> {
+        let recognizedStringsSubject: PassthroughSubject<RecognizedString, StringRecognizerError> = .init()
         let recordedStrings = stringsRepository.recordedStrings().suffix(1000)
 
-        guard !isCancelled else { return Fail(error: .cancelled).eraseToAnyPublisher() }
+        guard !isCancelled else { return Empty().eraseToAnyPublisher() }
 
         identificationTask = Task {
             await withTaskCancellationHandler(
@@ -106,7 +105,7 @@ public final class StringRecognizer: StringRecognizerProtocol {
 
                             defer {
                                 if !recognizedString.lines.isEmpty {
-                                    recognizedStringsSubject.send(recognizedStringsSubject.value + [recognizedString])
+                                    recognizedStringsSubject.send(recognizedString)
                                 }
                             }
 
@@ -144,7 +143,7 @@ public final class StringRecognizer: StringRecognizerProtocol {
                     recognizedStringsSubject.send(completion: .finished)
                 },
                 onCancel: {
-                    recognizedStringsSubject.send(completion: .failure(.cancelled))
+                    recognizedStringsSubject.send(completion: .finished)
                 }
             )
         }

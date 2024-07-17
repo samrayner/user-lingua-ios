@@ -64,14 +64,14 @@ public final class StringsRepository: StringsRepositoryProtocol {
             let unformattedRecord = stringRecord[formattedString.format.value]?[unformattedRecordIndex]
             formattedString.format.localization = unformattedRecord?.localization
             stringRecord[formattedString.format.value]?.remove(at: unformattedRecordIndex)
-            print("Discarded localized record: \(formattedString.format.value)")
+            // print("Discarded localized record: \(formattedString.format.value)")
         }
 
         stringRecord[formattedString.value, default: []].append(
             RecordedString(formattedString)
         )
 
-        print("Recorded formatted: \(formattedString.value)")
+        // print("Recorded formatted: \(formattedString.value)")
     }
 
     public func record(localized localizedString: LocalizedString) {
@@ -81,7 +81,7 @@ public final class StringsRepository: StringsRepositoryProtocol {
             RecordedString(localizedString)
         )
 
-        print("Recorded localized: \(localizedString.value)")
+        // print("Recorded localized: \(localizedString.value)")
     }
 
     public func record(string: String) {
@@ -89,7 +89,7 @@ public final class StringsRepository: StringsRepositoryProtocol {
             RecordedString(string)
         )
 
-        print("Recorded string: \(string)")
+        // print("Recorded string: \(string)")
     }
 
     public func recordedStrings() -> [RecordedString] {

@@ -4,7 +4,10 @@ import Foundation
 
 extension Bundle {
     public var shouldIgnore: Bool {
-        false
+        let shouldIgnore = bundleURL.pathExtension == "axbundle" ||
+            bundleURL.lastPathComponent == "UIKitCore.framework"
+
+        return shouldIgnore
     }
 
     public func localized(localeIdentifier: String) -> Bundle? {

@@ -1,5 +1,6 @@
 // InspectionFeatureView.swift
 
+import CasePaths
 import CombineFeedback
 import Dependencies
 import Foundation
@@ -65,21 +66,17 @@ public struct InspectionFeatureView: View {
             .animation(state.keyboardAnimation, value: state.keyboardHeight)
         }
         .background {
-            WithViewStore(store, scoped: \.presentation) { presentation in
-                switch presentation.state {
-                case let .presenting(appFacade), let .dismissing(appFacade):
-                    appFacade.map { Image(uiImage: $0).ignoresSafeArea() }
-                default:
-                    EmptyView()
-                }
+            WithViewStore(store, scoped: \.presentation.appFacade) { appFacade in
+                appFacade.state.map { Image(uiImage: $0).ignoresSafeArea() }
             }
         }
         .font(.theme(\.body))
         .clearPresentationBackground()
         .onAppear { store.send(.onAppear) }
-        .onReceive(store.publisher(for: \.presentation)) {
-            guard case .dismissing = $0 else { return }
-            dismiss()
+        .onReceive(store.publisher(for: \.presentation)) { presentation in
+            if case .dismissing = presentation {
+                dismiss()
+            }
         }
         .onReceive(deviceOrientationObservable.didChangePublisher) {
             store.send(.orientationDidChange($0))

@@ -49,8 +49,20 @@ public enum InspectionFeature: Feature {
     public enum PresentationState: Equatable {
         case presenting(appFacade: UIImage?)
         case presented
-        case preparingToDismiss
+        case preparingAppFacadeForDismissal
+        case preparingAppForDismissal(appFacade: UIImage?)
         case dismissing(appFacade: UIImage?)
+
+        var appFacade: UIImage? {
+            switch self {
+            case .presented, .preparingAppFacadeForDismissal:
+                nil
+            case let .presenting(appFacade),
+                 let .preparingAppForDismissal(appFacade),
+                 let .dismissing(appFacade):
+                appFacade
+            }
+        }
     }
 
     public struct State: Equatable {
@@ -58,7 +70,6 @@ public enum InspectionFeature: Feature {
         public var locale = Locale.current
         public var suggestionValue: String
         var appIsInDarkMode: Bool
-        var presentation: PresentationState
         var recognition = RecognitionFeature.State()
         var previewMode: PreviewMode = .app
         var focusedField: Field?
@@ -66,6 +77,7 @@ public enum InspectionFeature: Feature {
         var keyboardHeight: CGFloat = 0
         var viewportFrame: CGRect = .zero
         var isFullScreen = false
+        var presentation: PresentationState
 
         public var isTransitioning: Bool {
             presentation != .presented
@@ -125,7 +137,8 @@ public enum InspectionFeature: Feature {
         case didTapToggleFullScreen
         case onAppear
         case didAppear
-        case dismiss(appFacade: UIImage?)
+        case didPrepareAppFacadeForDismissal(UIImage?)
+        case didPrepareAppForDismissal
         case setPreviewMode(PreviewMode)
         case setSuggestionValue(String)
         case setFocusedField(Field?)
@@ -147,8 +160,6 @@ public enum InspectionFeature: Feature {
                 switch event {
                 case .didTapSuggestionPreview:
                     state.focusedField = .suggestion
-                case .didTapClose:
-                    state.presentation = .preparingToDismiss
                 case .didTapDoneSuggesting:
                     state.focusedField = nil
                 case .didTapToggleDarkMode:
@@ -158,10 +169,14 @@ public enum InspectionFeature: Feature {
                 case .didTapToggleFullScreen:
                     state.focusedField = nil
                     state.isFullScreen.toggle()
+                case .didTapClose:
+                    state.presentation = .preparingAppFacadeForDismissal
                 case .didAppear:
                     state.presentation = .presented
-                case let .dismiss(appFacade):
-                    state.presentation = .dismissing(appFacade: appFacade)
+                case let .didPrepareAppFacadeForDismissal(screenshot):
+                    state.presentation = .preparingAppForDismissal(appFacade: screenshot)
+                case .didPrepareAppForDismissal:
+                    state.presentation = .dismissing(appFacade: state.presentation.appFacade)
                 case let .setSuggestionValue(value):
                     state.suggestionValue = value
                 case let .setLocale(identifier):
@@ -178,20 +193,11 @@ public enum InspectionFeature: Feature {
                     if newHeight != state.keyboardHeight {
                         state.keyboardHeight = newHeight
                     }
-                case let .recognition(.delegate(.didFinish(result))):
-                    switch result {
-                    case let .success(recognizedStrings):
-                        guard let recognizedString = recognizedStrings.first(
-                            where: { $0.recordedString.formatted == state.recognizedString.recordedString.formatted }
-                        ) else { return }
-
-                        // recognizedString may not be found again on re-recognition
-                        // due to keyboard avoidance in the app hiding it from view
-
+                case let .recognition(.delegate(.didRecognizeString(recognizedString))):
+                    // if we recognize the string being inspected again (e.g. on orientation change)
+                    // update our state with its latest position to refocus the viewport
+                    if recognizedString.recordedString.formatted == state.recognizedString.recordedString.formatted {
                         state.recognizedString = recognizedString
-                    case .failure:
-                        // recognition failed for some reason, so do nothing
-                        return
                     }
                 case .didTapIncreaseTextSize,
                      .didTapDecreaseTextSize,
@@ -208,14 +214,16 @@ public enum InspectionFeature: Feature {
 
     private static var stateFeedbacks: [FeedbackOf<Self>] {
         [
-            .state(scoped: \.presentation) { state, dependencies in
-                switch state.new {
-                case .preparingToDismiss:
+            .state(scoped: \.presentation) { presentation, dependencies in
+                switch presentation.new {
+                case .preparingAppFacadeForDismissal:
                     let appFacade = dependencies.windowService.screenshotAppWindow()
+                    return .send(.didPrepareAppFacadeForDismissal(appFacade), after: 0.2)
+                case .preparingAppForDismissal:
                     dependencies.contentSizeCategoryService.resetAppContentSizeCategory()
                     dependencies.windowService.resetAppWindow()
                     dependencies.appViewModel.refresh() // rerun UserLinguaClient.shared.displayString
-                    return .send(.dismiss(appFacade: appFacade))
+                    return .send(.didPrepareAppForDismissal, after: 0.2)
                 case .presenting, .presented, .dismissing:
                     return .none
                 }
@@ -256,7 +264,10 @@ public enum InspectionFeature: Feature {
                 return .none
             },
             .event(/Event.orientationDidChange) { _, _, _ in
-                .send(.recognition(.start), after: 0.1)
+                .combine(
+                    .send(.recognition(.cancel)),
+                    .send(.recognition(.start), after: 0.5)
+                )
             },
             .event(/Event.focusViewport) { fromZeroPosition, state, dependencies in
                 if fromZeroPosition {
