@@ -118,7 +118,7 @@ public enum SelectionFeature: Feature {
                 if state.new.recognition.isInProgress {
                     .combine(
                         .send(.recognition(.cancel)),
-                        .send(.delegate(.dismiss), after: 0.5)
+                        .send(.delegate(.dismiss), after: 0.4)
                     )
                 } else {
                     .send(.delegate(.dismiss))
@@ -131,7 +131,7 @@ public enum SelectionFeature: Feature {
                 if state.new.recognition.isInProgress {
                     .combine(
                         .send(.recognition(.cancel)),
-                        .send(.recognition(.start), after: 0.5)
+                        .send(.recognition(.start), after: 0.4)
                     )
                 } else {
                     .send(.recognition(.start))

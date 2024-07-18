@@ -41,10 +41,11 @@ public final class UserLinguaClient {
         )
     }
 
-    var isTakingScreenshot: Bool {
+    var isScreenshottingForRecognition: Bool {
         switch store.state {
-        case let .visible(state):
-            state.recognition.isTakingScreenshot
+        case let .visible(selection):
+            selection.recognition.isScreenshottingForRecognition ||
+                selection.inspection?.recognition.isScreenshottingForRecognition == true
         default:
             false
         }
@@ -223,7 +224,7 @@ public final class UserLinguaClient {
     }
 
     private func displayString(for formattedString: FormattedString) -> String {
-        if isTakingScreenshot {
+        if isScreenshottingForRecognition {
             // if we've recorded this string, make the most detailed record
             // uniquely recognizable in the UI by scrambling it
             if let recordedString = dependencies.stringsRepository.recordedString(formatted: formattedString) {

@@ -13,7 +13,7 @@ import Utilities
 public enum RecognitionFeature: Feature {
     public enum Error: Swift.Error, Equatable {
         case screenshotFailed
-        case recognitionFailed(Swift.Error)
+        case recognitionFailed(StringRecognizerError)
     }
 
     public struct Dependencies: Child {
@@ -28,21 +28,22 @@ public enum RecognitionFeature: Feature {
         case preparingFacade
         case preparingApp
         case screenshottingApp
-        case recognizingStrings(screenshot: UIImage)
         case resettingApp
+        case recognizingStrings
     }
 
     public struct State: Equatable {
         var stage: Stage?
         var appFacade: UIImage?
+        var recognizableScreenshot: UIImage?
         var appYOffset: CGFloat = 0
         var recognizedStrings: [RecognizedString] = []
-        var error: Error?
+        var isCancelled = false
 
         public init() {}
 
-        public var isTakingScreenshot: Bool {
-            stage == .preparingApp
+        public var isScreenshottingForRecognition: Bool {
+            [.preparingApp, .screenshottingApp].contains(stage)
         }
 
         public var isInProgress: Bool {
@@ -56,9 +57,9 @@ public enum RecognitionFeature: Feature {
         case didPrepareFacade(screenshot: UIImage, appYOffset: CGFloat)
         case didPrepareApp
         case didScreenshotApp(UIImage)
+        case didResetApp
         case didRecognizeString(RecognizedString)
         case didFinishRecognizingStrings(Result<Void, Error>)
-        case didResetApp
         case delegate(Delegate)
 
         public enum Delegate {
@@ -70,6 +71,8 @@ public enum RecognitionFeature: Feature {
     public static func reducer() -> ReducerOf<Self> {
         .init { state, event in
             switch event {
+            case .cancel:
+                state.isCancelled = true
             case .start:
                 state.stage = .preparingFacade
             case let .didPrepareFacade(screenshot, appYOffset):
@@ -79,17 +82,17 @@ public enum RecognitionFeature: Feature {
             case .didPrepareApp:
                 state.stage = .screenshottingApp
             case let .didScreenshotApp(screenshot):
-                state.stage = .recognizingStrings(screenshot: screenshot)
-            case let .didRecognizeString(recognizedString):
-                state.recognizedStrings.append(recognizedString)
-            case let .didFinishRecognizingStrings(result):
-                if case let .failure(error) = result {
-                    state.error = error
-                }
+                state.appFacade = nil
+                state.recognizableScreenshot = screenshot
                 state.stage = .resettingApp
             case .didResetApp:
+                state.appFacade = nil
+                state.stage = .recognizingStrings
+            case let .didRecognizeString(recognizedString):
+                state.recognizedStrings.append(recognizedString)
+            case .didFinishRecognizingStrings:
                 state = .init()
-            case .cancel, .delegate:
+            case .delegate:
                 return
             }
         }
@@ -109,14 +112,26 @@ public enum RecognitionFeature: Feature {
                     return .send(.didPrepareFacade(screenshot: screenshot, appYOffset: appYOffset))
                 case .preparingApp:
                     dependencies.windowService.resetAppPosition()
-                    dependencies.appViewModel.refresh() // refresh app views with scrambled text
-                    return .send(.didPrepareApp, after: 0.5) // give UI time to refresh (scramble)
+                    dependencies.appViewModel.refresh() // refresh app views with recognizable (scrambled) text
+                    return .send(.didPrepareApp, after: 0.2) // give UI time to refresh (scramble)
                 case .screenshottingApp:
                     guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
                         return .send(.didFinishRecognizingStrings(.failure(.screenshotFailed)))
                     }
                     return .send(.didScreenshotApp(screenshot))
-                case let .recognizingStrings(screenshot):
+                case .resettingApp:
+                    dependencies.windowService.positionApp(yOffset: state.new.appYOffset, animationDuration: 0)
+                    dependencies.appViewModel.refresh() // refresh app views with unscrambled text
+                    return .send(.didResetApp, after: 0.2) // give UI time to refresh (unscramble)
+                case .recognizingStrings:
+                    guard let screenshot = state.new.recognizableScreenshot else {
+                        return .send(.didFinishRecognizingStrings(.failure(.recognitionFailed(.invalidImage))))
+                    }
+
+                    guard !state.new.isCancelled else {
+                        return .send(.didFinishRecognizingStrings(.success()))
+                    }
+
                     return .publish(
                         dependencies.stringRecognizer
                             .recognizeStrings(in: screenshot)
@@ -127,10 +142,6 @@ public enum RecognitionFeature: Feature {
                             .receive(on: DispatchQueue.main)
                             .eraseToAnyPublisher()
                     )
-                case .resettingApp:
-                    dependencies.windowService.positionApp(yOffset: state.new.appYOffset, animationDuration: 0)
-                    dependencies.appViewModel.refresh() // refresh app views with unscrambled text
-                    return .send(.didResetApp, after: 0.5) // give UI time to refresh (unscramble)
                 case nil:
                     return .none
                 }
@@ -138,17 +149,16 @@ public enum RecognitionFeature: Feature {
             .event(/Event.didRecognizeString) { payload, _, _ in
                 .send(.delegate(.didRecognizeString(payload)))
             },
-            .event(/Event.didResetApp) { _, state, _ in
-                .send(.delegate(.didFinish(.success(state.old.recognizedStrings))))
+            .event(/Event.didFinishRecognizingStrings) { result, state, _ in
+                .send(.delegate(.didFinish(
+                    result.map { _ in state.old.recognizedStrings }
+                )))
             },
             .event(/Event.cancel) { _, state, dependencies in
-                switch state.new.stage {
-                case .recognizingStrings:
+                if state.new.stage == .recognizingStrings {
                     dependencies.stringRecognizer.cancel()
-                    return .none
-                default:
-                    return .send(.didFinishRecognizingStrings(.success()))
                 }
+                return .none
             }
         ]
     }

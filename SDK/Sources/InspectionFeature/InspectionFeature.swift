@@ -69,8 +69,8 @@ public enum InspectionFeature: Feature {
         public internal(set) var recognizedString: RecognizedString
         public var locale = Locale.current
         public var suggestionValue: String
+        public var recognition = RecognitionFeature.State()
         var appIsInDarkMode: Bool
-        var recognition = RecognitionFeature.State()
         var previewMode: PreviewMode = .app
         var focusedField: Field?
         var keyboardAnimation: Animation?

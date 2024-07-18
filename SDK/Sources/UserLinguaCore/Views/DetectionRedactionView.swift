@@ -13,7 +13,7 @@ private struct DetectionRedactionView<Content: View>: View {
     let redact: Bool
 
     var body: some View {
-        if UserLinguaClient.shared.isTakingScreenshot {
+        if UserLinguaClient.shared.isScreenshottingForRecognition {
             if redact {
                 content.redacted(reason: [.placeholder, .userLingua])
             } else if redactionReasons.contains(.userLingua) {
