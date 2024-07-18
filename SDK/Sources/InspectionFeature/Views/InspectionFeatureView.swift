@@ -67,7 +67,11 @@ public struct InspectionFeatureView: View {
         }
         .background {
             WithViewStore(store, scoped: \.presentation.appFacade) { appFacade in
-                appFacade.state.map { Image(uiImage: $0).ignoresSafeArea() }
+                appFacade.state.map {
+                    Image(uiImage: $0.screenshot)
+                        .ignoresSafeArea()
+                        .offset(y: $0.yOffset - 13) // why is this 13pt out?!
+                }
             }
         }
         .font(.theme(\.body))

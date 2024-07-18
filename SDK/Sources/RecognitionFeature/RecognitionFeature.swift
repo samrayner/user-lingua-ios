@@ -113,7 +113,7 @@ public enum RecognitionFeature: Feature {
                 case .preparingApp:
                     dependencies.windowService.resetAppPosition()
                     dependencies.appViewModel.refresh() // refresh app views with recognizable (scrambled) text
-                    return .send(.didPrepareApp, after: 0.2) // give UI time to refresh (scramble)
+                    return .send(.didPrepareApp, after: 0.3) // give UI time to refresh (scramble)
                 case .screenshottingApp:
                     guard let screenshot = dependencies.windowService.screenshotAppWindow() else {
                         return .send(.didFinishRecognizingStrings(.failure(.screenshotFailed)))
@@ -122,7 +122,7 @@ public enum RecognitionFeature: Feature {
                 case .resettingApp:
                     dependencies.windowService.positionApp(yOffset: state.new.appYOffset, animationDuration: 0)
                     dependencies.appViewModel.refresh() // refresh app views with unscrambled text
-                    return .send(.didResetApp, after: 0.2) // give UI time to refresh (unscramble)
+                    return .send(.didResetApp, after: 0.3) // give UI time to refresh (unscramble)
                 case .recognizingStrings:
                     guard let screenshot = state.new.recognizableScreenshot else {
                         return .send(.didFinishRecognizingStrings(.failure(.recognitionFailed(.invalidImage))))

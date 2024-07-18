@@ -103,7 +103,7 @@ public enum SelectionFeature: Feature {
                 ThemeFont.scaleFactor = dependencies.contentSizeCategoryService.systemContentSizeCategory.fontScaleFactor
                 let inspectionState = InspectionFeature.State(
                     recognizedString: recognizedString,
-                    appFacade: dependencies.windowService.screenshotAppWindow(),
+                    screenshot: dependencies.windowService.screenshotAppWindow(),
                     appIsInDarkMode: dependencies.windowService.appUIStyle == .dark
                 )
                 return .combine(
@@ -118,7 +118,7 @@ public enum SelectionFeature: Feature {
                 if state.new.recognition.isInProgress {
                     .combine(
                         .send(.recognition(.cancel)),
-                        .send(.delegate(.dismiss), after: 0.4)
+                        .send(.delegate(.dismiss), after: 0.6)
                     )
                 } else {
                     .send(.delegate(.dismiss))
@@ -131,7 +131,7 @@ public enum SelectionFeature: Feature {
                 if state.new.recognition.isInProgress {
                     .combine(
                         .send(.recognition(.cancel)),
-                        .send(.recognition(.start), after: 0.4)
+                        .send(.recognition(.start), after: 0.6)
                     )
                 } else {
                     .send(.recognition(.start))

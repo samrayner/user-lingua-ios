@@ -46,14 +46,19 @@ public enum InspectionFeature: Feature {
         }
     }
 
+    public struct AppFacade: Equatable {
+        let screenshot: UIImage
+        let yOffset: CGFloat
+    }
+
     public enum PresentationState: Equatable {
-        case presenting(appFacade: UIImage?)
+        case presenting(appFacade: AppFacade?)
         case presented
         case preparingAppFacadeForDismissal
-        case preparingAppForDismissal(appFacade: UIImage?)
-        case dismissing(appFacade: UIImage?)
+        case preparingAppForDismissal(appFacade: AppFacade?)
+        case dismissing(appFacade: AppFacade?)
 
-        var appFacade: UIImage? {
+        var appFacade: AppFacade? {
             switch self {
             case .presented, .preparingAppFacadeForDismissal:
                 nil
@@ -108,13 +113,15 @@ public enum InspectionFeature: Feature {
 
         public init(
             recognizedString: RecognizedString,
-            appFacade: UIImage?,
+            screenshot: UIImage?,
             appIsInDarkMode: Bool
         ) {
             self.recognizedString = recognizedString
             self.suggestionValue = recognizedString.value
-            self.presentation = .presenting(appFacade: appFacade)
             self.appIsInDarkMode = appIsInDarkMode
+            self.presentation = .presenting(
+                appFacade: screenshot.map { .init(screenshot: $0, yOffset: 0) }
+            )
         }
 
         func makeSuggestion() -> Suggestion {
@@ -137,7 +144,7 @@ public enum InspectionFeature: Feature {
         case didTapToggleFullScreen
         case onAppear
         case didAppear
-        case didPrepareAppFacadeForDismissal(UIImage?)
+        case didPrepareAppFacadeForDismissal(AppFacade?)
         case didPrepareAppForDismissal
         case setPreviewMode(PreviewMode)
         case setSuggestionValue(String)
@@ -173,8 +180,8 @@ public enum InspectionFeature: Feature {
                     state.presentation = .preparingAppFacadeForDismissal
                 case .didAppear:
                     state.presentation = .presented
-                case let .didPrepareAppFacadeForDismissal(screenshot):
-                    state.presentation = .preparingAppForDismissal(appFacade: screenshot)
+                case let .didPrepareAppFacadeForDismissal(appFacade):
+                    state.presentation = .preparingAppForDismissal(appFacade: appFacade)
                 case .didPrepareAppForDismissal:
                     state.presentation = .dismissing(appFacade: state.presentation.appFacade)
                 case let .setSuggestionValue(value):
@@ -217,13 +224,18 @@ public enum InspectionFeature: Feature {
             .state(scoped: \.presentation) { presentation, dependencies in
                 switch presentation.new {
                 case .preparingAppFacadeForDismissal:
-                    let appFacade = dependencies.windowService.screenshotAppWindow()
-                    return .send(.didPrepareAppFacadeForDismissal(appFacade), after: 0.2)
+                    let screenshot = dependencies.windowService.screenshotAppWindow()
+                    let appYOffset = dependencies.windowService.appYOffset
+                    return .send(
+                        .didPrepareAppFacadeForDismissal(
+                            screenshot.map { AppFacade(screenshot: $0, yOffset: appYOffset) }
+                        )
+                    )
                 case .preparingAppForDismissal:
                     dependencies.contentSizeCategoryService.resetAppContentSizeCategory()
                     dependencies.windowService.resetAppWindow()
                     dependencies.appViewModel.refresh() // rerun UserLinguaClient.shared.displayString
-                    return .send(.didPrepareAppForDismissal, after: 0.2)
+                    return .send(.didPrepareAppForDismissal, after: 0.3) // leave time for everything to reset
                 case .presenting, .presented, .dismissing:
                     return .none
                 }
