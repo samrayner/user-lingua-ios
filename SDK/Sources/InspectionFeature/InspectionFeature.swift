@@ -249,7 +249,7 @@ public enum InspectionFeature: Feature {
                 .send(.focusViewport(fromZeroPosition: true))
             },
             .state(scoped: \.suggestionValue) { _, _ in
-                .send(.saveSuggestion) // TODO: debounce
+                .send(.saveSuggestion, after: 0.5) // debounce for 0.5s
             },
             .state(scoped: \.appIsInDarkMode) { _, dependencies in
                 dependencies.windowService.toggleDarkMode()
