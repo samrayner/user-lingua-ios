@@ -111,6 +111,10 @@ public enum InspectionFeature: Feature {
             )
         }
 
+        var localizations: Set<String> {
+            .init(recognizedString.localization?.bundle?.localizations ?? [])
+        }
+
         public init(
             recognizedString: RecognizedString,
             screenshot: UIImage?,

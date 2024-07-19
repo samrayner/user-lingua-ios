@@ -13,14 +13,12 @@ public enum Strings {
   /// UserLingua
   public static let sdkName = Strings.tr("Localizable", "sdkName", fallback: "UserLingua")
   public enum Inspection {
+    /// Base
+    public static let baseLocaleLabel = Strings.tr("Localizable", "inspection.base_locale_label", fallback: "Base")
     /// Submit suggestion
     public static let submitButton = Strings.tr("Localizable", "inspection.submit_button", fallback: "Submit suggestion")
     /// Suggest Copy
     public static let title = Strings.tr("Localizable", "inspection.title", fallback: "Suggest Copy")
-    public enum LocalePicker {
-      /// Language
-      public static let title = Strings.tr("Localizable", "inspection.locale_picker.title", fallback: "Language")
-    }
     public enum Localization {
       public enum Comment {
         /// Comment
@@ -29,6 +27,12 @@ public enum Strings {
       public enum Key {
         /// Key
         public static let title = Strings.tr("Localizable", "inspection.localization.key.title", fallback: "Key")
+      }
+      public enum LanguageName {
+        /// Unknown
+        public static let fallback = Strings.tr("Localizable", "inspection.localization.language_name.fallback", fallback: "Unknown")
+        /// Language
+        public static let title = Strings.tr("Localizable", "inspection.localization.language_name.title", fallback: "Language")
       }
       public enum Table {
         /// File

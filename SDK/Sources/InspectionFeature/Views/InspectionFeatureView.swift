@@ -16,11 +16,16 @@ public struct InspectionFeatureView: View {
     @Environment(\.dismiss) var dismiss
 
     private let store: StoreOf<InspectionFeature>
+    private let systemLocale: Locale
     @FocusState private var focusedField: InspectionFeature.Field?
     @EnvironmentObject var deviceOrientationObservable: DeviceOrientationObservable
 
-    public init(store: StoreOf<InspectionFeature>) {
+    public init(
+        store: StoreOf<InspectionFeature>,
+        systemLocale: Locale = Locale.current
+    ) {
         self.store = store
+        self.systemLocale = systemLocale
     }
 
     struct BodyState: Equatable, Child {
@@ -168,6 +173,7 @@ public struct InspectionFeatureView: View {
         let locale: Locale
         let keyboardHeight: CGFloat
         let focusedField: InspectionFeature.Field?
+        let localizations: Set<String>
     }
 
     @ViewBuilder
@@ -216,22 +222,14 @@ public struct InspectionFeatureView: View {
                 }
 
                 VStack(alignment: .leading, spacing: .Space.m) {
-                    if state.recognizedString.hasAlternativeLocalizations {
-                        ScrollView(.horizontal) {
-                            Picker(
-                                Strings.Inspection.LocalePicker.title,
-                                selection: store.binding(
-                                    get: { $0.locale.identifier(.bcp47) },
-                                    send: { .setLocale(identifier: $0) }
-                                )
-                            ) {
-                                ForEach(state.recognizedString.localization?.bundle?.localizations ?? [], id: \.self) { identifier in
-                                    Text(identifier)
-                                }
-                            }
-                            .pickerStyle(.segmented)
-                            .fixedSize()
-                        }
+                    if !state.localizations.isEmpty {
+                        LocalePickerView(
+                            localizationIdentifiers: state.localizations,
+                            selectedIdentifier: store.binding(
+                                get: { $0.locale.identifier(.bcp47) },
+                                send: { .setLocale(identifier: $0) }
+                            )
+                        )
                     }
 
                     if let localization = state.recognizedString.localization {
@@ -241,7 +239,14 @@ public struct InspectionFeatureView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
                             (Text("\(Strings.Inspection.Localization.Table.title): ")
-                                .bold() + Text("\(localization.tableName ?? "Localizable").strings"))
+                                .bold() + Text("\(localization.tableName ?? "Localizable").(xc)strings"))
+                                .padding(.horizontal, .Space.s)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                            (Text("\(Strings.Inspection.Localization.LanguageName.title): ")
+                                .bold() +
+                                Text(systemLocale.localizedString(forLanguageCode: state.locale.identifier(.bcp47)) ?? Strings
+                                    .Inspection.Localization.LanguageName.fallback))
                                 .padding(.horizontal, .Space.s)
                                 .frame(maxWidth: .infinity, alignment: .leading)
 

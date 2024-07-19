@@ -8,8 +8,10 @@
 "inspection.text_preview.diff_title" = "Changes from original %@ (%@)";
 "inspection.text_preview.language_name_fallback" = "Language";
 "inspection.suggestion_field.placeholder" = "";
-"inspection.locale_picker.title" = "Language";
 "inspection.localization.key.title" = "Key";
 "inspection.localization.table.title" = "File";
+"inspection.localization.language_name.title" = "Language";
+"inspection.localization.language_name.fallback" = "Unknown";
 "inspection.localization.comment.title" = "Comment";
 "inspection.submit_button" = "Submit suggestion";
+"inspection.base_locale_label" = "Base";

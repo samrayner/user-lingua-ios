@@ -220,8 +220,7 @@ public struct SelectionFeatureView: View {
                 onDismiss: Event.inspectionDidDismiss
             ) { store in
                 InspectionFeatureView(store: store)
-                // TODO: Why does this crash?
-                // .preferredColorScheme(colorScheme == .light ? .dark : .light)
+                    .preferredColorScheme(colorScheme == .light ? .dark : .light)
             }
         }
     }

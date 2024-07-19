@@ -19,11 +19,6 @@ public struct RecognizedString: Equatable {
         recordedString.localization
     }
 
-    public var hasAlternativeLocalizations: Bool {
-        guard let localizationCount = localization?.bundle?.localizations.count else { return false }
-        return localizationCount > 1
-    }
-
     public var isLocalized: Bool {
         localization != nil
     }

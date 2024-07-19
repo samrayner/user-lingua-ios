@@ -38,6 +38,7 @@ extension InspectionFeatureView.InspectionPanelState {
         self.locale = parent.locale
         self.keyboardHeight = parent.keyboardHeight
         self.focusedField = parent.focusedField
+        self.localizations = parent.localizations
     }
 }
 
