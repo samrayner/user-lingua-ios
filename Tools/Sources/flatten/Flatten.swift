@@ -83,7 +83,7 @@ struct UpdateLibs: AsyncParsableCommand {
                     contents = contents
                         .replacingOccurrences(
                             of: "(@_spi\\(.*\\) )?(public|open) {1,}",
-                            with: "",
+                            with: "internal ",
                             options: .regularExpression
                         )
                 }
@@ -91,15 +91,15 @@ struct UpdateLibs: AsyncParsableCommand {
                 // public protocol conformances
                 contents = contents
                     .replacingOccurrences(
-                        of: "static func == ",
+                        of: "internal static func == ",
                         with: "public static func == "
                     )
                     .replacingOccurrences(
-                        of: "func hash(into hasher:",
+                        of: "internal func hash(into hasher:",
                         with: "public func hash(into hasher:"
                     )
                     .replacingOccurrences(
-                        of: "func cancel()",
+                        of: "internal func cancel()",
                         with: "public func cancel()"
                     )
 
