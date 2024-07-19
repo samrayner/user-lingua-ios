@@ -112,7 +112,8 @@ public enum InspectionFeature: Feature {
         }
 
         var localizations: Set<String> {
-            .init(recognizedString.localization?.bundle?.localizations ?? [])
+            Set(recognizedString.localization?.bundle?.localizations ?? [])
+                .filter { $0 != "Base" }
         }
 
         public init(

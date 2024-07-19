@@ -17,9 +17,10 @@ struct LocalePickerView: View {
     }
 
     var localizations: [String] {
-        var localizations = localizationIdentifiers
-        localizations.remove(baseLocaleIdentifier)
-        return [baseLocaleIdentifier] + localizations.sorted()
+        [baseLocaleIdentifier] +
+            localizationIdentifiers
+            .filter { $0 != baseLocaleIdentifier }
+            .sorted()
     }
 
     var body: some View {

@@ -10,23 +10,23 @@
 		E8639B6D2B7A53BA00685EEA /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E8639B6C2B7A53BA00685EEA /* Localizable.xcstrings */; };
 		E8639B6F2B7A545400685EEA /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8639B6E2B7A545400685EEA /* TabBarController.swift */; };
 		E8639B712B7A54C000685EEA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8639B702B7A54C000685EEA /* ContentView.swift */; };
+		E8914ED42C4A904400971386 /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8914ED32C4A904400971386 /* UserLingua */; };
+		E8914ED62C4A904400971386 /* UserLinguaAuto in Frameworks */ = {isa = PBXBuildFile; productRef = E8914ED52C4A904400971386 /* UserLinguaAuto */; };
+		E8914ED82C4A904400971386 /* UserLinguaCore in Frameworks */ = {isa = PBXBuildFile; productRef = E8914ED72C4A904400971386 /* UserLinguaCore */; };
+		E8914EDA2C4A904400971386 /* UserLinguaMacros in Frameworks */ = {isa = PBXBuildFile; productRef = E8914ED92C4A904400971386 /* UserLinguaMacros */; };
 		E8C95F6B2B7A516B00FDC7C4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6A2B7A516B00FDC7C4 /* AppDelegate.swift */; };
 		E8C95F6D2B7A516B00FDC7C4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6C2B7A516B00FDC7C4 /* SceneDelegate.swift */; };
 		E8C95F6F2B7A516B00FDC7C4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C95F6E2B7A516B00FDC7C4 /* ViewController.swift */; };
 		E8C95F722B7A516B00FDC7C4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F702B7A516B00FDC7C4 /* Main.storyboard */; };
 		E8C95F742B7A516D00FDC7C4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F732B7A516D00FDC7C4 /* Assets.xcassets */; };
 		E8C95F772B7A516D00FDC7C4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E8C95F752B7A516D00FDC7C4 /* LaunchScreen.storyboard */; };
-		E8DF32B42C3D727400EB5CB5 /* UserLingua in Frameworks */ = {isa = PBXBuildFile; productRef = E8DF32B32C3D727400EB5CB5 /* UserLingua */; };
-		E8DF32B62C3D727400EB5CB5 /* UserLinguaAuto in Frameworks */ = {isa = PBXBuildFile; productRef = E8DF32B52C3D727400EB5CB5 /* UserLinguaAuto */; };
-		E8DF32B82C3D727400EB5CB5 /* UserLinguaCore in Frameworks */ = {isa = PBXBuildFile; productRef = E8DF32B72C3D727400EB5CB5 /* UserLinguaCore */; };
-		E8DF32BA2C3D727400EB5CB5 /* UserLinguaMacros in Frameworks */ = {isa = PBXBuildFile; productRef = E8DF32B92C3D727400EB5CB5 /* UserLinguaMacros */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		E8639B6C2B7A53BA00685EEA /* Localizable.xcstrings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		E8639B6E2B7A545400685EEA /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		E8639B702B7A54C000685EEA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		E88697072C3D4FFE002BA56E /* BinarySDK */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = BinarySDK; path = ../BinarySDK; sourceTree = "<group>"; };
+		E8914ED22C4A903B00971386 /* SDK */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SDK; path = ../SDK; sourceTree = "<group>"; };
 		E8C95F672B7A516B00FDC7C4 /* UserLinguaExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UserLinguaExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8C95F6A2B7A516B00FDC7C4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E8C95F6C2B7A516B00FDC7C4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -42,10 +42,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8DF32BA2C3D727400EB5CB5 /* UserLinguaMacros in Frameworks */,
-				E8DF32B62C3D727400EB5CB5 /* UserLinguaAuto in Frameworks */,
-				E8DF32B82C3D727400EB5CB5 /* UserLinguaCore in Frameworks */,
-				E8DF32B42C3D727400EB5CB5 /* UserLingua in Frameworks */,
+				E8914EDA2C4A904400971386 /* UserLinguaMacros in Frameworks */,
+				E8914ED62C4A904400971386 /* UserLinguaAuto in Frameworks */,
+				E8914ED82C4A904400971386 /* UserLinguaCore in Frameworks */,
+				E8914ED42C4A904400971386 /* UserLingua in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -62,7 +62,7 @@
 		E8C95F5E2B7A516B00FDC7C4 = {
 			isa = PBXGroup;
 			children = (
-				E88697072C3D4FFE002BA56E /* BinarySDK */,
+				E8914ED22C4A903B00971386 /* SDK */,
 				E8C95F692B7A516B00FDC7C4 /* UserLinguaExample */,
 				E8C95F682B7A516B00FDC7C4 /* Products */,
 				E8639B692B7A532000685EEA /* Frameworks */,
@@ -112,10 +112,10 @@
 			);
 			name = UserLinguaExample;
 			packageProductDependencies = (
-				E8DF32B32C3D727400EB5CB5 /* UserLingua */,
-				E8DF32B52C3D727400EB5CB5 /* UserLinguaAuto */,
-				E8DF32B72C3D727400EB5CB5 /* UserLinguaCore */,
-				E8DF32B92C3D727400EB5CB5 /* UserLinguaMacros */,
+				E8914ED32C4A904400971386 /* UserLingua */,
+				E8914ED52C4A904400971386 /* UserLinguaAuto */,
+				E8914ED72C4A904400971386 /* UserLinguaCore */,
+				E8914ED92C4A904400971386 /* UserLinguaMacros */,
 			);
 			productName = UserLinguaExample;
 			productReference = E8C95F672B7A516B00FDC7C4 /* UserLinguaExample.app */;
@@ -429,19 +429,19 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E8DF32B32C3D727400EB5CB5 /* UserLingua */ = {
+		E8914ED32C4A904400971386 /* UserLingua */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLingua;
 		};
-		E8DF32B52C3D727400EB5CB5 /* UserLinguaAuto */ = {
+		E8914ED52C4A904400971386 /* UserLinguaAuto */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLinguaAuto;
 		};
-		E8DF32B72C3D727400EB5CB5 /* UserLinguaCore */ = {
+		E8914ED72C4A904400971386 /* UserLinguaCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLinguaCore;
 		};
-		E8DF32B92C3D727400EB5CB5 /* UserLinguaMacros */ = {
+		E8914ED92C4A904400971386 /* UserLinguaMacros */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UserLinguaMacros;
 		};
