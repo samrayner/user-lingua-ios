@@ -4,6 +4,7 @@
 --exclude SDK/Sources/CombineSchedulers
 --exclude SDK/Sources/CustomDump
 --exclude SDK/Sources/XCTestDynamicOverlay
+--exclude SDK/Sources/SQLite
 
 --commas inline
 --funcattributes prev-line

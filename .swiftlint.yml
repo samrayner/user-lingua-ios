@@ -6,6 +6,7 @@ excluded: # Paths to ignore during linting. Takes precedence over `included`.
   - SDK/Sources/CombineSchedulers
   - SDK/Sources/CustomDump
   - SDK/Sources/XCTestDynamicOverlay
+  - SDK/Sources/SQLite
 
 disabled_rules:
   # Don't warn about things we don't mind

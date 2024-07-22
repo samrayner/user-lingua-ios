@@ -125,6 +125,12 @@ struct UpdateLibs: AsyncParsableCommand {
                         )
                 }
 
+                // avoid collision with SwiftUI
+                if moduleName == "SQLite" {
+                    contents = contents
+                        .replacingOccurrences(of: "View", with: "ViewSchema")
+                }
+
                 try? fileManager.createDirectory(at: destination, withIntermediateDirectories: true)
                 let filePath = destination.appendingPathComponent("\(moduleName)_\(filename)")
                 try contents.write(to: filePath, atomically: false, encoding: encoding)

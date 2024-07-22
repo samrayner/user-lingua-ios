@@ -80,8 +80,12 @@ let package = Package(
             name: "Dependencies",
             dependencies: [
                 "Models",
-                "Utilities"
+                "Utilities",
+                "SQLite"
             ]
+        ),
+        .target(
+            name: "SQLite"
         ),
         .target(
             name: "Diff",

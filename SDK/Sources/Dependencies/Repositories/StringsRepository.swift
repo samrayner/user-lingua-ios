@@ -2,6 +2,7 @@
 
 import Foundation
 import Models
+import SQLite
 
 // sourcery: AutoMockable
 public protocol StringsRepositoryProtocol {
@@ -19,6 +20,9 @@ public final class StringsRepository: StringsRepositoryProtocol {
 
     public init(stringRecord: [String: [RecordedString]] = [:]) {
         self.stringRecord = stringRecord
+
+        let connection = try? SQLite.Connection()
+        print(connection?.sqliteVersion.description)
     }
 
     public func record(formatted formattedString: FormattedString) {

@@ -86,6 +86,25 @@ struct UpdateLibs: AsyncParsableCommand {
         }
     }
 
+    private func installSQLite(version: String) async throws {
+        let unzipped = try await downloadLibrary(
+            .package(url: "https://github.com/stephencelis/SQLite.swift", exact: version)
+        )
+        let target = "SQLite"
+        let source = unzipped.appending(path: "SQLite.swift-\(version)/Sources/\(target)", directoryHint: .isDirectory)
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/\(target)")
+
+        try? fileManager.removeItem(at: destination)
+        try fileManager.copyItem(
+            at: source,
+            to: destination
+        )
+
+        try editSwiftFiles(at: destination) { _ in
+            // do nothing
+        }
+    }
+
     private func installPointFreeLibrary(package: String, target: String, version: String) async throws {
         let unzipped = try await downloadLibrary(
             .package(url: "https://github.com/pointfreeco/\(package)", exact: version)
@@ -146,5 +165,6 @@ struct UpdateLibs: AsyncParsableCommand {
         try await installCombineSchedulers(version: "0.10.0")
         try await installCustomDump(version: "1.3.0")
         try await installXCTestDynamicOverlay(version: "1.1.2")
+        try await installSQLite(version: "0.15.3")
     }
 }
