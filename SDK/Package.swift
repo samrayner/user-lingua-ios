@@ -80,8 +80,12 @@ let package = Package(
             name: "Dependencies",
             dependencies: [
                 "Models",
-                "Utilities"
+                "Utilities",
+                "GRDB"
             ]
+        ),
+        .target(
+            name: "GRDB"
         ),
         .target(
             name: "Diff",

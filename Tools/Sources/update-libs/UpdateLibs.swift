@@ -51,7 +51,7 @@ struct UpdateLibs: AsyncParsableCommand {
         return unzippedDir
     }
 
-    private func editSwiftFiles(at url: URL, edit: (inout String) -> Void) throws {
+    private func editSwiftFiles(at url: URL, edit: (URL, inout String) -> Void) throws {
         let fileURLs = fileManager
             .enumerator(at: url, includingPropertiesForKeys: nil)!
             .compactMap { $0 as? URL }
@@ -61,7 +61,7 @@ struct UpdateLibs: AsyncParsableCommand {
             let encoding = String.Encoding.utf8
             var contents = try String(contentsOf: url, encoding: encoding)
 
-            edit(&contents)
+            edit(url, &contents)
 
             try contents.write(to: url, atomically: false, encoding: encoding)
         }
@@ -80,9 +80,37 @@ struct UpdateLibs: AsyncParsableCommand {
             to: destination
         )
 
-        try editSwiftFiles(at: destination) { swift in
+        try editSwiftFiles(at: destination) { _, swift in
             swift = swift.replacingOccurrences(of: "import KSSFoundation", with: "")
             swift = swift.replacingOccurrences(of: "duration(1.0, .seconds)", with: "1.0")
+        }
+    }
+
+    private func installGRDB(version: String) async throws {
+        let unzipped = try await downloadLibrary(
+            .package(url: "https://github.com/groue/GRDB.swift", exact: "v\(version)")
+        )
+        let target = "GRDB"
+        let source = unzipped.appending(path: "GRDB.swift-\(version)/\(target)", directoryHint: .isDirectory)
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/\(target)")
+
+        try? fileManager.removeItem(at: source.appendingPathComponent("Documentation.docc"))
+
+        try? fileManager.removeItem(at: destination)
+        try fileManager.copyItem(
+            at: source,
+            to: destination
+        )
+
+        try editSwiftFiles(at: destination) { fileURL, swift in
+            if fileURL.lastPathComponent == "Export.swift" {
+                swift = """
+                    @_exported import SQLite3
+                    internal func _enableDoubleQuotedStringLiterals(_: SQLiteConnection?) {}
+                    internal func _disableDoubleQuotedStringLiterals(_: SQLiteConnection?) {}
+                    internal func _registerErrorLogCallback(_: ((Void, CInt, CChar?) -> Void)?) {}
+                """
+            }
         }
     }
 
@@ -101,7 +129,7 @@ struct UpdateLibs: AsyncParsableCommand {
             to: destination
         )
 
-        try editSwiftFiles(at: destination) { _ in
+        try editSwiftFiles(at: destination) { _, _ in
             // do nothing
         }
     }
@@ -132,7 +160,7 @@ struct UpdateLibs: AsyncParsableCommand {
 
     private func installXCTestDynamicOverlay(version: String) async throws {
         try await installPointFreeLibrary(
-            package: "xctest-dynamic-overlay",
+            package: "swift-issue-reporting",
             target: "XCTestDynamicOverlay",
             version: version
         )
@@ -140,6 +168,7 @@ struct UpdateLibs: AsyncParsableCommand {
 
     mutating func run() async throws {
         try await installKSSDiff(version: "3.0.1")
+        try await installGRDB(version: "6.29.0")
 
         // TCA
         try await installCasePaths(version: "1.0.0")

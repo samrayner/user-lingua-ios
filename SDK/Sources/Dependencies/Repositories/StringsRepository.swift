@@ -1,6 +1,7 @@
 // StringsRepository.swift
 
 import Foundation
+import GRDB
 import Models
 
 // sourcery: AutoMockable
@@ -19,6 +20,9 @@ public final class StringsRepository: StringsRepositoryProtocol {
 
     public init(stringRecord: [String: [RecordedString]] = [:]) {
         self.stringRecord = stringRecord
+
+        let dbQueue = try? DatabaseQueue(path: "/path/to/database.sqlite")
+        print(dbQueue)
     }
 
     public func record(formatted formattedString: FormattedString) {
