@@ -1,16 +1,21 @@
 // Localization.swift
 
 import Foundation
+import Utilities
 
-public struct Localization: Equatable {
+public struct Localization: Equatable, Codable {
     public var key: String
-    public var bundle: Bundle?
+    public var bundleURL: URL?
     public var tableName: String?
     public var comment: String?
 
+    var bundle: Bundle? {
+        bundleURL.flatMap(Bundle.init)
+    }
+
     public init(key: String, bundle: Bundle?, tableName: String?, comment: String?) {
         self.key = key
-        self.bundle = bundle
+        self.bundleURL = bundle?.bundleURL
         self.tableName = tableName
         self.comment = comment
     }

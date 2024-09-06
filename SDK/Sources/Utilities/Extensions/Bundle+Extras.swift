@@ -1,4 +1,4 @@
-// Bundle+Localization.swift
+// Bundle+Extras.swift
 
 import Foundation
 

@@ -2,9 +2,9 @@
 
 import CasePaths
 import CombineFeedback
-import Dependencies
 import Foundation
 import Models
+import Services
 import Strings
 import SwiftUI
 import Theme

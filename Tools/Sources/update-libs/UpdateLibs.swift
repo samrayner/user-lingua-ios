@@ -114,6 +114,24 @@ struct UpdateLibs: AsyncParsableCommand {
         }
     }
 
+    private func installAnyCodable(version: String) async throws {
+        let unzipped = try await downloadLibrary(
+            .package(url: "https://github.com/Flight-School/AnyCodable", exact: version)
+        )
+        let target = "AnyCodable"
+        let source = unzipped.appending(path: "\(target)-\(version)/Sources/\(target)", directoryHint: .isDirectory)
+        let destination = currentDir.appendingPathComponent("../SDK/Sources/\(target)")
+
+        try? fileManager.removeItem(at: destination)
+        try fileManager.copyItem(
+            at: source,
+            to: destination
+        )
+
+        try editSwiftFiles(at: destination) { _, _ in
+        }
+    }
+
     private func installPointFreeLibrary(package: String, target: String, version: String) async throws {
         let unzipped = try await downloadLibrary(
             .package(url: "https://github.com/pointfreeco/\(package)", exact: version)
@@ -169,6 +187,7 @@ struct UpdateLibs: AsyncParsableCommand {
     mutating func run() async throws {
         try await installKSSDiff(version: "3.0.1")
         try await installGRDB(version: "6.29.0")
+        try await installAnyCodable(version: "0.6.7")
 
         // TCA
         try await installCasePaths(version: "1.0.0")

@@ -1,9 +1,9 @@
 // UserLinguaClient.swift
 
 import CombineFeedback
-import Dependencies
 import Models
 import RootFeature
+import Services
 import SwiftUI
 import UIKit
 import Utilities

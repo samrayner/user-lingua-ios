@@ -3,11 +3,11 @@
 import CasePaths
 import Combine
 import CombineFeedback
-import Dependencies
 import Foundation
 import InspectionFeature
 import Models
 import RecognitionFeature
+import Services
 import SwiftUI
 import Theme
 import Utilities

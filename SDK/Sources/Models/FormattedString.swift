@@ -2,7 +2,7 @@
 
 import Foundation
 
-public struct FormattedString {
+public struct FormattedString: Codable {
     public var value: String
     public var format: StringFormat
     public var arguments: [FormattedStringArgument]

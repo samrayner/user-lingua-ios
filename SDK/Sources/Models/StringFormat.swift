@@ -2,7 +2,7 @@
 
 import Foundation
 
-public struct StringFormat: Equatable {
+public struct StringFormat: Equatable, Codable {
     public static let placeholderRegex: NSRegularExpression = {
         let int = "(?:h|hh|l|ll|q|z|t|j)?([dioux])"
         // valid flags for float

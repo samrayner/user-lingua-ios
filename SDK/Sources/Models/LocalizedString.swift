@@ -3,7 +3,7 @@
 import Foundation
 import Utilities
 
-public struct LocalizedString {
+public struct LocalizedString: Equatable, Codable {
     public var value: String
     public var localization: Localization
 

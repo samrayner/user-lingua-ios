@@ -37,7 +37,8 @@ let package = Package(
         .target(
             name: "UserLinguaCore",
             dependencies: [
-                "Dependencies",
+                "Services",
+                "Repositories",
                 "Models",
                 "Utilities",
                 "RootFeature"
@@ -60,9 +61,19 @@ let package = Package(
             dependencies: []
         ),
         .target(
+            name: "AnyCodable",
+            dependencies: []
+        ),
+        .target(
+            name: "CodableCVarArg",
+            dependencies: []
+        ),
+        .target(
             name: "Models",
             dependencies: [
-                "Utilities"
+                "Utilities",
+                "AnyCodable",
+                "CodableCVarArg"
             ]
         ),
         .target(
@@ -77,11 +88,25 @@ let package = Package(
             dependencies: []
         ),
         .target(
-            name: "Dependencies",
+            name: "Services",
+            dependencies: [
+                "Models",
+                "Utilities"
+            ]
+        ),
+        .target(
+            name: "Persistence",
             dependencies: [
                 "Models",
                 "Utilities",
                 "GRDB"
+            ]
+        ),
+        .target(
+            name: "Repositories",
+            dependencies: [
+                "Models",
+                "Utilities"
             ]
         ),
         .target(
@@ -132,7 +157,8 @@ let package = Package(
             name: "RootFeature",
             dependencies: [
                 "CombineFeedback",
-                "Dependencies",
+                "Services",
+                "Repositories",
                 "Models",
                 "Utilities",
                 "Theme",
@@ -143,7 +169,7 @@ let package = Package(
             name: "RecognitionFeature",
             dependencies: [
                 "CombineFeedback",
-                "Dependencies",
+                "Services",
                 "Models",
                 "Utilities"
             ]
@@ -152,7 +178,7 @@ let package = Package(
             name: "SelectionFeature",
             dependencies: [
                 "CombineFeedback",
-                "Dependencies",
+                "Services",
                 "Models",
                 "Utilities",
                 "Strings",
@@ -165,7 +191,8 @@ let package = Package(
             name: "InspectionFeature",
             dependencies: [
                 "CombineFeedback",
-                "Dependencies",
+                "Services",
+                "Repositories",
                 "Models",
                 "Utilities",
                 "Strings",

@@ -1,7 +1,7 @@
 // Swizzler.swift
 
-import Dependencies
 import Foundation
+import Services
 import UIKit
 
 final class Swizzler: SwizzlerProtocol {
