@@ -20,7 +20,7 @@
 //                             expandedSource: """
 //                             struct MyView: View {
 //
-//                                 @ObservedObject private (set) var _userLinguaViewModel = UserLinguaClient.shared.viewModel
+//                                 @ObservedObject private(set) var _userLinguaViewModel = UserLinguaClient.shared.viewModel
 //                             }
 //                             """,
 //                             macros: macros,

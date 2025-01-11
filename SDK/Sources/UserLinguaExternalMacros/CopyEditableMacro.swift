@@ -16,7 +16,7 @@ public enum CopyEditableMacro: MemberMacro {
         }
 
         return [
-            "@ObservedObject private (set) var _userLinguaViewModel = UserLinguaClient.shared.viewModel"
+            "@ObservedObject private(set) var _userLinguaViewModel = UserLinguaClient.shared.viewModel"
         ]
     }
 }

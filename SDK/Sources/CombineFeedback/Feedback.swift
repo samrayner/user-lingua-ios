@@ -281,7 +281,7 @@ extension Feedback {
     }
 }
 
-extension [Cancellable]: Cancellable {
+extension [Cancellable]: @retroactive Cancellable {
     public func cancel() {
         for element in self {
             element.cancel()
